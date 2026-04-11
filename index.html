@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ORU HMO Density Map</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin="" />
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    #map { width: 100vw; height: 100vh; }
+
+    /* ── Disclaimer banner ── */
+    #disclaimer {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      background: #fff3cd;
+      color: #664d03;
+      padding: 10px 48px 10px 16px;
+      font-size: 14px;
+      border-bottom: 1px solid #ffecb5;
+      text-align: center;
+    }
+    #disclaimer button {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      color: #664d03;
+    }
+
+    /* ── Legend ── */
+    .legend {
+      background: white;
+      padding: 10px 14px;
+      border-radius: 6px;
+      box-shadow: 0 1px 5px rgba(0,0,0,.3);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .legend .legend-title {
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .legend .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend .legend-swatch {
+      width: 28px;
+      height: 14px;
+      border-radius: 2px;
+      border: 1px solid #ccc;
+    }
+
+    /* ── Hover info panel ── */
+    #info-panel {
+      display: none;
+      position: fixed;
+      z-index: 900;
+      background: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.25);
+      font-size: 13px;
+      pointer-events: none;
+      max-width: 260px;
+    }
+    #info-panel .info-name  { font-weight: 600; margin-bottom: 2px; }
+    #info-panel .info-value { color: #555; }
+
+  </style>
+</head>
+<body>
+
+<!-- Disclaimer banner (F-05) -->
+<div id="disclaimer">
+  Showing placeholder data (OSM amenity counts per neighbourhood). Upload your HMO CSV to see real data.
+  <button onclick="dismissDisclaimer()" aria-label="Dismiss">&times;</button>
+</div>
+
+<!-- Hover info panel (F-03) -->
+<div id="info-panel">
+  <div class="info-name"  id="info-name"></div>
+  <div class="info-value" id="info-value"></div>
+</div>
+
+<!-- Map container -->
+<div id="map"></div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""></script>
+
+<!-- chroma.js for colour scales -->
+<script src="https://unpkg.com/chroma-js@2.4.2/chroma.min.js"></script>
+
+<!-- App logic -->
+<script src="static/app.js"></script>
+
+</body>
+</html>

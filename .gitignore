@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+venv/
+.venv/
+.env
+
+# Large intermediate Overpass / ONS dumps (regenerate with scripts)
+data/overpass_wards_raw.json
+data/lsoa_raw.json
+data/amenities_raw.json
