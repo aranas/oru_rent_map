@@ -1,8 +1,8 @@
-# ORU HMO Density Map
+# ORU Density Map
 
-A browser-based interactive map that helps Oxford Renters Union (ORU) organisers
-decide which areas to prioritise for door-knocking by visualising amenity (and
-eventually HMO) density per neighbourhood.
+Interactive choropleth map of Oxford neighbourhood density for ORU door-knocking
+planning. Visualises any per-neighbourhood numeric dataset (e.g. HMO counts,
+amenity density, survey responses) on LSOA boundaries with optional point markers.
 
 ## Quick start
 
@@ -22,23 +22,23 @@ For detailed setup, data generation, and deployment instructions see
 
 ## What the map shows
 
-Oxford is divided into **20 ward neighbourhoods**. Each ward is colour-coded from
-light to dark based on a numeric value. In the MVP this value is an **OSM amenity
-count** (a structural placeholder). When real HMO register data is available, the
-same map renders actual HMO counts per neighbourhood.
+Oxford is divided into **LSOA neighbourhoods** (Lower Layer Super Output Areas —
+small census zones). Each LSOA is colour-coded from light to dark based on a
+numeric value. The current dataset uses **OSM amenity counts** as a structural
+placeholder; swapping in real data (e.g. HMO register counts) only requires
+replacing the CSV and GeoJSON properties.
 
-Individual **amenity locations** are shown as blue circle markers. Hovering a
-marker shows the amenity name and type.
+Individual **point locations** (currently amenities) are shown as blue circle
+markers. Hovering a marker shows its name and type.
 
 | Feature | Description |
 |---------|-------------|
-| Neighbourhood choropleth | Ward polygons filled light to dark by value (quantile scale) |
-| Amenity markers | Blue circle markers at each OSM amenity location |
-| Hover info | Neighbourhood name, count, and label shown on ward mouseover |
-| Amenity tooltips | Name and type shown on marker hover |
+| Neighbourhood choropleth | LSOA polygons filled light to dark by value (quantile scale) |
+| Point markers | Blue circles at each data point location |
+| Hover info | Neighbourhood name, count, and label on polygon mouseover |
+| Point tooltips | Name and type on marker hover |
 | Colour legend | Auto-generated quantile breakpoints in bottom-right corner |
-| Layer control | Toggle neighbourhood fill and amenity markers independently |
-| Visited-area toggle | Grey out wards listed in `data/visited_streets.csv` |
+| Layer control | Toggle neighbourhood fill and point markers independently |
 | Placeholder disclaimer | Banner at top; dismissible per session |
 
 ## Data
@@ -47,9 +47,9 @@ marker shows the amenity name and type.
 
 | Column | Description |
 |--------|-------------|
-| `neighbourhood` | Ward name matching GeoJSON properties (e.g. "Cowley") |
-| `value` | Integer count (amenities in placeholder; HMOs in real data) |
-| `value_label` | Human-readable label shown in legend and tooltip |
+| `neighbourhood` | LSOA name matching GeoJSON properties (e.g. "Oxford 005A") |
+| `value` | Integer count |
+| `value_label` | Human-readable label shown in legend and tooltip (e.g. "HMO count") |
 
 ### Preprocessing raw data
 
@@ -78,10 +78,9 @@ oru_doorknocking_map/
   static/
     app.js                      <- all map logic (fetch, style, legend, layers, UI)
   data/
-    neighbourhoods.geojson      <- Oxford ward boundary polygons (from ONS, ~41 KB)
-    amenities.geojson           <- individual amenity point markers (from Overpass, ~467 KB)
-    placeholder_amenities.csv   <- per-neighbourhood amenity count (placeholder)
-    visited_streets.csv         <- neighbourhoods to mask as visited (editable)
+    neighbourhoods.geojson      <- Oxford LSOA boundary polygons (from ONS)
+    amenities.geojson           <- individual point markers (from Overpass)
+    placeholder_amenities.csv   <- per-neighbourhood counts (placeholder)
   scripts/
     generate_placeholder.py     <- regenerate all data from ONS + Overpass
     preprocess_data.py          <- aggregate raw per-property CSV to per-neighbourhood
@@ -96,23 +95,27 @@ oru_doorknocking_map/
 | Map rendering | Leaflet.js (CDN, no build step) |
 | Base tiles | OpenStreetMap (no API key) |
 | Colour scale | chroma.js (CDN) |
-| Ward boundaries | ONS Open Geography Portal |
-| Amenity data | Overpass API (OpenStreetMap) |
+| Neighbourhood boundaries | ONS Open Geography Portal (LSOA 2021) |
+| Point data | Overpass API (OpenStreetMap) |
 | Point-in-polygon | shapely (Python, data generation only) |
 | Hosting | GitHub Pages (static, free) |
 | Build pipeline | None — plain HTML/CSS/JS |
 
-## Open decisions
+## Swapping in a different dataset
 
-These are documented but do not block the MVP:
+The map is dataset-agnostic. To use your own data:
 
-- **Density metric**: raw count vs count per unit area for neighbourhood colouring.
-- **Column fuzzy matching** on CSV upload (v1.1).
+1. Provide a **`neighbourhoods.geojson`** where each feature has an `amenity_count`
+   property (or rename the property and update `app.js` accordingly).
+2. Optionally provide a **point-layer GeoJSON** with `name` and `amenity` (or
+   any label) properties for the markers.
+3. Update `value_label` in the CSV or the `valueLabel` constant in `app.js` to
+   describe what the numbers represent.
 
 ## Data licence
 
-Ward boundaries are from the [ONS Open Geography Portal](https://geoportal.statistics.gov.uk/)
+LSOA boundaries are from the [ONS Open Geography Portal](https://geoportal.statistics.gov.uk/)
 and are available under the Open Government Licence.
 
-Amenity data is derived from [OpenStreetMap](https://www.openstreetmap.org/copyright)
+Amenity point data is derived from [OpenStreetMap](https://www.openstreetmap.org/copyright)
 and is available under the [Open Database License (ODbL)](https://opendatacommons.org/licenses/odbl/).
