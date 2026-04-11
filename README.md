@@ -6,8 +6,7 @@ amenity density, survey responses) on LSOA boundaries with optional point marker
 
 ## Quick start
 
-**Just want to view the map?**
-Open the GitHub Pages URL in any browser — no installation or login required.
+[**View the map here**](https://aranas.github.io/oru_rent_map/)
 
 **Want to run it locally?**
 
