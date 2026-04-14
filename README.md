@@ -16,50 +16,54 @@ python3 -m http.server 8000
 # Open http://localhost:8000
 ```
 
-For detailed setup, data generation, and deployment instructions see
+For detailed setup, data generation, and testing instructions see
 [INSTRUCTIONS.md](INSTRUCTIONS.md).
 
 ## What the map shows
 
 Oxford is divided into **LSOA neighbourhoods** (Lower Layer Super Output Areas —
 small census zones). Each LSOA is colour-coded from light to dark based on a
-numeric value. The current dataset uses **OSM amenity counts** as a structural
-placeholder; swapping in real data (e.g. HMO register counts) only requires
-replacing the CSV and GeoJSON properties.
+numeric value. By default the map shows **OSM amenity counts** as a structural
+placeholder.
 
-Individual **point locations** (currently amenities) are shown as blue circle
-markers. Hovering a marker shows its name and type.
+**Upload an HMO CSV** (in-browser, no data leaves your machine) and the map
+instantly updates to show HMO density per LSOA, with individual HMOs
+highlighted as **building footprint polygons** matched to their exact address
+in OpenStreetMap.
 
 | Feature | Description |
 |---------|-------------|
 | Neighbourhood choropleth | LSOA polygons filled light to dark by value (quantile scale) |
-| Point markers | Blue circles at each data point location |
+| HMO building footprints | Blue outlines of matched HMO buildings (after CSV upload) |
+| Fallback markers | Orange circles at postcode centroid for unmatched addresses |
+| Amenity markers | Blue circles at each amenity location (placeholder mode) |
 | Hover info | Neighbourhood name, count, and label on polygon mouseover |
-| Point tooltips | Name and type on marker hover |
+| Building tooltips | Address, licence dates, register ID on HMO building hover |
 | Colour legend | Auto-generated quantile breakpoints in bottom-right corner |
-| Layer control | Toggle neighbourhood fill and point markers independently |
-| Placeholder disclaimer | Banner at top; dismissible per session |
+| Layer control | Toggle layers independently |
+| CSV upload panel | Drag-and-drop or click; data stays in memory only, never cached |
+| Placeholder disclaimer | Banner at top; updates when HMO data is loaded |
 
-## Data
+## Uploading HMO data (in-browser)
 
-### CSV schema (aggregated, map-ready)
+Use the **Upload HMO CSV** panel in the bottom-left corner. Your CSV should have
+these columns (header names are detected by fuzzy match):
 
 | Column | Description |
 |--------|-------------|
-| `neighbourhood` | LSOA name matching GeoJSON properties (e.g. "Oxford 005A") |
-| `value` | Integer count |
-| `value_label` | Human-readable label shown in legend and tooltip (e.g. "HMO count") |
+| ID | HMO register reference |
+| Address | Full address including postcode (e.g. `18 Abbey Road, OX2 0AE`) |
+| Street | Street name |
+| Licence start | HMO licence start date |
+| Licence end | HMO licence end date |
 
-### Preprocessing raw data
+The browser matches each address to an OSM building footprint and assigns it to
+an LSOA via the postcode. **No data leaves your machine** — all reference data
+is pre-generated and served as static files. CSV data is **never cached or
+persisted**; it lives only in browser memory for the current session. Click
+**Clear HMO data** or refresh the page to revert to the placeholder view.
 
-If you have a per-property CSV (e.g. HMO register with columns `id`, `address`,
-`neighbourhood`), aggregate it first:
-
-```bash
-python3 scripts/preprocess_data.py data/hmo_register.csv \
-  --output data/hmo_aggregated.csv \
-  --label "HMO count"
-```
+## Data
 
 ### Regenerating placeholder data from OSM
 
@@ -67,23 +71,39 @@ python3 scripts/preprocess_data.py data/hmo_register.csv \
 python3 scripts/generate_placeholder.py
 ```
 
-See [INSTRUCTIONS.md](INSTRUCTIONS.md) section 3 for full details.
+### Regenerating building footprint + postcode data
+
+Must run after `generate_placeholder.py` (needs `data/neighbourhoods.geojson`):
+
+```bash
+python3 scripts/generate_building_data.py
+```
+
+This produces:
+- `data/oxford_buildings.geojson` (~10 MB) — building footprints with address tags
+- `data/postcode_lsoa.csv` (~50 KB) — postcode-to-LSOA mapping
+
+See [INSTRUCTIONS.md](INSTRUCTIONS.md) for full details.
 
 ## File structure
 
 ```
 oru_doorknocking_map/
-  index.html                    <- single HTML file (Leaflet + chroma via CDN)
+  index.html                    <- HTML file (Leaflet + chroma + PapaParse via CDN)
   static/
-    app.js                      <- all map logic (fetch, style, legend, layers, UI)
+    app.js                      <- map logic, layer builders, upload UI wiring
+    hmo-upload.js               <- CSV parsing, address matching (in-memory only)
   data/
     neighbourhoods.geojson      <- Oxford LSOA boundary polygons (from ONS)
     amenities.geojson           <- individual point markers (from Overpass)
     placeholder_amenities.csv   <- per-neighbourhood counts (placeholder)
+    oxford_buildings.geojson    <- building footprints with address tags (from Overpass)
+    postcode_lsoa.csv           <- postcode -> LSOA + centroid mapping
   scripts/
-    generate_placeholder.py     <- regenerate all data from ONS + Overpass
-    preprocess_data.py          <- aggregate raw per-property CSV to per-neighbourhood
-  INSTRUCTIONS.md               <- detailed setup, testing, and deploy guide
+    generate_placeholder.py     <- regenerate LSOA + amenity data from ONS + Overpass
+    generate_building_data.py   <- regenerate building footprints + postcode mapping
+  requirements.txt              <- Python dependencies for data-generation scripts
+  INSTRUCTIONS.md               <- detailed setup and testing guide
   README.md                     <- this file
 ```
 
@@ -94,22 +114,24 @@ oru_doorknocking_map/
 | Map rendering | Leaflet.js (CDN, no build step) |
 | Base tiles | OpenStreetMap (no API key) |
 | Colour scale | chroma.js (CDN) |
+| CSV parsing | PapaParse (CDN) |
 | Neighbourhood boundaries | ONS Open Geography Portal (LSOA 2021) |
-| Point data | Overpass API (OpenStreetMap) |
+| Building footprints | Overpass API (OpenStreetMap, build-time only) |
 | Point-in-polygon | shapely (Python, data generation only) |
+| CSV data handling | In-memory only, never persisted |
 | Hosting | GitHub Pages (static, free) |
 | Build pipeline | None — plain HTML/CSS/JS |
 
-## Swapping in a different dataset
+## Privacy model
 
-The map is dataset-agnostic. To use your own data:
+When a user uploads an HMO CSV in the browser:
 
-1. Provide a **`neighbourhoods.geojson`** where each feature has an `amenity_count`
-   property (or rename the property and update `app.js` accordingly).
-2. Optionally provide a **point-layer GeoJSON** with `name` and `amenity` (or
-   any label) properties for the markers.
-3. Update `value_label` in the CSV or the `valueLabel` constant in `app.js` to
-   describe what the numbers represent.
+- The CSV is parsed **entirely in the browser** (client-side JavaScript)
+- Address matching uses `data/oxford_buildings.geojson` (static file, public OSM data)
+- Postcode-to-LSOA lookup uses `data/postcode_lsoa.csv` (static file, public data)
+- **Zero external API calls** are made at runtime
+- CSV data is **never cached or persisted** — it lives in browser memory only and is discarded on page refresh
+- No HMO data is ever sent to a server or stored in the Git repository
 
 ## Data licence
 

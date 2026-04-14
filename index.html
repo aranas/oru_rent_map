@@ -84,9 +84,235 @@
     #info-panel .info-name  { font-weight: 600; margin-bottom: 2px; }
     #info-panel .info-value { color: #555; }
 
+    /* ── Upload panel ── */
+    #upload-panel {
+      position: fixed;
+      bottom: 24px;
+      left: 12px;
+      z-index: 1000;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.3);
+      padding: 14px 16px;
+      font-size: 13px;
+      max-width: 300px;
+    }
+    #upload-panel .upload-title {
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    #upload-panel .upload-privacy {
+      color: #888;
+      font-size: 11px;
+      margin-bottom: 8px;
+    }
+    #upload-drop-zone {
+      border: 2px dashed #ccc;
+      border-radius: 6px;
+      padding: 14px 10px;
+      text-align: center;
+      cursor: pointer;
+      color: #666;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    #upload-drop-zone.dragover {
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
+    #upload-drop-zone input[type="file"] { display: none; }
+    #upload-status {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #555;
+      min-height: 1.4em;
+    }
+    #upload-status.error { color: #b91c1c; }
+    #upload-status.success { color: #15803d; }
+    #btn-clear-hmo {
+      display: none;
+      margin-top: 8px;
+      padding: 5px 12px;
+      font-size: 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #f9fafb;
+      cursor: pointer;
+    }
+    #btn-clear-hmo:hover { background: #f3f4f6; }
+
+    /* ── Welcome overlay ── */
+    #welcome-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.45);
+      backdrop-filter: blur(2px);
+    }
+    #welcome-box {
+      position: relative;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.25);
+      padding: 32px 36px 28px;
+      max-width: 620px;
+      width: 66vw;
+      max-height: 80vh;
+      overflow-y: auto;
+      font-size: 14px;
+      line-height: 1.65;
+      color: #1e293b;
+    }
+    #welcome-box h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    #welcome-box p { margin-bottom: 10px; }
+    #welcome-box .section-label {
+      font-weight: 600;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      color: #64748b;
+      margin: 18px 0 8px;
+    }
+    #welcome-box ul {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 10px;
+    }
+    #welcome-box li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    #welcome-box .sym {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      margin-top: 2px;
+    }
+    #welcome-box .sym-circle {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      margin: 4px 4px 0;
+    }
+    #welcome-box .data-note {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 14px;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 12px;
+    }
+    #welcome-close {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      background: none;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      color: #94a3b8;
+      line-height: 1;
+    }
+    #welcome-close:hover { color: #334155; }
+
   </style>
 </head>
 <body>
+
+<!-- Welcome overlay -->
+<div id="welcome-overlay">
+  <div id="welcome-box">
+    <button id="welcome-close" aria-label="Close">&times;</button>
+
+    <h2>Welcome to the Oxford Density Map</h2>
+    <p>
+      This interactive map visualises point-of-interest density across
+      Oxford's neighbourhoods (LSOAs). By default it displays publicly
+      available amenity data. You can replace this with your own HMO
+      licence dataset by uploading a CSV in the panel at the bottom-left.
+    </p>
+
+    <div class="section-label">Map elements</div>
+    <ul>
+      <li>
+        <span class="sym" style="background:linear-gradient(135deg,#fee5d9,#a50f15);opacity:.7;"></span>
+        <span><strong>Neighbourhood shading</strong> &mdash; each LSOA polygon is
+        coloured by density (amenity count or HMO count). Hover for details.</span>
+      </li>
+      <li>
+        <span class="sym-circle" style="background:#2563eb;"></span>
+        <span><strong>Blue circle markers</strong> &mdash; individual amenity
+        locations (default dataset). Visible when no HMO CSV is loaded.</span>
+      </li>
+      <li>
+        <span class="sym" style="background:rgba(37,99,235,.35);border:2px solid #1d4ed8;"></span>
+        <span><strong>Blue building footprints</strong> &mdash; exact building
+        outlines for HMO addresses matched to OpenStreetMap. Appear after
+        uploading an HMO CSV.</span>
+      </li>
+      <li>
+        <span class="sym-circle" style="background:#ea580c;"></span>
+        <span><strong>Orange circle markers</strong> &mdash; HMO addresses that
+        could not be matched to a building footprint, placed at their
+        postcode centroid. Appear after uploading an HMO CSV.</span>
+      </li>
+    </ul>
+
+    <div class="section-label">Data sources</div>
+    <ul>
+      <li>
+        <span class="sym" style="background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#475569;">OSM</span>
+        <span><strong>Map tiles &amp; building footprints</strong> &mdash;
+        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>
+        contributors, fetched at build time via the Overpass API.</span>
+      </li>
+      <li>
+        <span class="sym" style="background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#475569;">ONS</span>
+        <span><strong>Neighbourhood boundaries</strong> &mdash; LSOA polygons
+        from the
+        <a href="https://geoportal.statistics.gov.uk/" target="_blank" rel="noopener">ONS Open Geography Portal</a>.</span>
+      </li>
+      <li>
+        <span class="sym" style="background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#475569;">CSV</span>
+        <span><strong>HMO data</strong> &mdash; uploaded by you and processed
+        entirely in your browser. It is never sent to any server.</span>
+      </li>
+    </ul>
+
+    <div class="section-label">Tips</div>
+    <ul>
+      <li>
+        <span class="sym" style="background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:14px;color:#475569;">&#9432;</span>
+        <span>Hover over buildings or markers to see metadata (address,
+        licence dates, register ID). The neighbourhood shading overlay can
+        block these tooltips &mdash; use the layer control in the top-right
+        to untick it when you want to inspect individual markers.</span>
+      </li>
+      <li>
+        <span class="sym" style="background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:14px;color:#475569;">&#9432;</span>
+        <span>Some buildings contain multiple HMO entries at the same
+        address (e.g.&nbsp;Flat&nbsp;A and Flat&nbsp;B). These are
+        consolidated into a single footprint &mdash; hover to see all
+        sub-units and entry count in the metadata.</span>
+      </li>
+    </ul>
+
+    <p class="data-note">
+      All reference data (tiles, boundaries, building footprints) is either
+      served as static files or loaded from OpenStreetMap tile servers.
+      No uploaded data leaves your browser.
+    </p>
+  </div>
+</div>
 
 <!-- Disclaimer banner (F-05) -->
 <div id="disclaimer">
@@ -100,6 +326,18 @@
   <div class="info-value" id="info-value"></div>
 </div>
 
+<!-- Upload panel -->
+<div id="upload-panel">
+  <div class="upload-title">Upload HMO CSV</div>
+  <div class="upload-privacy">Data stays in your browser only</div>
+  <div id="upload-drop-zone">
+    Drop CSV here or <strong>click to browse</strong>
+    <input type="file" id="hmo-file-input" accept=".csv">
+  </div>
+  <div id="upload-status"></div>
+  <button id="btn-clear-hmo">Clear HMO data</button>
+</div>
+
 <!-- Map container -->
 <div id="map"></div>
 
@@ -110,6 +348,12 @@
 
 <!-- chroma.js for colour scales -->
 <script src="https://unpkg.com/chroma-js@2.4.2/chroma.min.js"></script>
+
+<!-- PapaParse for CSV handling -->
+<script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+
+<!-- HMO upload logic (must load before app.js) -->
+<script src="static/hmo-upload.js"></script>
 
 <!-- App logic -->
 <script src="static/app.js"></script>
