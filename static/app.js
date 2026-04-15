@@ -316,7 +316,7 @@ function buildLegend(map, colourScale, breaks, valueLabel) {
       var txt = 'Showing HMO licence data (' + stats.total + ' properties, ' +
         stats.matched + ' matched to buildings';
       if (stats.multiHousehold > 0) {
-        txt += ', ' + stats.multiHousehold + ' multi-household addresses';
+        txt += ', ' + stats.multiHousehold + ' with multiple HMO entries at one address';
       }
       txt += ')';
       disc.innerHTML = txt +
