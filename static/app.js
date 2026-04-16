@@ -7,6 +7,7 @@ var CONFIG = {
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   neighbourhoodsPath: 'data/neighbourhoods.geojson',
   amenitiesPath:      'data/amenities.geojson',
+  buildingsPath:      'data/oxford_buildings.geojson',
   numQuantiles: 4,
   colourRange: ['#fee5d9', '#a50f15'],
   defaultFillOpacity: 0.55,
@@ -17,6 +18,8 @@ var CONFIG = {
   hmoBuildingFill:   '#2563eb',
   hmoBuildingStroke: '#1d4ed8',
   hmoFallbackColour: '#ea580c',
+  allBuildingsFill:   '#22c55e',
+  allBuildingsStroke: '#15803d',
 };
 
 
@@ -164,6 +167,32 @@ function buildPointMarkers(map, pointGeojson, opts) {
 }
 
 
+function buildAllReferenceBuildings(buildingGeojson) {
+  return L.geoJSON(buildingGeojson, {
+    style: function () {
+      return {
+        fillColor: CONFIG.allBuildingsFill,
+        fillOpacity: 0.28,
+        color: CONFIG.allBuildingsStroke,
+        weight: 1.5,
+      };
+    },
+    onEachFeature: function (feature, layer) {
+      var p = feature.properties;
+      var line = '';
+      if (p.addr_housenumber || p.addr_street) {
+        line = [p.addr_housenumber, p.addr_street].filter(Boolean).join(' ');
+      }
+      if (p.addr_postcode) {
+        line = line ? line + ', ' + p.addr_postcode : p.addr_postcode;
+      }
+      if (!line && p.match_key) line = p.match_key;
+      if (line) layer.bindTooltip(line, { direction: 'top', offset: [0, -6] });
+    },
+  });
+}
+
+
 function buildBuildingFootprints(map, buildingGeojson) {
   return L.geoJSON(buildingGeojson, {
     style: function () {
@@ -233,6 +262,7 @@ function buildLegend(map, colourScale, breaks, valueLabel) {
   var currentLegend      = null;
   var currentLayerControl = null;
   var wardGeojson        = null;
+  var allBuildingsLayer  = null;
 
   // Fetch base neighbourhood data (always needed for choropleth)
   var wardRes = await fetch(CONFIG.neighbourhoodsPath);
@@ -290,6 +320,10 @@ function buildLegend(map, colourScale, breaks, valueLabel) {
       currentMarkerLayer = buildPointMarkers(map, pointGeojson);
       currentMarkerLayer.addTo(map);
       overlays['Amenity markers'] = currentMarkerLayer;
+    }
+
+    if (allBuildingsLayer) {
+      overlays['All building footprints'] = allBuildingsLayer;
     }
 
     currentLayerControl = L.control.layers(null, overlays, { collapsed: false, position: 'topright' });
@@ -420,6 +454,16 @@ function buildLegend(map, colourScale, breaks, valueLabel) {
   }
 
   // ── Initial load: always start with placeholder data ───────────────────
+
+  try {
+    var buildingsRes = await fetch(CONFIG.buildingsPath);
+    if (buildingsRes.ok) {
+      var buildingsGeojson = await buildingsRes.json();
+      allBuildingsLayer = buildAllReferenceBuildings(buildingsGeojson);
+    }
+  } catch (err) {
+    console.warn('Could not load reference building footprints:', err);
+  }
 
   var amenityRes = await fetch(CONFIG.amenitiesPath);
   var amenityGeojson = await amenityRes.json();
