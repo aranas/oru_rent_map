@@ -73,18 +73,20 @@ python3 scripts/generate_building_data.py
 ```
 
 This script:
-1. Fetches all Oxford buildings with address tags from Overpass API.
-2. Converts to GeoJSON with a normalised `match_key` for address matching.
-3. Uses shapely to map each building's postcode to its LSOA via point-in-polygon.
-4. Outputs two files (see below).
+1. Fetches building ways from Overpass (full address on way, housenumber-only, street-only, and `building:part`) plus address **nodes** in the same bounding box.
+2. Converts ways to GeoJSON, deduplicates by OSM id, then assigns node addresses to polygons with a Shapely **point-in-polygon** join (smallest-area polygon wins when several contain the node). Ways that already have both `addr:housenumber` and `addr:street` keep those tags; incomplete ways are filled from nodes where possible.
+3. Builds `match_key` and `match_keys`: housenumber **ranges** (e.g. `1-19`) expand to multiple normalised keys (odds/evens when both ends share parity, otherwise every integer), capped per feature so the browser index can match unit-level HMO addresses to one terrace polygon.
+4. Uses shapely to map each building postcode centroid to an LSOA for `postcode_lsoa.csv`.
+5. Outputs two main files (see below). Raw Overpass dumps are gitignored (`buildings_raw.json`, `addr_nodes_raw.json`).
 
 **Expected output files:**
 
 | File | Description | Typical size |
 |------|-------------|-------------|
-| `data/oxford_buildings.geojson` | ~23,000 building footprint polygons | ~10 MB |
-| `data/postcode_lsoa.csv` | ~1,500 postcode-to-LSOA mappings | ~50 KB |
-| `data/buildings_raw.json` | Raw Overpass response (intermediate, gitignored) | ~20 MB |
+| `data/oxford_buildings.geojson` | Building footprint polygons + `match_key` / `match_keys` | larger than before (more ways + expanded keys) |
+| `data/postcode_lsoa.csv` | Postcode-to-LSOA mappings | varies |
+| `data/buildings_raw.json` | Raw Overpass response for ways (intermediate, gitignored) | large |
+| `data/addr_nodes_raw.json` | Raw Overpass response for address nodes (gitignored) | moderate |
 
 
 ## 3. Manual testing of the map

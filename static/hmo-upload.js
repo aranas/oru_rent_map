@@ -90,9 +90,19 @@
 
       _buildingIndex = new Map();
       buildingsGeojson.features.forEach(function (f) {
-        var key = f.properties.match_key;
-        if (key && !_buildingIndex.has(key)) {
-          _buildingIndex.set(key, f);
+        var p = f.properties;
+        var keys = p.match_keys;
+        if (keys && keys.length) {
+          keys.forEach(function (key) {
+            if (key && !_buildingIndex.has(key)) {
+              _buildingIndex.set(key, f);
+            }
+          });
+        } else {
+          var key = p.match_key;
+          if (key && !_buildingIndex.has(key)) {
+            _buildingIndex.set(key, f);
+          }
         }
       });
       onProgress('Building index: ' + _buildingIndex.size + ' entries');
