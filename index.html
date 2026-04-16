@@ -254,16 +254,28 @@
         locations (default dataset). Visible when no HMO CSV is loaded.</span>
       </li>
       <li>
+        <span class="sym" style="background:rgba(34,197,94,.35);border:2px solid #15803d;"></span>
+        <span><strong>Green building footprints</strong> &mdash; every
+        addressed building outline from the reference dataset (optional layer
+        in the top-right control).</span>
+      </li>
+      <li>
         <span class="sym" style="background:rgba(37,99,235,.35);border:2px solid #1d4ed8;"></span>
         <span><strong>Blue building footprints</strong> &mdash; exact building
         outlines for HMO addresses matched to OpenStreetMap. Appear after
         uploading an HMO CSV.</span>
       </li>
       <li>
+        <span class="sym-circle" style="background:#2563eb;"></span>
+        <span><strong>Blue circle markers (precise)</strong> &mdash; HMO addresses
+        matched to an OSM address node with exact coordinates, but not to a
+        building polygon. Appear after uploading an HMO CSV.</span>
+      </li>
+      <li>
         <span class="sym-circle" style="background:#ea580c;"></span>
         <span><strong>Orange circle markers</strong> &mdash; HMO addresses that
-        could not be matched to a building footprint, placed at their
-        postcode centroid. Appear after uploading an HMO CSV.</span>
+        could not be matched to a building footprint or address node, placed
+        at their postcode centroid. Appear after uploading an HMO CSV.</span>
       </li>
     </ul>
 
