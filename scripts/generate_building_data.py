@@ -6,6 +6,7 @@ Generates two static reference files used by the in-browser HMO CSV upload:
 
   data/oxford_buildings.geojson  – building footprint polygons with address tags
   data/postcode_lsoa.csv         – postcode -> LSOA + centroid mapping
+  data/addr_nodes.csv            – precise lat/lon for address nodes (fallback)
 
 Prerequisite: data/neighbourhoods.geojson must already exist
               (run generate_placeholder.py first).
@@ -360,21 +361,21 @@ def main() -> None:
             "Run generate_placeholder.py first to create LSOA boundaries."
         )
 
-    print("[1/4] Fetching building ways from Overpass...")
+    print("[1/5] Fetching building ways from Overpass...")
     raw_ways = query_overpass(BUILDINGS_QUERY, "building ways")
     raw_path = os.path.join(DATA_DIR, "buildings_raw.json")
     with open(raw_path, "w") as f:
         json.dump(raw_ways, f)
     print(f"  Wrote raw response -> {raw_path}")
 
-    print("[2/4] Fetching address nodes from Overpass...")
+    print("[2/5] Fetching address nodes from Overpass...")
     raw_nodes = query_overpass(ADDR_NODES_QUERY, "address nodes")
     nodes_path = os.path.join(DATA_DIR, "addr_nodes_raw.json")
     with open(nodes_path, "w") as f:
         json.dump(raw_nodes, f)
     print(f"  Wrote raw response -> {nodes_path}")
 
-    print("[3/4] Converting to GeoJSON, joining nodes, expanding ranges...")
+    print("[3/5] Converting to GeoJSON, joining nodes, expanding ranges...")
     way_elements = dedupe_ways(raw_ways.get("elements", []))
     features: list[dict] = []
     for el in way_elements:
@@ -407,7 +408,39 @@ def main() -> None:
     )
     print(f"  Wrote {buildings_path} ({size_kb:.0f} KB)")
 
-    print("[4/4] Generating postcode-to-LSOA mapping...")
+    # Write address nodes CSV for precise browser fallback
+    print("[4/5] Writing address nodes CSV...")
+    addr_csv_path = os.path.join(DATA_DIR, "addr_nodes.csv")
+    node_elements = [
+        el for el in raw_nodes.get("elements", [])
+        if el.get("type") == "node" and el.get("lat") is not None and el.get("lon") is not None
+    ]
+    addr_rows_written = 0
+    seen_node_keys: set[str] = set()
+    with open(addr_csv_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["match_key", "lat", "lon", "addr_housenumber", "addr_street", "addr_postcode"])
+        for el in node_elements:
+            tags = el.get("tags") or {}
+            hn = (tags.get("addr:housenumber") or "").strip()
+            street = (tags.get("addr:street") or "").strip()
+            pc = (tags.get("addr:postcode") or "").strip()
+            if not hn or not street:
+                continue
+            lat = truncate_coord(el["lat"])
+            lon = truncate_coord(el["lon"])
+            expanded = expand_housenumber_field(hn)
+            for num in expanded:
+                key = normalise_name(f"{num} {street}")
+                if not key or key in seen_node_keys:
+                    continue
+                seen_node_keys.add(key)
+                writer.writerow([key, lat, lon, hn, street, pc])
+                addr_rows_written += 1
+    size_kb = os.path.getsize(addr_csv_path) / 1024
+    print(f"  {addr_rows_written} address node entries -> {addr_csv_path} ({size_kb:.0f} KB)")
+
+    print("[5/5] Generating postcode-to-LSOA mapping...")
 
     with open(hoods_path) as f:
         hoods_geojson = json.load(f)

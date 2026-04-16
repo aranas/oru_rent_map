@@ -72,10 +72,11 @@
   // ── Reference data loading (lazy, cached in module scope) ──────────────
 
   var _buildingIndex = null;   // Map<matchKey, GeoJSON feature>
+  var _nodeIndex     = null;   // Map<matchKey, {lat, lon}>
   var _postcodeIndex = null;   // Map<normalisedPostcode, {lsoa, lat, lon}>
 
   function loadReferenceData(onProgress) {
-    if (_buildingIndex && _postcodeIndex) {
+    if (_buildingIndex && _nodeIndex && _postcodeIndex) {
       return Promise.resolve();
     }
 
@@ -84,9 +85,11 @@
     return Promise.all([
       fetch('data/oxford_buildings.geojson').then(function (r) { return r.json(); }),
       fetch('data/postcode_lsoa.csv').then(function (r) { return r.text(); }),
+      fetch('data/addr_nodes.csv').then(function (r) { return r.text(); }),
     ]).then(function (results) {
       var buildingsGeojson = results[0];
       var postcodeCsvText  = results[1];
+      var addrNodesCsvText = results[2];
 
       _buildingIndex = new Map();
       buildingsGeojson.features.forEach(function (f) {
@@ -106,6 +109,19 @@
         }
       });
       onProgress('Building index: ' + _buildingIndex.size + ' entries');
+
+      _nodeIndex = new Map();
+      var nodeParsed = Papa.parse(addrNodesCsvText, { header: true, skipEmptyLines: true });
+      nodeParsed.data.forEach(function (row) {
+        var key = (row.match_key || '').trim();
+        if (key && !_nodeIndex.has(key)) {
+          _nodeIndex.set(key, {
+            lat: parseFloat(row.lat) || 0,
+            lon: parseFloat(row.lon) || 0,
+          });
+        }
+      });
+      onProgress('Address node index: ' + _nodeIndex.size + ' entries');
 
       _postcodeIndex = new Map();
       var parsed = Papa.parse(postcodeCsvText, { header: true, skipEmptyLines: true });
@@ -162,11 +178,12 @@
 
   function matchRows(rows, headers, colMap, onProgress) {
     var lsoaCounts = {};
-    var stats = { total: 0, matched: 0, fallback: 0, noPostcode: 0, noLsoa: 0, multiHousehold: 0 };
+    var stats = { total: 0, matched: 0, nodeMatch: 0, fallback: 0, noPostcode: 0, noLsoa: 0, multiHousehold: 0 };
 
     // Pass 1: parse each row, strip sub-units, collect per-building entries
-    var buildingBucket = new Map();  // matchKey -> { geometry, entries[] }
-    var fallbackBucket = new Map();  // matchKey|postcode -> { geometry, entries[] }
+    var buildingBucket  = new Map();  // matchKey -> { geometry, entries[] }
+    var nodePointBucket = new Map();  // matchKey -> { geometry, entries[] }
+    var fallbackBucket  = new Map();  // matchKey|postcode -> { geometry, entries[] }
 
     rows.forEach(function (row) {
       var vals = headers.map(function (h) { return row[h] || ''; });
@@ -236,19 +253,36 @@
             lsoa: lsoa,
           });
         }
-      } else if (pcInfo) {
-        var fbKey = matchKey || (postcode + '|' + address);
-        if (fallbackBucket.has(fbKey)) {
-          fallbackBucket.get(fbKey).entries.push(entry);
-        } else {
-          fallbackBucket.set(fbKey, {
-            geometry: { type: 'Point', coordinates: [pcInfo.lon, pcInfo.lat] },
-            entries: [entry],
-            address: address,
-            street: street || streetForMatch,
-            postcode: postcode,
-            lsoa: lsoa,
-          });
+      } else {
+        var nodeInfo = matchKey ? _nodeIndex.get(matchKey) : null;
+        if (nodeInfo) {
+          var nKey = matchKey;
+          if (nodePointBucket.has(nKey)) {
+            nodePointBucket.get(nKey).entries.push(entry);
+          } else {
+            nodePointBucket.set(nKey, {
+              geometry: { type: 'Point', coordinates: [nodeInfo.lon, nodeInfo.lat] },
+              entries: [entry],
+              address: address,
+              street: street || streetForMatch,
+              postcode: postcode,
+              lsoa: lsoa,
+            });
+          }
+        } else if (pcInfo) {
+          var fbKey = matchKey || (postcode + '|' + address);
+          if (fallbackBucket.has(fbKey)) {
+            fallbackBucket.get(fbKey).entries.push(entry);
+          } else {
+            fallbackBucket.set(fbKey, {
+              geometry: { type: 'Point', coordinates: [pcInfo.lon, pcInfo.lat] },
+              entries: [entry],
+              address: address,
+              street: street || streetForMatch,
+              postcode: postcode,
+              lsoa: lsoa,
+            });
+          }
         }
       }
     });
@@ -282,6 +316,40 @@
 
       stats.matched++;
       buildingFeatures.push({
+        type: 'Feature',
+        geometry: bucket.geometry,
+        properties: props,
+      });
+    });
+
+    var nodePointFeatures = [];
+    nodePointBucket.forEach(function (bucket) {
+      var entries = bucket.entries;
+      var isMulti = entries.length > 1;
+      if (isMulti) stats.multiHousehold++;
+
+      var subUnits = entries.map(function (e) { return e.sub_unit; }).filter(Boolean);
+      var ids = entries.map(function (e) { return e.hmo_id; }).filter(Boolean);
+
+      var props = {
+        address: bucket.address,
+        street: bucket.street,
+        postcode: bucket.postcode,
+        lsoa: bucket.lsoa,
+        hmo_id: ids.join(', '),
+        licence_start: entries[0].licence_start,
+        licence_end: entries[0].licence_end,
+      };
+
+      if (isMulti) {
+        props.sub_units = subUnits.join(', ');
+        props.entry_count = entries.length;
+      } else if (entries[0].sub_unit) {
+        props.sub_units = entries[0].sub_unit;
+      }
+
+      stats.nodeMatch++;
+      nodePointFeatures.push({
         type: 'Feature',
         geometry: bucket.geometry,
         properties: props,
@@ -326,6 +394,7 @@
 
     return {
       hmoBuildings:      { type: 'FeatureCollection', features: buildingFeatures },
+      hmoNodePoints:     { type: 'FeatureCollection', features: nodePointFeatures },
       hmoFallbackPoints: { type: 'FeatureCollection', features: fallbackFeatures },
       lsoaCounts: lsoaCounts,
       matchStats: stats,
