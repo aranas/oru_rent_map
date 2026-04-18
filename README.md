@@ -63,6 +63,32 @@ is pre-generated and served as static files. CSV data is **never cached or
 persisted**; it lives only in browser memory for the current session. Click
 **Clear HMO data** or refresh the page to revert to the placeholder view.
 
+### Preprocessing CSV for instant matching (recommended)
+
+For large CSV files or when you need instant uploads, preprocess your CSV to
+match addresses against the building database upfront:
+
+```bash
+python3 scripts/preprocess_hmo_csv.py input.csv output.csv
+```
+
+This script:
+- Parses addresses using the same logic as the browser
+- Matches against the building database (exact match first, then fuzzy)
+- Adds matched building keys for instant exact lookups
+
+The preprocessed CSV gets additional columns:
+- `match_key`: The building's exact matchKey (from building data)
+- `housenumber`: Parsed housenumber from input
+- `street`: Parsed street from input  
+- `postcode`: Normalized postcode
+- `sub_unit`: Parsed sub-unit
+- `match_confidence`: 'exact', 'fuzzy', or 'none'
+
+Upload the preprocessed CSV just like a regular one — the app detects the
+precomputed matches and uploads instantly. The expensive fuzzy matching happens
+once during preprocessing, not in the browser.
+
 ## Data
 
 ### Regenerating placeholder data from OSM
