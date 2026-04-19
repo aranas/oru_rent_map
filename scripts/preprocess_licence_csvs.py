@@ -394,76 +394,82 @@ def process_csv(input_path, building_index, licence_type):
     rows = []
     
     # Try different encodings
-    encodings = ['utf-8', 'iso-8859-1', 'cp1252']
+    encodings = ['utf-8', 'iso-8859-1', 'cp1252', 'latin1']
     infile = None
+    encoding = None
     
-    for encoding in encodings:
+    for enc in encodings:
         try:
-            infile = open(input_path, 'r', newline='', encoding=encoding, errors='replace')
-            # Test by trying to read a line
-            pos = infile.tell()
-            line = infile.readline()
-            infile.seek(pos)  # Reset position
+            with open(input_path, 'rb') as f:
+                # Read first 10KB to detect encoding
+                sample = f.read(10240)
+                sample.decode(enc)
+            # If we get here, encoding works
+            encoding = enc
             break
-        except Exception:
-            if infile:
-                infile.close()
+        except UnicodeDecodeError:
             continue
     
-    if not infile:
-        print(f"Error: Could not read {input_path} with any supported encoding")
+    if not encoding:
+        print(f"Error: Could not determine encoding for {input_path}")
         return rows
     
-    reader = csv.DictReader(infile)
-    fieldnames = reader.fieldnames
+    print(f"  Using encoding: {encoding}")
     
-    exact_matches = 0
-    list_matches = 0
-    range_matches = 0
-    fuzzy_matches = 0
-    no_matches = 0
-    
-    for row in reader:
-        # Find address column (case-insensitive)
-        address_col = None
-        for col in fieldnames:
-            if col and col.lower() == 'address':
-                address_col = col
-                break
+    try:
+        infile = open(input_path, 'r', newline='', encoding=encoding, errors='replace')
+        reader = csv.DictReader(infile)
+        fieldnames = reader.fieldnames
+
+        exact_matches = 0
+        list_matches = 0
+        range_matches = 0
+        fuzzy_matches = 0
+        no_matches = 0
         
-        if not address_col:
-            print(f"Warning: No 'address' column found in {input_path}, skipping row")
-            continue
-        
-        raw_address = row.get(address_col, '')
-        parsed = parse_address(raw_address)
-        
-        # Try to find the best match in building data
-        matched_key, confidence = find_best_match(parsed, building_index)
-        
-        if confidence == 'exact':
-            exact_matches += 1
-        elif confidence == 'list':
-            list_matches += 1
-        elif confidence == 'range':
-            range_matches += 1
-        elif confidence == 'fuzzy':
-            fuzzy_matches += 1
-        else:
-            no_matches += 1
-        
-        # Create standardized row with only required columns
-        processed_row = {
-            'address': raw_address,
-            'licence_type': licence_type,
-            'match_key': matched_key or '',
-            'street': parsed['street'],
-            'housenumber': parsed['housenumber'],
-            'postcode': parsed['postcode']
-        }
-        rows.append(processed_row)
-    
-    infile.close()
+        for row in reader:
+            # Find address column (case-insensitive)
+            address_col = None
+            for col in fieldnames:
+                if col and col.lower() == 'address':
+                    address_col = col
+                    break
+            
+            if not address_col:
+                print(f"Warning: No 'address' column found in {input_path}, skipping row")
+                continue
+            
+            raw_address = row.get(address_col, '')
+            parsed = parse_address(raw_address)
+            
+            # Try to find the best match in building data
+            matched_key, confidence = find_best_match(parsed, building_index)
+            
+            if confidence == 'exact':
+                exact_matches += 1
+            elif confidence == 'list':
+                list_matches += 1
+            elif confidence == 'range':
+                range_matches += 1
+            elif confidence == 'fuzzy':
+                fuzzy_matches += 1
+            else:
+                no_matches += 1
+            
+            # Create standardized row with only required columns
+            processed_row = {
+                'address': raw_address,
+                'licence_type': licence_type,
+                'match_key': matched_key or '',
+                'street': parsed['street'],
+                'housenumber': parsed['housenumber'],
+                'postcode': parsed['postcode']
+            }
+            rows.append(processed_row)
+    finally:
+        if infile:
+            infile.close()
+
     print(f"  {licence_type} results: {exact_matches} exact, {list_matches} list, {range_matches} range, {fuzzy_matches} fuzzy, {no_matches} none")
     
     return rows
