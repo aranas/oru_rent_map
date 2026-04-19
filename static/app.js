@@ -7,7 +7,7 @@ var CONFIG = {
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   neighbourhoodsPath: 'data/neighbourhoods.geojson',
   amenitiesPath:      'data/amenities.geojson',
-  numQuantiles: 4,
+  numQuantiles: 6,
   colourRange: ['#fee5d9', '#a50f15'],
   defaultFillOpacity: 0.55,
   defaultBorderColour: '#666',
@@ -16,7 +16,10 @@ var CONFIG = {
   amenityMarkerColour: '#2563eb',
   hmoBuildingFill:   '#2563eb',
   hmoBuildingStroke: '#1d4ed8',
+  selectiveBuildingFill: '#16a34a',
+  selectiveBuildingStroke: '#15803d',
   hmoFallbackColour: '#ea580c',
+  selectiveFallbackColour: '#ca8a04',
 };
 
 
@@ -164,13 +167,17 @@ function buildPointMarkers(map, pointGeojson, opts) {
 }
 
 
-function buildBuildingFootprints(map, buildingGeojson) {
+function buildBuildingFootprints(map, buildingGeojson, opts) {
+  opts = opts || {};
+  var fillColor = opts.fillColor || CONFIG.hmoBuildingFill;
+  var strokeColor = opts.strokeColor || CONFIG.hmoBuildingStroke;
+
   return L.geoJSON(buildingGeojson, {
     style: function () {
       return {
-        fillColor: CONFIG.hmoBuildingFill,
+        fillColor: fillColor,
         fillOpacity: 0.35,
-        color: CONFIG.hmoBuildingStroke,
+        color: strokeColor,
         weight: 2,
       };
     },
@@ -179,7 +186,7 @@ function buildBuildingFootprints(map, buildingGeojson) {
       var lines = [];
       if (p.address)        lines.push(p.address);
       if (p.sub_units)      lines.push('Units: ' + p.sub_units);
-      if (p.entry_count)    lines.push('<em>' + p.entry_count + ' separate HMO entries at this address</em>');
+      if (p.entry_count)    lines.push('<em>' + p.entry_count + ' separate licence entries at this address</em>');
       if (p.hmo_id)         lines.push('ID: ' + p.hmo_id);
       if (p.licence_start)  lines.push('Start: ' + p.licence_start);
       if (p.licence_end)    lines.push('End: ' + p.licence_end);
@@ -228,8 +235,10 @@ function buildLegend(map, colourScale, breaks, valueLabel) {
   // State references for layer swapping
   var currentWardLayer   = null;
   var currentMarkerLayer = null;
-  var currentBuildingLayer  = null;
-  var currentFallbackLayer  = null;
+  var currentHmoBuildingLayer = null;
+  var currentSelectiveBuildingLayer = null;
+  var currentHmoFallbackLayer = null;
+  var currentSelectiveFallbackLayer = null;
   var currentLegend      = null;
   var currentLayerControl = null;
   var wardGeojson        = null;
@@ -240,12 +249,14 @@ function buildLegend(map, colourScale, breaks, valueLabel) {
 
   // ── Apply data and render layers ───────────────────────────────────────
 
-  function applyData(countProp, valueLabel, pointGeojson, hmoBuildings, hmoFallback, matchStats) {
+  function applyData(countProp, valueLabel, pointGeojson, hmoBuildings, selectiveBuildings, hmoFallback, selectiveFallback, matchStats) {
     // Remove existing layers
     if (currentWardLayer)     { map.removeLayer(currentWardLayer); }
     if (currentMarkerLayer)   { map.removeLayer(currentMarkerLayer); }
-    if (currentBuildingLayer) { map.removeLayer(currentBuildingLayer); }
-    if (currentFallbackLayer) { map.removeLayer(currentFallbackLayer); }
+    if (currentHmoBuildingLayer) { map.removeLayer(currentHmoBuildingLayer); }
+    if (currentSelectiveBuildingLayer) { map.removeLayer(currentSelectiveBuildingLayer); }
+    if (currentHmoFallbackLayer) { map.removeLayer(currentHmoFallbackLayer); }
+    if (currentSelectiveFallbackLayer) { map.removeLayer(currentSelectiveFallbackLayer); }
     if (currentLegend)        { map.removeControl(currentLegend); }
     if (currentLayerControl)  { map.removeControl(currentLayerControl); }
 
@@ -262,13 +273,25 @@ function buildLegend(map, colourScale, breaks, valueLabel) {
     overlays['Neighbourhood density'] = currentWardLayer;
 
     if (hmoBuildings && hmoBuildings.features.length > 0) {
-      currentBuildingLayer = buildBuildingFootprints(map, hmoBuildings);
-      currentBuildingLayer.addTo(map);
-      overlays['HMO buildings'] = currentBuildingLayer;
+      currentHmoBuildingLayer = buildBuildingFootprints(map, hmoBuildings, {
+        fillColor: CONFIG.hmoBuildingFill,
+        strokeColor: CONFIG.hmoBuildingStroke,
+      });
+      currentHmoBuildingLayer.addTo(map);
+      overlays['Selective buildings'] = currentHmoBuildingLayer;
+    }
+
+    if (selectiveBuildings && selectiveBuildings.features.length > 0) {
+      currentSelectiveBuildingLayer = buildBuildingFootprints(map, selectiveBuildings, {
+        fillColor: CONFIG.selectiveBuildingFill,
+        strokeColor: CONFIG.selectiveBuildingStroke,
+      });
+      currentSelectiveBuildingLayer.addTo(map);
+      overlays['HMO buildings'] = currentSelectiveBuildingLayer;
     }
 
     if (hmoFallback && hmoFallback.features.length > 0) {
-      currentFallbackLayer = buildPointMarkers(map, hmoFallback, {
+      currentHmoFallbackLayer = buildPointMarkers(map, hmoFallback, {
         radius: 5,
         fillColor: CONFIG.hmoFallbackColour,
         tooltipFn: function (p) {
@@ -282,8 +305,27 @@ function buildLegend(map, colourScale, breaks, valueLabel) {
           return lines.join('\n');
         },
       });
-      currentFallbackLayer.addTo(map);
-      overlays['Unmatched (postcode centroid)'] = currentFallbackLayer;
+      currentHmoFallbackLayer.addTo(map);
+      overlays['Unmatched Selective (postcode centroid)'] = currentHmoFallbackLayer;
+    }
+
+    if (selectiveFallback && selectiveFallback.features.length > 0) {
+      currentSelectiveFallbackLayer = buildPointMarkers(map, selectiveFallback, {
+        radius: 5,
+        fillColor: CONFIG.selectiveFallbackColour,
+        tooltipFn: function (p) {
+          var lines = [];
+          if (p.address)        lines.push(p.address);
+          if (p.sub_units)      lines.push('Units: ' + p.sub_units);
+          if (p.entry_count)    lines.push(p.entry_count + ' separate licence entries at this address');
+          if (p.hmo_id)         lines.push('ID: ' + p.hmo_id);
+          if (p.licence_start)  lines.push('Start: ' + p.licence_start);
+          if (p.licence_end)    lines.push('End: ' + p.licence_end);
+          return lines.join('\n');
+        },
+      });
+      currentSelectiveFallbackLayer.addTo(map);
+      overlays['Unmatched HMO (postcode centroid)'] = currentSelectiveFallbackLayer;
     }
 
     if (pointGeojson) {
@@ -299,21 +341,30 @@ function buildLegend(map, colourScale, breaks, valueLabel) {
   // ── Replace data with HMO results ─────────────────────────────────────
 
   function replaceWithHmoData(hmoData) {
-    // Patch wardGeojson with HMO counts
+    // Patch wardGeojson with uploaded licence counts
     wardGeojson.features.forEach(function (f) {
       var name = f.properties.LSOA21NM || '';
       f.properties.amenity_count = hmoData.lsoaCounts[name] || 0;
     });
 
     var stats = hmoData.matchStats;
-    var label = 'HMO count';
+    var label = 'Licence count';
 
-    applyData('amenity_count', label, null, hmoData.hmoBuildings, hmoData.hmoFallbackPoints, stats);
+    applyData(
+      'amenity_count',
+      label,
+      null,
+      hmoData.hmoBuildings,
+      hmoData.selectiveBuildings,
+      hmoData.hmoFallbackPoints,
+      hmoData.selectiveFallbackPoints,
+      stats
+    );
 
     // Update disclaimer
     var disc = document.getElementById('disclaimer');
     if (disc) {
-      var txt = 'Showing HMO licence data (' + stats.total + ' properties, ' +
+      var txt = 'Showing uploaded licence data (' + stats.total + ' properties, ' +
         stats.matched + ' matched to buildings';
       if (stats.multiHousehold > 0) {
         txt += ', ' + stats.multiHousehold + ' with multiple HMO entries at one address';
@@ -343,7 +394,7 @@ function buildLegend(map, colourScale, breaks, valueLabel) {
       f.properties.amenity_count = freshWardGeojson.features[i].properties.amenity_count;
     });
 
-    applyData('amenity_count', 'OSM amenity count (placeholder)', amenityGeojson, null, null, null);
+    applyData('amenity_count', 'OSM amenity count (placeholder)', amenityGeojson, null, null, null, null, null);
 
     var disc = document.getElementById('disclaimer');
     if (disc) {
@@ -423,5 +474,5 @@ function buildLegend(map, colourScale, breaks, valueLabel) {
 
   var amenityRes = await fetch(CONFIG.amenitiesPath);
   var amenityGeojson = await amenityRes.json();
-  applyData('amenity_count', 'OSM amenity count (placeholder)', amenityGeojson, null, null, null);
+  applyData('amenity_count', 'OSM amenity count (placeholder)', amenityGeojson, null, null, null, null, null);
 })();
