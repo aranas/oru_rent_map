@@ -5,15 +5,20 @@ var CONFIG = {
   tileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
   tileAttribution:
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-  neighbourhoodsPath: 'data/neighbourhoods.geojson',
-  amenitiesPath:      'data/amenities.geojson',
+  neighbourhoodsPath:     'data/neighbourhoods.geojson',
+  licenceLocationsPath:   'data/licence_locations.geojson',
   numQuantiles: 4,
-  colourRange: ['#fee5d9', '#a50f15'],
-  defaultFillOpacity: 0.55,
+  // Choropleth colour ranges per type
+  choroplethHmo:       ['#dbeafe', '#1e40af'],  // blue
+  choroplethSelective: ['#dcfce7', '#166534'],  // green
+  choroplethCombined:  ['#f3e8ff', '#6b21a8'],  // purple
+  defaultFillOpacity:  0.55,
   defaultBorderColour: '#666',
   highlightBorderColour: '#222',
-  amenityMarkerRadius: 4,
-  amenityMarkerColour: '#2563eb',
+  // Marker colours
+  hmoMarkerColour:       '#2563eb',  // blue
+  selectiveMarkerColour: '#16a34a',  // green
+  // CSV upload (existing HMO footprint matching)
   hmoBuildingFill:   '#2563eb',
   hmoBuildingStroke: '#1d4ed8',
   hmoFallbackColour: '#ea580c',
@@ -90,25 +95,25 @@ function hideInfo() {
 }
 
 
-// ── Reusable layer builders ──────────────────────────────────────────────
+// ── Reusable layer builders ───────────────────────────────────────────────
 
-function buildChoropleth(map, wardGeojson, countProp, valueLabel) {
+function buildChoropleth(wardGeojson, countProp, valueLabel, colourRange) {
   var allValues = wardGeojson.features.map(function (f) {
     return f.properties[countProp] || 0;
   });
-  var breaks     = quantileBreaks(allValues, CONFIG.numQuantiles);
-  var minVal     = Math.min.apply(null, allValues);
-  var maxVal     = Math.max.apply(null, allValues);
+  var breaks      = quantileBreaks(allValues, CONFIG.numQuantiles);
+  var minVal      = Math.min.apply(null, allValues);
+  var maxVal      = Math.max.apply(null, allValues);
   var classBounds = [minVal].concat(breaks, [maxVal]);
-  var colourScale = chroma.scale(CONFIG.colourRange).classes(classBounds);
+  var colourScale = chroma.scale(colourRange).classes(classBounds);
 
   function wardStyle(feature) {
     var count = feature.properties[countProp] || 0;
     return {
-      fillColor: colourScale(count).hex(),
+      fillColor:   colourScale(count).hex(),
       fillOpacity: CONFIG.defaultFillOpacity,
-      color: CONFIG.defaultBorderColour,
-      weight: 1.5,
+      color:       CONFIG.defaultBorderColour,
+      weight:      1.5,
     };
   }
 
@@ -138,22 +143,20 @@ function buildChoropleth(map, wardGeojson, countProp, valueLabel) {
 }
 
 
-function buildPointMarkers(map, pointGeojson, opts) {
+function buildPointMarkers(pointGeojson, opts) {
   opts = opts || {};
-  var radius    = opts.radius    || CONFIG.amenityMarkerRadius;
-  var fillColor = opts.fillColor || CONFIG.amenityMarkerColour;
-  var tooltipFn = opts.tooltipFn || function (p) {
-    return p.name ? p.name + ' (' + p.amenity + ')' : p.amenity;
-  };
+  var radius    = opts.radius    || 5;
+  var fillColor = opts.fillColor || CONFIG.hmoMarkerColour;
+  var tooltipFn = opts.tooltipFn || function () { return ''; };
 
   return L.geoJSON(pointGeojson, {
     pointToLayer: function (feature, latlng) {
       return L.circleMarker(latlng, {
-        radius: radius,
-        fillColor: fillColor,
-        fillOpacity: 0.7,
-        color: '#fff',
-        weight: 1,
+        radius:      radius,
+        fillColor:   fillColor,
+        fillOpacity: 0.8,
+        color:       '#fff',
+        weight:      1,
       });
     },
     onEachFeature: function (feature, layer) {
@@ -164,25 +167,25 @@ function buildPointMarkers(map, pointGeojson, opts) {
 }
 
 
-function buildBuildingFootprints(map, buildingGeojson) {
+function buildBuildingFootprints(buildingGeojson) {
   return L.geoJSON(buildingGeojson, {
     style: function () {
       return {
-        fillColor: CONFIG.hmoBuildingFill,
+        fillColor:   CONFIG.hmoBuildingFill,
         fillOpacity: 0.35,
-        color: CONFIG.hmoBuildingStroke,
-        weight: 2,
+        color:       CONFIG.hmoBuildingStroke,
+        weight:      2,
       };
     },
     onEachFeature: function (feature, layer) {
       var p = feature.properties;
       var lines = [];
-      if (p.address)        lines.push(p.address);
-      if (p.sub_units)      lines.push('Units: ' + p.sub_units);
-      if (p.entry_count)    lines.push('<em>' + p.entry_count + ' separate HMO entries at this address</em>');
-      if (p.hmo_id)         lines.push('ID: ' + p.hmo_id);
-      if (p.licence_start)  lines.push('Start: ' + p.licence_start);
-      if (p.licence_end)    lines.push('End: ' + p.licence_end);
+      if (p.address)       lines.push(p.address);
+      if (p.sub_units)     lines.push('Units: ' + p.sub_units);
+      if (p.entry_count)   lines.push('<em>' + p.entry_count + ' separate HMO entries at this address</em>');
+      if (p.hmo_id)        lines.push('ID: ' + p.hmo_id);
+      if (p.licence_start) lines.push('Start: ' + p.licence_start);
+      if (p.licence_end)   lines.push('End: ' + p.licence_end);
       if (lines.length) {
         layer.bindTooltip(lines.join('<br>'), { direction: 'top', offset: [0, -6] });
       }
@@ -191,7 +194,7 @@ function buildBuildingFootprints(map, buildingGeojson) {
 }
 
 
-function buildLegend(map, colourScale, breaks, valueLabel) {
+function buildLegend(colourScale, breaks, valueLabel) {
   var legend = L.control({ position: 'bottomright' });
   legend.onAdd = function () {
     var div = L.DomUtil.create('div', 'legend');
@@ -225,142 +228,182 @@ function buildLegend(map, colourScale, breaks, valueLabel) {
   var map = L.map('map').setView(CONFIG.centre, CONFIG.zoom);
   L.tileLayer(CONFIG.tileUrl, { attribution: CONFIG.tileAttribution, maxZoom: 19 }).addTo(map);
 
-  // State references for layer swapping
-  var currentWardLayer   = null;
-  var currentMarkerLayer = null;
-  var currentBuildingLayer  = null;
-  var currentFallbackLayer  = null;
-  var currentLegend      = null;
-  var currentLayerControl = null;
-  var wardGeojson        = null;
+  // ── Load base data ────────────────────────────────────────────────────
+  var wardRes    = await fetch(CONFIG.neighbourhoodsPath);
+  var wardGeojson = await wardRes.json();
 
-  // Fetch base neighbourhood data (always needed for choropleth)
-  var wardRes = await fetch(CONFIG.neighbourhoodsPath);
-  wardGeojson = await wardRes.json();
+  var licRes     = await fetch(CONFIG.licenceLocationsPath);
+  var licGeojson = await licRes.json();
 
-  // ── Apply data and render layers ───────────────────────────────────────
+  // ── Aggregate LSOA counts ─────────────────────────────────────────────
+  var hmoLsoa  = {};   // lsoa -> count
+  var selLsoa  = {};
 
-  function applyData(countProp, valueLabel, pointGeojson, hmoBuildings, hmoFallback, matchStats) {
-    // Remove existing layers
-    if (currentWardLayer)     { map.removeLayer(currentWardLayer); }
-    if (currentMarkerLayer)   { map.removeLayer(currentMarkerLayer); }
-    if (currentBuildingLayer) { map.removeLayer(currentBuildingLayer); }
-    if (currentFallbackLayer) { map.removeLayer(currentFallbackLayer); }
-    if (currentLegend)        { map.removeControl(currentLegend); }
-    if (currentLayerControl)  { map.removeControl(currentLayerControl); }
+  licGeojson.features.forEach(function (f) {
+    var lsoa = f.properties.lsoa || '';
+    if (!lsoa) return;
+    if (f.properties.type === 'hmo') {
+      hmoLsoa[lsoa]  = (hmoLsoa[lsoa]  || 0) + 1;
+    } else {
+      selLsoa[lsoa]  = (selLsoa[lsoa]  || 0) + 1;
+    }
+  });
 
-    // Build choropleth
-    var choro = buildChoropleth(map, wardGeojson, countProp, valueLabel);
-    currentWardLayer = choro.wardLayer;
-    currentWardLayer.addTo(map);
+  // Patch wardGeojson with counts
+  wardGeojson.features.forEach(function (f) {
+    var name = f.properties.LSOA21NM || '';
+    f.properties.hmo_count        = hmoLsoa[name]  || 0;
+    f.properties.selective_count  = selLsoa[name]  || 0;
+    f.properties.combined_count   = (hmoLsoa[name] || 0) + (selLsoa[name] || 0);
+  });
 
-    // Build legend
-    currentLegend = buildLegend(map, choro.colourScale, choro.breaks, valueLabel);
-    currentLegend.addTo(map);
+  // ── Split licence features by type ───────────────────────────────────
+  var hmoFeatures = licGeojson.features.filter(function (f) {
+    return f.properties.type === 'hmo';
+  });
+  var selFeatures = licGeojson.features.filter(function (f) {
+    return f.properties.type === 'selective';
+  });
 
-    var overlays = {};
-    overlays['Neighbourhood density'] = currentWardLayer;
+  function licTooltip(p) {
+    var lines = [];
+    if (p.id)            lines.push('ID: ' + p.id);
+    if (p.licence_start) lines.push('Start: ' + p.licence_start);
+    if (p.licence_end)   lines.push('End: ' + p.licence_end);
+    return lines.join('<br>');
+  }
 
-    if (hmoBuildings && hmoBuildings.features.length > 0) {
-      currentBuildingLayer = buildBuildingFootprints(map, hmoBuildings);
-      currentBuildingLayer.addTo(map);
-      overlays['HMO buildings'] = currentBuildingLayer;
+  // ── Build pre-loaded layers ───────────────────────────────────────────
+  var hmoMarkerLayer = buildPointMarkers(
+    { type: 'FeatureCollection', features: hmoFeatures },
+    { fillColor: CONFIG.hmoMarkerColour, tooltipFn: licTooltip }
+  );
+
+  var selMarkerLayer = buildPointMarkers(
+    { type: 'FeatureCollection', features: selFeatures },
+    { fillColor: CONFIG.selectiveMarkerColour, tooltipFn: licTooltip }
+  );
+
+  var hmoChoro  = buildChoropleth(wardGeojson, 'hmo_count',       'HMO licences',              CONFIG.choroplethHmo);
+  var selChoro  = buildChoropleth(wardGeojson, 'selective_count',  'Selective licences',        CONFIG.choroplethSelective);
+  var combChoro = buildChoropleth(wardGeojson, 'combined_count',   'Combined licences',         CONFIG.choroplethCombined);
+
+  // Default: markers on, combined density on
+  hmoMarkerLayer.addTo(map);
+  selMarkerLayer.addTo(map);
+  combChoro.wardLayer.addTo(map);
+
+  // ── Layer control ─────────────────────────────────────────────────────
+  var overlays = {};
+  overlays['🔵 HMO licence markers']        = hmoMarkerLayer;
+  overlays['🟢 Selective licence markers']   = selMarkerLayer;
+  overlays['Combined density']               = combChoro.wardLayer;
+  overlays['HMO density']                    = hmoChoro.wardLayer;
+  overlays['Selective density']              = selChoro.wardLayer;
+
+  var layerControl = L.control.layers(null, overlays, { collapsed: false, position: 'topright' });
+  layerControl.addTo(map);
+
+  // ── Legend (combined by default) ──────────────────────────────────────
+  var activeLegend = buildLegend(combChoro.colourScale, combChoro.breaks, 'Combined licences');
+  activeLegend.addTo(map);
+
+  // Swap legend when density layers are toggled
+  var legendMap = {
+    combined:  { choro: combChoro,  label: 'Combined licences' },
+    hmo:       { choro: hmoChoro,   label: 'HMO licences' },
+    selective: { choro: selChoro,   label: 'Selective licences' },
+  };
+  var activeDensity = 'combined';
+
+  function updateLegend() {
+    // Show legend for the last-toggled-on density layer; hide if none active
+    var active = null;
+    if (map.hasLayer(combChoro.wardLayer)) active = 'combined';
+    if (map.hasLayer(hmoChoro.wardLayer))  active = 'hmo';
+    if (map.hasLayer(selChoro.wardLayer))  active = 'selective';
+    if (activeLegend) { map.removeControl(activeLegend); activeLegend = null; }
+    if (active) {
+      var l = legendMap[active];
+      activeLegend = buildLegend(l.choro.colourScale, l.choro.breaks, l.label);
+      activeLegend.addTo(map);
+    }
+  }
+
+  map.on('overlayadd overlayremove', updateLegend);
+
+  // ── Disclaimer ────────────────────────────────────────────────────────
+  var hmoTotal = hmoFeatures.length;
+  var selTotal = selFeatures.length;
+  var disc = document.getElementById('disclaimer');
+  if (disc) {
+    disc.innerHTML =
+      'Showing Oxford licence data: <strong>' + hmoTotal + ' HMO</strong> licences (blue) ' +
+      'and <strong>' + selTotal + ' selective</strong> licences (green). ' +
+      'Data: Oxford City Council.' +
+      ' <button onclick="dismissDisclaimer()" aria-label="Dismiss">&times;</button>';
+    disc.style.display = '';
+    try { sessionStorage.removeItem('disclaimerDismissed'); } catch (_) {}
+  }
+
+  // ── CSV upload (adds extra layers on top of pre-loaded data) ──────────
+
+  // State for uploaded CSV layers
+  var uploadedLayers = [];
+
+  function clearUploadedLayers() {
+    uploadedLayers.forEach(function (l) {
+      if (map.hasLayer(l)) map.removeLayer(l);
+      layerControl.removeLayer(l);
+    });
+    uploadedLayers = [];
+  }
+
+  function addUploadedData(hmoData) {
+    clearUploadedLayers();
+
+    var stats = hmoData.matchStats;
+
+    if (hmoData.hmoBuildings && hmoData.hmoBuildings.features.length > 0) {
+      var bl = buildBuildingFootprints(hmoData.hmoBuildings);
+      bl.addTo(map);
+      layerControl.addOverlay(bl, 'Uploaded: HMO buildings');
+      uploadedLayers.push(bl);
     }
 
-    if (hmoFallback && hmoFallback.features.length > 0) {
-      currentFallbackLayer = buildPointMarkers(map, hmoFallback, {
-        radius: 5,
+    if (hmoData.hmoFallbackPoints && hmoData.hmoFallbackPoints.features.length > 0) {
+      var fl = buildPointMarkers(hmoData.hmoFallbackPoints, {
         fillColor: CONFIG.hmoFallbackColour,
         tooltipFn: function (p) {
           var lines = [];
-          if (p.address)        lines.push(p.address);
-          if (p.sub_units)      lines.push('Units: ' + p.sub_units);
-          if (p.entry_count)    lines.push(p.entry_count + ' separate HMO entries at this address');
-          if (p.hmo_id)         lines.push('ID: ' + p.hmo_id);
-          if (p.licence_start)  lines.push('Start: ' + p.licence_start);
-          if (p.licence_end)    lines.push('End: ' + p.licence_end);
-          return lines.join('\n');
+          if (p.address)       lines.push(p.address);
+          if (p.hmo_id)        lines.push('ID: ' + p.hmo_id);
+          if (p.licence_start) lines.push('Start: ' + p.licence_start);
+          if (p.licence_end)   lines.push('End: ' + p.licence_end);
+          return lines.join('<br>');
         },
       });
-      currentFallbackLayer.addTo(map);
-      overlays['Unmatched (postcode centroid)'] = currentFallbackLayer;
+      fl.addTo(map);
+      layerControl.addOverlay(fl, 'Uploaded: unmatched (point)');
+      uploadedLayers.push(fl);
     }
-
-    if (pointGeojson) {
-      currentMarkerLayer = buildPointMarkers(map, pointGeojson);
-      currentMarkerLayer.addTo(map);
-      overlays['Amenity markers'] = currentMarkerLayer;
-    }
-
-    currentLayerControl = L.control.layers(null, overlays, { collapsed: false, position: 'topright' });
-    currentLayerControl.addTo(map);
-  }
-
-  // ── Replace data with HMO results ─────────────────────────────────────
-
-  function replaceWithHmoData(hmoData) {
-    // Patch wardGeojson with HMO counts
-    wardGeojson.features.forEach(function (f) {
-      var name = f.properties.LSOA21NM || '';
-      f.properties.amenity_count = hmoData.lsoaCounts[name] || 0;
-    });
-
-    var stats = hmoData.matchStats;
-    var label = 'HMO count';
-
-    applyData('amenity_count', label, null, hmoData.hmoBuildings, hmoData.hmoFallbackPoints, stats);
 
     // Update disclaimer
-    var disc = document.getElementById('disclaimer');
     if (disc) {
-      var txt = 'Showing HMO licence data (' + stats.total + ' properties, ' +
-        stats.matched + ' matched to buildings';
-      if (stats.multiHousehold > 0) {
-        txt += ', ' + stats.multiHousehold + ' with multiple HMO entries at one address';
-      }
-      txt += ')';
-      disc.innerHTML = txt +
+      disc.innerHTML =
+        'Showing Oxford licence data: <strong>' + hmoTotal + ' HMO</strong> + ' +
+        '<strong>' + selTotal + ' selective</strong> licences (pre-loaded). ' +
+        'Uploaded CSV: ' + stats.total + ' properties, ' + stats.matched + ' matched to buildings.' +
         ' <button onclick="dismissDisclaimer()" aria-label="Dismiss">&times;</button>';
       disc.style.display = '';
       try { sessionStorage.removeItem('disclaimerDismissed'); } catch (_) {}
     }
 
-    // Show clear button
     var btn = document.getElementById('btn-clear-hmo');
     if (btn) btn.style.display = 'inline-block';
   }
 
-  // ── Revert to placeholder amenity data ─────────────────────────────────
-
-  async function revertToPlaceholder() {
-    var amenityRes = await fetch(CONFIG.amenitiesPath);
-    var amenityGeojson = await amenityRes.json();
-
-    // Restore original amenity counts from the GeoJSON
-    var freshWardRes = await fetch(CONFIG.neighbourhoodsPath);
-    var freshWardGeojson = await freshWardRes.json();
-    wardGeojson.features.forEach(function (f, i) {
-      f.properties.amenity_count = freshWardGeojson.features[i].properties.amenity_count;
-    });
-
-    applyData('amenity_count', 'OSM amenity count (placeholder)', amenityGeojson, null, null, null);
-
-    var disc = document.getElementById('disclaimer');
-    if (disc) {
-      disc.innerHTML =
-        'Showing placeholder data (OSM amenity counts per neighbourhood). Upload your HMO CSV to see real data.' +
-        ' <button onclick="dismissDisclaimer()" aria-label="Dismiss">&times;</button>';
-      disc.style.display = '';
-      try { sessionStorage.removeItem('disclaimerDismissed'); } catch (_) {}
-    }
-
-    var btn = document.getElementById('btn-clear-hmo');
-    if (btn) btn.style.display = 'none';
-
-    setUploadStatus('', '');
-  }
-
-  // ── Upload UI wiring ───────────────────────────────────────────────────
+  // ── Upload UI wiring ──────────────────────────────────────────────────
 
   var statusEl  = document.getElementById('upload-status');
   var dropZone  = document.getElementById('upload-drop-zone');
@@ -370,7 +413,7 @@ function buildLegend(map, colourScale, breaks, valueLabel) {
   function setUploadStatus(msg, className) {
     if (statusEl) {
       statusEl.textContent = msg;
-      statusEl.className = className || '';
+      statusEl.className   = className || '';
     }
   }
 
@@ -405,7 +448,7 @@ function buildLegend(map, colourScale, breaks, valueLabel) {
     window.HmoUpload.processHmoCsv(file, function (msg) {
       setUploadStatus(msg, '');
     }).then(function (result) {
-      replaceWithHmoData(result);
+      addUploadedData(result);
       setUploadStatus('CSV loaded', 'success');
     }).catch(function (err) {
       setUploadStatus('Error: ' + err.message, 'error');
@@ -415,13 +458,18 @@ function buildLegend(map, colourScale, breaks, valueLabel) {
 
   if (clearBtn) {
     clearBtn.addEventListener('click', function () {
-      revertToPlaceholder();
+      clearUploadedLayers();
+      clearBtn.style.display = 'none';
+      setUploadStatus('', '');
+      if (disc) {
+        disc.innerHTML =
+          'Showing Oxford licence data: <strong>' + hmoTotal + ' HMO</strong> licences (blue) ' +
+          'and <strong>' + selTotal + ' selective</strong> licences (green). ' +
+          'Data: Oxford City Council.' +
+          ' <button onclick="dismissDisclaimer()" aria-label="Dismiss">&times;</button>';
+        disc.style.display = '';
+        try { sessionStorage.removeItem('disclaimerDismissed'); } catch (_) {}
+      }
     });
   }
-
-  // ── Initial load: always start with placeholder data ───────────────────
-
-  var amenityRes = await fetch(CONFIG.amenitiesPath);
-  var amenityGeojson = await amenityRes.json();
-  applyData('amenity_count', 'OSM amenity count (placeholder)', amenityGeojson, null, null, null);
 })();

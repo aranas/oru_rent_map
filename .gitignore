@@ -9,3 +9,10 @@ data/overpass_wards_raw.json
 data/lsoa_raw.json
 data/amenities_raw.json
 data/buildings_raw.json
+data/geocode_cache.json
+oru-map/
+
+# Source registers — not needed at runtime, contain personal data
+data/Oxford HMO Register*.xlsx
+data/Oxford HMO Register*.csv
+data/Selective_Licence_Register*.csv

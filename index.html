@@ -233,58 +233,59 @@
   <div id="welcome-box">
     <button id="welcome-close" aria-label="Close">&times;</button>
 
-    <h2>Welcome to the Oxford Density Map</h2>
+    <h2>Welcome to the Oxford Licence Map</h2>
     <p>
-      This interactive map visualises point-of-interest density across
-      Oxford's neighbourhoods (LSOAs). By default it displays publicly
-      available amenity data. You can replace this with your own HMO
-      licence dataset by uploading a CSV in the panel at the bottom-left.
+      This interactive map shows Oxford City Council's HMO and Selective
+      Licence registers across the city's neighbourhoods (LSOAs). Use the
+      layer controls (top-right) to toggle markers and density maps.
+      You can also upload your own CSV in the panel at the bottom-left
+      to overlay additional data.
     </p>
 
     <div class="section-label">Map elements</div>
     <ul>
       <li>
-        <span class="sym" style="background:linear-gradient(135deg,#fee5d9,#a50f15);opacity:.7;"></span>
-        <span><strong>Neighbourhood shading</strong> &mdash; each LSOA polygon is
-        coloured by density (amenity count or HMO count). Hover for details.</span>
+        <span class="sym-circle" style="background:#2563eb;"></span>
+        <span><strong>Blue markers</strong> &mdash; HMO licences
+        (pre-loaded from Oxford City Council register).</span>
       </li>
       <li>
-        <span class="sym-circle" style="background:#2563eb;"></span>
-        <span><strong>Blue circle markers</strong> &mdash; individual amenity
-        locations (default dataset). Visible when no HMO CSV is loaded.</span>
+        <span class="sym-circle" style="background:#16a34a;"></span>
+        <span><strong>Green markers</strong> &mdash; Selective licences
+        (pre-loaded from Oxford City Council register).</span>
+      </li>
+      <li>
+        <span class="sym" style="background:linear-gradient(135deg,#f3e8ff,#6b21a8);opacity:.7;"></span>
+        <span><strong>Combined density</strong> &mdash; neighbourhood shading by
+        total licence count. Toggle HMO-only or Selective-only density in the
+        layer control.</span>
       </li>
       <li>
         <span class="sym" style="background:rgba(37,99,235,.35);border:2px solid #1d4ed8;"></span>
         <span><strong>Blue building footprints</strong> &mdash; exact building
-        outlines for HMO addresses matched to OpenStreetMap. Appear after
-        uploading an HMO CSV.</span>
-      </li>
-      <li>
-        <span class="sym-circle" style="background:#ea580c;"></span>
-        <span><strong>Orange circle markers</strong> &mdash; HMO addresses that
-        could not be matched to a building footprint, placed at their
-        postcode centroid. Appear after uploading an HMO CSV.</span>
+        outlines for addresses matched to OpenStreetMap, shown when you
+        upload a custom CSV.</span>
       </li>
     </ul>
 
     <div class="section-label">Data sources</div>
     <ul>
       <li>
+        <span class="sym" style="background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#475569;">OCC</span>
+        <span><strong>Licence data</strong> &mdash; Oxford City Council HMO
+        Register and Selective Licence Register (public data).</span>
+      </li>
+      <li>
         <span class="sym" style="background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#475569;">OSM</span>
         <span><strong>Map tiles &amp; building footprints</strong> &mdash;
         <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>
-        contributors, fetched at build time via the Overpass API.</span>
+        contributors.</span>
       </li>
       <li>
         <span class="sym" style="background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#475569;">ONS</span>
         <span><strong>Neighbourhood boundaries</strong> &mdash; LSOA polygons
         from the
         <a href="https://geoportal.statistics.gov.uk/" target="_blank" rel="noopener">ONS Open Geography Portal</a>.</span>
-      </li>
-      <li>
-        <span class="sym" style="background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#475569;">CSV</span>
-        <span><strong>HMO data</strong> &mdash; uploaded by you and processed
-        entirely in your browser. It is never sent to any server.</span>
       </li>
     </ul>
 
@@ -316,7 +317,7 @@
 
 <!-- Disclaimer banner (F-05) -->
 <div id="disclaimer">
-  Showing placeholder data (OSM amenity counts per neighbourhood). Upload your HMO CSV to see real data.
+  Loading licence data&hellip;
   <button onclick="dismissDisclaimer()" aria-label="Dismiss">&times;</button>
 </div>
 
@@ -328,7 +329,7 @@
 
 <!-- Upload panel -->
 <div id="upload-panel">
-  <div class="upload-title">Upload HMO CSV</div>
+  <div class="upload-title">Upload custom CSV</div>
   <div class="upload-privacy">Data stays in your browser only</div>
   <div id="upload-drop-zone">
     Drop CSV here or <strong>click to browse</strong>
