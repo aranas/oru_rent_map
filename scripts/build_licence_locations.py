@@ -409,6 +409,7 @@ def main():
         print(f"  Cache: {CACHE_PATH} (safe to interrupt & resume)")
 
     geocoded = failed = 0
+    failed_addresses = []  # collect for diagnostics
     for i, addr in enumerate(to_geocode):
         result = geocode(addr, session, cache)
         address_to_coords[addr] = result
@@ -416,8 +417,25 @@ def main():
             geocoded += 1
         else:
             failed += 1
+            failed_addresses.append(addr)
         if (i + 1) % 50 == 0 or (i + 1) == len(to_geocode):
             print(f"  {i + 1}/{len(to_geocode)} — geocoded: {geocoded}, failed: {failed}")
+
+    # ── Write geocoding failures for analysis ─────────────────────────────
+    if failed_addresses:
+        failures_path = os.path.join(DATA_DIR, "geocode_failures.csv")
+        # Build a lookup: address -> (type, id) from all_records
+        addr_meta = {}
+        for licence_type, rec in all_records:
+            if rec["address"] not in addr_meta:
+                addr_meta[rec["address"]] = (licence_type, rec["id"])
+        with open(failures_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["type", "id", "address"])
+            for addr in failed_addresses:
+                meta = addr_meta.get(addr, ("", ""))
+                writer.writerow([meta[0], meta[1], addr])
+        print(f"  Failures written -> {failures_path} ({len(failed_addresses)} rows)")
 
     # ── Assign LSOAs + build features ─────────────────────────────────────
     print("[4/5] Assigning LSOAs and building GeoJSON features...")
