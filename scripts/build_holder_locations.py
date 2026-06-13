@@ -151,6 +151,9 @@ def geocode(address, session, cache):
     # Return cached success immediately; None entries purged at startup
     if address in cache and cache[address] is not None:
         e = cache[address]
+        # Handle both old list format [lon, lat] and new dict format {lon, lat}
+        if isinstance(e, list):
+            return (e[0], e[1])
         return (e["lon"], e["lat"])
 
     postcode = extract_postcode(address)
