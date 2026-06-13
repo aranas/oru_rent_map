@@ -1,142 +1,175 @@
-# ORU Density Map
+# Oxford Licence Map
 
-Interactive choropleth map of Oxford neighbourhood density for ORU door-knocking
-planning. Visualises any per-neighbourhood numeric dataset (e.g. HMO counts,
-amenity density, survey responses) on LSOA boundaries with optional point markers.
+Interactive map of Oxford City Council's HMO and Selective Licence registers,
+visualised as point markers and LSOA density choropleths.
 
 ## Quick start
 
-[**View the map here**](https://aranas.github.io/oru_rent_map/)
+[**View the map →**](https://aranas.github.io/oru_rent_map/)
 
-**Want to run it locally?**
+To run locally:
 
 ```bash
-cd oru_doorknocking_map
 python3 -m http.server 8000
 # Open http://localhost:8000
 ```
 
-For detailed setup, data generation, and testing instructions see
-[INSTRUCTIONS.md](INSTRUCTIONS.md).
-
 ## What the map shows
 
-Oxford is divided into **LSOA neighbourhoods** (Lower Layer Super Output Areas —
-small census zones). Each LSOA is colour-coded from light to dark based on a
-numeric value. By default the map shows **OSM amenity counts** as a structural
-placeholder.
+Pre-loaded from the Oxford City Council licence registers:
 
-**Upload an HMO CSV** (in-browser, no data leaves your machine) and the map
-instantly updates to show HMO density per LSOA, with individual HMOs
-highlighted as **building footprint polygons** matched to their exact address
-in OpenStreetMap.
+| Layer | Description |
+|-------|-------------|
+| 🔵 HMO markers | One blue dot per HMO licence, positioned at the geocoded property address |
+| 🟢 Selective markers | One green dot per Selective licence |
+| Combined / HMO / Selective density | LSOA choropleth shaded by licence count (toggle independently) |
+| ⚫ Licence holder addresses | Black dots at the home addresses of Oxford-based landlords (OX1–OX4 only) |
+| 🔴 Agent highlights | Toggle per-agent halos to see the geographic footprint of individual letting agents (Chancellors, Scott Fraser, NOPS, and more) |
 
-| Feature | Description |
-|---------|-------------|
-| Neighbourhood choropleth | LSOA polygons filled light to dark by value (quantile scale) |
-| HMO building footprints | Blue outlines of matched HMO buildings (after CSV upload) |
-| Fallback markers | Orange circles at postcode centroid for unmatched addresses |
-| Amenity markers | Blue circles at each amenity location (placeholder mode) |
-| Hover info | Neighbourhood name, count, and label on polygon mouseover |
-| Building tooltips | Address, licence dates, register ID on HMO building hover |
-| Colour legend | Auto-generated quantile breakpoints in bottom-right corner |
-| Layer control | Toggle layers independently |
-| CSV upload panel | Drag-and-drop or click; data stays in memory only, never cached |
-| Placeholder disclaimer | Banner at top; updates when HMO data is loaded |
+Hover any marker to see the property address and managing agent. Hover an LSOA to see its licence count.
 
-## Uploading HMO data (in-browser)
+**CSV upload** — the bottom-left panel accepts a custom CSV for overlaying additional data on top of the pre-loaded layers. Uploaded data never leaves your browser.
 
-Use the **Upload HMO CSV** panel in the bottom-left corner. Your CSV should have
-these columns (header names are detected by fuzzy match):
+## Generating the data files
 
-| Column | Description |
-|--------|-------------|
-| ID | HMO register reference |
-| Address | Full address including postcode (e.g. `18 Abbey Road, OX2 0AE`) |
-| Street | Street name |
-| Licence start | HMO licence start date |
-| Licence end | HMO licence end date |
+The map loads three pre-built data files that are not committed to the repo
+(they derive from source registers which contain personal data). Run these
+scripts locally after cloning:
 
-The browser matches each address to an OSM building footprint and assigns it to
-an LSOA via the postcode. **No data leaves your machine** — all reference data
-is pre-generated and served as static files. CSV data is **never cached or
-persisted**; it lives only in browser memory for the current session. Click
-**Clear HMO data** or refresh the page to revert to the placeholder view.
-
-## Data
-
-### Regenerating placeholder data from OSM
+### 1. Install dependencies
 
 ```bash
-python3 scripts/generate_placeholder.py
+python3 -m venv oru-map
+source oru-map/bin/activate
+pip install -r requirements.txt
 ```
 
-### Regenerating building footprint + postcode data
+### 2. Place source registers in `data/`
 
-Must run after `generate_placeholder.py` (needs `data/neighbourhoods.geojson`):
+- `data/Oxford HMO Register - Parsed.xlsx` — Oxford City Council HMO register
+- `data/Selective_Licence_Register_*.csv` — Oxford City Council Selective Licence register (latin-1 encoded)
+
+### 3. Build address + agent lookup (~2 seconds)
 
 ```bash
-python3 scripts/generate_building_data.py
+python3 scripts/build_address_lookup.py
 ```
 
-This produces:
-- `data/oxford_buildings.geojson` (~10 MB) — building footprints with address tags
-- `data/postcode_lsoa.csv` (~50 KB) — postcode-to-LSOA mapping
+Produces `data/licence_address_lookup.json` — maps each licence ID to its
+address, managing agent, and licence holder name. Used for marker tooltips.
 
-See [INSTRUCTIONS.md](INSTRUCTIONS.md) for full details.
+### 4. Geocode licence locations (~1–3 hours first run, fast on re-runs)
+
+```bash
+export GOOGLE_GEOCODING_KEY="your-key-here"  # optional but recommended
+python3 scripts/build_licence_locations.py
+```
+
+Produces `data/licence_locations.geojson` — one GeoJSON Point per licence
+(HMO or Selective), containing only: type, licence ID, start/end dates, and
+LSOA. No personal data.
+
+**Geocoding strategy** — for each address the script tries in order:
+1. Direct match against `oxford_buildings.geojson` (OSM building centroids)
+2. Nominatim: expanded address + postcode
+3. Nominatim: house number + postcode only
+4. Nominatim: house number found anywhere in the string + street + postcode  
+   *(handles "Flat 1, Oakthorpe Mansions, 205 Banbury Road, OX2 7HG")*
+5. Nominatim: original address unchanged
+6. **Google Maps Geocoding API** — only called if all Nominatim strategies fail;
+   handles named developments and new builds that aren't in OSM
+
+Results are cached in `data/geocode_cache.json`. Re-running the script is fast:
+cached successes (~10k+) are returned instantly; only new or previously-failed
+addresses hit the network.
+
+`data/licence_locations.geojson` **is committed** to the repo (no personal data)
+so the map works on GitHub Pages without running this script.
+
+### 5. Geocode licence holder (landlord) addresses (optional)
+
+```bash
+export GOOGLE_GEOCODING_KEY="your-key-here"
+python3 scripts/build_holder_locations.py
+```
+
+Produces `data/holder_locations.geojson` — one point per unique landlord
+address, with the holder name(s) and property count.
+
+**Oxford-only filter**: only addresses with an OX1–OX4 postcode are geocoded
+(~2,976 of 7,544 unique holder addresses). Landlords based outside Oxford city
+are excluded — the layer is intended to show where Oxford-based landlords live
+relative to their properties, not to map the entire national landlord base.
+
+The same 6-strategy geocoding cascade is used as for licence locations.
+
+`data/holder_locations.geojson` is **gitignored** (contains holder names and
+addresses). Each team member who wants the layer must run this script locally.
+
+### Why Google Maps Geocoding?
+
+Nominatim (OpenStreetMap) covers most Oxford street addresses well but fails on:
+- **Named developments** with no street number (`Almero Student The Park, Horspath Driftway`)
+- **Flat-only addresses** where the building isn't individually mapped in OSM
+- **New builds** not yet added to OpenStreetMap
+
+Google Maps handles these cases reliably. The API is free up to 40,000 requests/month
+(well above the ~3,400 addresses that Nominatim can't resolve). A billing account
+is required to activate the free tier but no charges are incurred within the quota.
+
+Get a key at [console.cloud.google.com](https://console.cloud.google.com) →
+Geocoding API → Credentials → Create API Key. Restrict the key to the
+Geocoding API only.
 
 ## File structure
 
 ```
-oru_doorknocking_map/
-  index.html                    <- HTML file (Leaflet + chroma + PapaParse via CDN)
+oru_rent_map/
+  index.html                        — map shell (Leaflet + chroma + PapaParse via CDN)
   static/
-    app.js                      <- map logic, layer builders, upload UI wiring
-    hmo-upload.js               <- CSV parsing, address matching (in-memory only)
+    app.js                          — map logic, layer builders, upload UI wiring
+    hmo-upload.js                   — CSV parsing + address matching (in-browser)
   data/
-    neighbourhoods.geojson      <- Oxford LSOA boundary polygons (from ONS)
-    amenities.geojson           <- individual point markers (from Overpass)
-    placeholder_amenities.csv   <- per-neighbourhood counts (placeholder)
-    oxford_buildings.geojson    <- building footprints with address tags (from Overpass)
-    postcode_lsoa.csv           <- postcode -> LSOA + centroid mapping
+    licence_locations.geojson       — pre-geocoded HMO + Selective points (committed)
+    neighbourhoods.geojson          — Oxford LSOA boundary polygons (ONS)
+    oxford_buildings.geojson        — OSM building footprints with address tags
+    licence_address_lookup.json     — id → {address, agent, holder} (gitignored)
+    holder_locations.geojson        — landlord home addresses (gitignored)
+    geocode_cache.json              — Nominatim + Google results cache (gitignored)
+    geocode_failures.csv            — addresses that could not be geocoded (gitignored)
   scripts/
-    generate_placeholder.py     <- regenerate LSOA + amenity data from ONS + Overpass
-    generate_building_data.py   <- regenerate building footprints + postcode mapping
-  requirements.txt              <- Python dependencies for data-generation scripts
-  INSTRUCTIONS.md               <- detailed setup and testing guide
-  README.md                     <- this file
+    build_licence_locations.py      — geocode HMO + Selective property addresses
+    build_holder_locations.py       — geocode landlord home addresses (Oxford only)
+    build_address_lookup.py         — build id → address/agent/holder lookup
+    generate_building_data.py       — regenerate oxford_buildings.geojson from Overpass
+    generate_placeholder.py         — regenerate LSOA boundaries from ONS + Overpass
+  requirements.txt
+  README.md
 ```
 
 ## Technology
 
 | Concern | Choice |
 |---------|--------|
-| Map rendering | Leaflet.js (CDN, no build step) |
-| Base tiles | OpenStreetMap (no API key) |
+| Map rendering | Leaflet.js (CDN) |
+| Base tiles | OpenStreetMap |
 | Colour scale | chroma.js (CDN) |
 | CSV parsing | PapaParse (CDN) |
 | Neighbourhood boundaries | ONS Open Geography Portal (LSOA 2021) |
 | Building footprints | Overpass API (OpenStreetMap, build-time only) |
-| Point-in-polygon | shapely (Python, data generation only) |
-| CSV data handling | In-memory only, never persisted |
-| Hosting | GitHub Pages (static, free) |
-| Build pipeline | None — plain HTML/CSS/JS |
+| Geocoding | Nominatim (primary) + Google Maps Geocoding API (fallback) |
+| Point-in-polygon (LSOA assignment) | shapely (Python, data generation only) |
+| Hosting | GitHub Pages (static) |
 
-## Privacy model
+## Privacy
 
-When a user uploads an HMO CSV in the browser:
+- Uploaded CSV data is parsed entirely in the browser — **no data leaves your machine**
+- `licence_locations.geojson` contains no personal data (coordinates, type, dates, LSOA only)
+- Source registers, address lookups, and holder locations are gitignored
+- At runtime, the map makes no external API calls (all data is served as static files)
 
-- The CSV is parsed **entirely in the browser** (client-side JavaScript)
-- Address matching uses `data/oxford_buildings.geojson` (static file, public OSM data)
-- Postcode-to-LSOA lookup uses `data/postcode_lsoa.csv` (static file, public data)
-- **Zero external API calls** are made at runtime
-- CSV data is **never cached or persisted** — it lives in browser memory only and is discarded on page refresh
-- No HMO data is ever sent to a server or stored in the Git repository
+## Data licences
 
-## Data licence
-
-LSOA boundaries are from the [ONS Open Geography Portal](https://geoportal.statistics.gov.uk/)
-and are available under the Open Government Licence.
-
-Amenity point data is derived from [OpenStreetMap](https://www.openstreetmap.org/copyright)
-and is available under the [Open Database License (ODbL)](https://opendatacommons.org/licenses/odbl/).
+- LSOA boundaries: [ONS Open Geography Portal](https://geoportal.statistics.gov.uk/) — Open Government Licence
+- Building footprints and base tiles: [OpenStreetMap](https://www.openstreetmap.org/copyright) — ODbL
+- Licence data: Oxford City Council (public register)
