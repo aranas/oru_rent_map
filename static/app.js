@@ -7,12 +7,13 @@ var CONFIG = {
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   neighbourhoodsPath:     'data/neighbourhoods.geojson',
   licenceLocationsPath:   'data/licence_locations.geojson',
+  addressLookupPath:      'data/licence_address_lookup.json',
   numQuantiles: 4,
   // Choropleth colour ranges per type
   choroplethHmo:       ['#dbeafe', '#1e40af'],  // blue
   choroplethSelective: ['#dcfce7', '#166534'],  // green
   choroplethCombined:  ['#f3e8ff', '#6b21a8'],  // purple
-  defaultFillOpacity:  0.55,
+defaultFillOpacity:  0.55,
   defaultBorderColour: '#666',
   highlightBorderColour: '#222',
   // Marker colours
@@ -97,7 +98,9 @@ function hideInfo() {
 
 // ── Reusable layer builders ───────────────────────────────────────────────
 
-function buildChoropleth(wardGeojson, countProp, valueLabel, colourRange) {
+// opts.hoverHtmlFn(feature) → HTML string for info panel (overrides default count display)
+function buildChoropleth(wardGeojson, countProp, valueLabel, colourRange, opts) {
+  opts = opts || {};
   var allValues = wardGeojson.features.map(function (f) {
     return f.properties[countProp] || 0;
   });
@@ -126,7 +129,16 @@ function buildChoropleth(wardGeojson, countProp, valueLabel, colourRange) {
       layer.on('mouseover', function (e) {
         this.setStyle({ weight: 3, color: CONFIG.highlightBorderColour });
         this.bringToFront();
-        showInfo(e, name, count, valueLabel);
+        if (opts.hoverHtmlFn) {
+          var html = opts.hoverHtmlFn(feature);
+          infoName.textContent = name;
+          infoValue.innerHTML  = html;
+          infoPanel.style.display = 'block';
+          infoPanel.style.left = (e.originalEvent.clientX + 14) + 'px';
+          infoPanel.style.top  = (e.originalEvent.clientY + 14) + 'px';
+        } else {
+          showInfo(e, name, count, valueLabel);
+        }
       });
       layer.on('mousemove', function (e) {
         infoPanel.style.left = (e.originalEvent.clientX + 14) + 'px';
@@ -235,26 +247,33 @@ function buildLegend(colourScale, breaks, valueLabel) {
   var licRes     = await fetch(CONFIG.licenceLocationsPath);
   var licGeojson = await licRes.json();
 
+  // Address lookup (id → address string); fails gracefully if file absent
+  var addrLookup = {};
+  try {
+    var addrRes = await fetch(CONFIG.addressLookupPath);
+    if (addrRes.ok) addrLookup = await addrRes.json();
+  } catch (e) { /* non-fatal */ }
+
   // ── Aggregate LSOA counts ─────────────────────────────────────────────
-  var hmoLsoa  = {};   // lsoa -> count
-  var selLsoa  = {};
+  var hmoLsoa = {};
+  var selLsoa = {};
 
   licGeojson.features.forEach(function (f) {
     var lsoa = f.properties.lsoa || '';
     if (!lsoa) return;
     if (f.properties.type === 'hmo') {
-      hmoLsoa[lsoa]  = (hmoLsoa[lsoa]  || 0) + 1;
+      hmoLsoa[lsoa] = (hmoLsoa[lsoa] || 0) + 1;
     } else {
-      selLsoa[lsoa]  = (selLsoa[lsoa]  || 0) + 1;
+      selLsoa[lsoa] = (selLsoa[lsoa] || 0) + 1;
     }
   });
 
   // Patch wardGeojson with counts
   wardGeojson.features.forEach(function (f) {
     var name = f.properties.LSOA21NM || '';
-    f.properties.hmo_count        = hmoLsoa[name]  || 0;
-    f.properties.selective_count  = selLsoa[name]  || 0;
-    f.properties.combined_count   = (hmoLsoa[name] || 0) + (selLsoa[name] || 0);
+    f.properties.hmo_count       = hmoLsoa[name] || 0;
+    f.properties.selective_count = selLsoa[name] || 0;
+    f.properties.combined_count  = (hmoLsoa[name] || 0) + (selLsoa[name] || 0);
   });
 
   // ── Split licence features by type ───────────────────────────────────
@@ -267,6 +286,13 @@ function buildLegend(colourScale, breaks, valueLabel) {
 
   function licTooltip(p) {
     var lines = [];
+    var meta  = addrLookup[p.id] || {};
+    var addr  = meta.address || '';
+    var agent = meta.agent  || '';
+    var holder = meta.holder || '';
+    if (addr)            lines.push('<strong>' + addr + '</strong>');
+    if (agent)           lines.push('Agent: ' + agent);
+    if (holder)          lines.push('Holder: ' + holder);
     if (p.id)            lines.push('ID: ' + p.id);
     if (p.licence_start) lines.push('Start: ' + p.licence_start);
     if (p.licence_end)   lines.push('End: ' + p.licence_end);
@@ -284,22 +310,58 @@ function buildLegend(colourScale, breaks, valueLabel) {
     { fillColor: CONFIG.selectiveMarkerColour, tooltipFn: licTooltip }
   );
 
-  var hmoChoro  = buildChoropleth(wardGeojson, 'hmo_count',       'HMO licences',              CONFIG.choroplethHmo);
-  var selChoro  = buildChoropleth(wardGeojson, 'selective_count',  'Selective licences',        CONFIG.choroplethSelective);
-  var combChoro = buildChoropleth(wardGeojson, 'combined_count',   'Combined licences',         CONFIG.choroplethCombined);
+  var hmoChoro  = buildChoropleth(wardGeojson, 'hmo_count',       'HMO licences',     CONFIG.choroplethHmo);
+  var selChoro  = buildChoropleth(wardGeojson, 'selective_count',  'Selective licences', CONFIG.choroplethSelective);
+  var combChoro = buildChoropleth(wardGeojson, 'combined_count',   'Combined licences',  CONFIG.choroplethCombined);
+
+  // ── Agent halo layers (selective only) ───────────────────────────────
+  // Each highlights properties managed by a specific agent with a red halo.
+  var AGENT_HIGHLIGHTS = [
+    { label: 'Chancellors',  match: 'chancellors',  colour: '#ef4444' },
+    { label: 'Scott Fraser', match: 'scott fraser', colour: '#f97316' },
+    { label: 'NOPS',         match: 'nops',         colour: '#a855f7' },
+  ];
+
+  function buildAgentHaloLayer(matchStr) {
+    var matched = selFeatures.filter(function (f) {
+      var agent = ((addrLookup[f.properties.id] || {}).agent || '').toLowerCase();
+      return agent.indexOf(matchStr) !== -1;
+    });
+    return L.geoJSON({ type: 'FeatureCollection', features: matched }, {
+      pointToLayer: function (feature, latlng) {
+        return L.circleMarker(latlng, {
+          radius:      11,
+          fillColor:   '#ef4444',
+          fillOpacity: 0.30,
+          color:       '#ef4444',
+          weight:      2.5,
+          opacity:     0.7,
+          interactive: false,
+        });
+      },
+    });
+  }
+
+  var agentHaloLayers = AGENT_HIGHLIGHTS.map(function (ag) {
+    return { label: ag.label, layer: buildAgentHaloLayer(ag.match) };
+  });
 
   // Default: markers on, combined density on
+  // Halos go on first so they sit behind the main markers
   hmoMarkerLayer.addTo(map);
   selMarkerLayer.addTo(map);
   combChoro.wardLayer.addTo(map);
 
   // ── Layer control ─────────────────────────────────────────────────────
   var overlays = {};
-  overlays['🔵 HMO licence markers']        = hmoMarkerLayer;
-  overlays['🟢 Selective licence markers']   = selMarkerLayer;
-  overlays['Combined density']               = combChoro.wardLayer;
-  overlays['HMO density']                    = hmoChoro.wardLayer;
-  overlays['Selective density']              = selChoro.wardLayer;
+  overlays['🔵 HMO licence markers']      = hmoMarkerLayer;
+  overlays['🟢 Selective licence markers'] = selMarkerLayer;
+  overlays['Combined density']             = combChoro.wardLayer;
+  overlays['HMO density']                  = hmoChoro.wardLayer;
+  overlays['Selective density']            = selChoro.wardLayer;
+  agentHaloLayers.forEach(function (ag) {
+    overlays['🔴 ' + ag.label] = ag.layer;
+  });
 
   var layerControl = L.control.layers(null, overlays, { collapsed: false, position: 'topright' });
   layerControl.addTo(map);
@@ -310,14 +372,12 @@ function buildLegend(colourScale, breaks, valueLabel) {
 
   // Swap legend when density layers are toggled
   var legendMap = {
-    combined:  { choro: combChoro,  label: 'Combined licences' },
-    hmo:       { choro: hmoChoro,   label: 'HMO licences' },
-    selective: { choro: selChoro,   label: 'Selective licences' },
+    combined:  { choro: combChoro, label: 'Combined licences' },
+    hmo:       { choro: hmoChoro,  label: 'HMO licences' },
+    selective: { choro: selChoro,  label: 'Selective licences' },
   };
-  var activeDensity = 'combined';
 
   function updateLegend() {
-    // Show legend for the last-toggled-on density layer; hide if none active
     var active = null;
     if (map.hasLayer(combChoro.wardLayer)) active = 'combined';
     if (map.hasLayer(hmoChoro.wardLayer))  active = 'hmo';
@@ -331,6 +391,12 @@ function buildLegend(colourScale, breaks, valueLabel) {
   }
 
   map.on('overlayadd overlayremove', updateLegend);
+
+  // Keep marker layers on top whenever a halo layer is toggled on
+  map.on('overlayadd', function () {
+    if (map.hasLayer(hmoMarkerLayer)) hmoMarkerLayer.bringToFront();
+    if (map.hasLayer(selMarkerLayer)) selMarkerLayer.bringToFront();
+  });
 
   // ── Disclaimer ────────────────────────────────────────────────────────
   var hmoTotal = hmoFeatures.length;

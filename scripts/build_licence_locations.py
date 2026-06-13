@@ -455,6 +455,7 @@ def main():
             "properties": {
                 "type":          licence_type,
                 "id":            rec["id"],
+                "address":       rec["address"],
                 "licence_start": rec["start"],
                 "licence_end":   rec["end"],
                 "lsoa":          lsoa,

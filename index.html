@@ -79,7 +79,8 @@
       box-shadow: 0 2px 8px rgba(0,0,0,.25);
       font-size: 13px;
       pointer-events: none;
-      max-width: 260px;
+      max-width: 320px;
+      min-width: 200px;
     }
     #info-panel .info-name  { font-weight: 600; margin-bottom: 2px; }
     #info-panel .info-value { color: #555; }
@@ -260,12 +261,6 @@
         total licence count. Toggle HMO-only or Selective-only density in the
         layer control.</span>
       </li>
-      <li>
-        <span class="sym" style="background:rgba(37,99,235,.35);border:2px solid #1d4ed8;"></span>
-        <span><strong>Blue building footprints</strong> &mdash; exact building
-        outlines for addresses matched to OpenStreetMap, shown when you
-        upload a custom CSV.</span>
-      </li>
     </ul>
 
     <div class="section-label">Data sources</div>
@@ -293,17 +288,9 @@
     <ul>
       <li>
         <span class="sym" style="background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:14px;color:#475569;">&#9432;</span>
-        <span>Hover over buildings or markers to see metadata (address,
-        licence dates, register ID). The neighbourhood shading overlay can
-        block these tooltips &mdash; use the layer control in the top-right
-        to untick it when you want to inspect individual markers.</span>
-      </li>
-      <li>
-        <span class="sym" style="background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:14px;color:#475569;">&#9432;</span>
-        <span>Some buildings contain multiple HMO entries at the same
-        address (e.g.&nbsp;Flat&nbsp;A and Flat&nbsp;B). These are
-        consolidated into a single footprint &mdash; hover to see all
-        sub-units and entry count in the metadata.</span>
+        <span>Hover over markers to see the full address, agent/holder
+        name, and licence dates. If the neighbourhood shading makes markers
+        hard to click, untick the density layer in the top-right control.</span>
       </li>
     </ul>
 
