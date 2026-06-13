@@ -88,8 +88,17 @@ UK_POSTCODE_RE = re.compile(r"[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}", re.IGNORECASE)
 
 SUBUNIT_RE = re.compile(
     r"^(flat\s+\S+|room\s+\S+|unit\s+\S+|apt\.?\s+\S+|apartment\s+\S+|"
-    r"studio\s+\S+|basement|ground\s+floor|first\s+floor|second\s+floor)\s*,\s*",
+    r"studio\s+\S+|basement|ground\s+floor|first\s+floor|second\s+floor|"
+    r"third\s+floor|top\s+floor|lower\s+ground|first\s+and\s+second\s+floor|"
+    r"second\s+and\s+third\s+floor|floor\s+\d+|maisonette|annexe|annex|"
+    r"the\s+flat|the\s+annexe)\s*,\s*",
     re.IGNORECASE,
+)
+
+# Finds the first house number anywhere in an address string
+# e.g. "Flat 1, Oakthorpe Mansions, 205 Banbury Road, OX2 7HG" → ("205", "Banbury Road")
+_HOUSENUMBER_IN_STRING_RE = re.compile(
+    r"(?:^|,\s*)(\d+[A-Za-z]?)\s+([A-Za-z][^,]+)"
 )
 
 STREET_ABBREVIATIONS = {
@@ -249,11 +258,28 @@ def _nominatim_get(query, session):
     return None
 
 
+def extract_housenumber_anywhere(address):
+    """
+    Find the first house number anywhere in the string, not just at the start.
+    Returns (housenumber, street_fragment) or ("", "").
+    Handles addresses like "Flat 1, Oakthorpe Mansions, 205 Banbury Road, OX2 7HG"
+    where the real house number is buried after a building name.
+    """
+    for m in _HOUSENUMBER_IN_STRING_RE.finditer(address):
+        hn     = m.group(1)
+        street = m.group(2).strip()
+        # Skip if the "street" fragment is a postcode or very short
+        if UK_POSTCODE_RE.match(street) or len(street) < 4:
+            continue
+        return hn, street
+    return "", ""
+
+
 def geocode(raw_address, session, cache):
     """
     Return (lon, lat) or None.  Tries multiple strategies, caches result.
-    Previously-failed entries are retried (cache stores None only after
-    all strategies are exhausted).
+    Cached successes are returned immediately; cached failures are skipped
+    (None entries are purged at startup so re-runs retry with new strategies).
     """
     cache_key = raw_address
 
@@ -269,19 +295,27 @@ def geocode(raw_address, session, cache):
 
     result = None
 
-    # Strategy 1: expanded address + postcode
+    # Strategy 1: expanded address (sub-unit stripped) + postcode
     q1 = f"{expanded}, {postcode}, Oxford, UK" if postcode else f"{expanded}, Oxford, UK"
     result = _nominatim_get(q1, session)
 
-    # Strategy 2: housenumber + postcode only (bypasses street-name errors)
+    # Strategy 2: housenumber found at start of stripped address + postcode
     if not result and hn and postcode:
         result = _nominatim_get(f"{hn} {postcode}, UK", session)
 
-    # Strategy 3: original address unchanged
+    # Strategy 3: house number found anywhere in string + street + postcode
+    # Catches "Flat 1, Building Name, 42 Some Street, OX1 1AA"
+    if not result and postcode:
+        hn2, street2 = extract_housenumber_anywhere(raw_address)
+        if hn2 and street2 and hn2 != hn:
+            street2 = expand_abbreviations(street2)
+            result = _nominatim_get(f"{hn2} {street2}, {postcode}, UK", session)
+
+    # Strategy 4: original address unchanged (last resort)
     if not result:
-        q3 = f"{raw_address}, Oxford, UK" if postcode not in raw_address else f"{raw_address}, UK"
-        if q3 != q1:
-            result = _nominatim_get(q3, session)
+        q4 = f"{raw_address}, Oxford, UK" if postcode not in raw_address else f"{raw_address}, UK"
+        if q4 != q1:
+            result = _nominatim_get(q4, session)
 
     if result:
         cache[cache_key] = {"lon": result[0], "lat": result[1]}
@@ -385,6 +419,15 @@ def main():
     # ── Match / geocode ───────────────────────────────────────────────────
     print("[3/5] Matching addresses...")
     cache   = load_cache()
+
+    # Purge cached failures so they get retried with the improved strategies.
+    # Cached successes (non-None) are kept — they won't be re-requested.
+    failures_purged = sum(1 for v in cache.values() if v is None)
+    cache = {k: v for k, v in cache.items() if v is not None}
+    if failures_purged:
+        print(f"  Purged {failures_purged} cached failures — will retry with improved strategies")
+        save_cache(cache)
+
     session = requests.Session()
     session.headers.update({"User-Agent": USER_AGENT})
 
