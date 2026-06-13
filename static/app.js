@@ -8,6 +8,7 @@ var CONFIG = {
   neighbourhoodsPath:     'data/neighbourhoods.geojson',
   licenceLocationsPath:   'data/licence_locations.geojson',
   addressLookupPath:      'data/licence_address_lookup.json',
+  holderLocationsPath:    'data/holder_locations.geojson',
   numQuantiles: 4,
   // Choropleth colour ranges per type
   choroplethHmo:       ['#dbeafe', '#1e40af'],  // blue
@@ -247,11 +248,18 @@ function buildLegend(colourScale, breaks, valueLabel) {
   var licRes     = await fetch(CONFIG.licenceLocationsPath);
   var licGeojson = await licRes.json();
 
-  // Address lookup (id → address string); fails gracefully if file absent
+  // Address lookup (id → {address, agent, holder}); fails gracefully if absent
   var addrLookup = {};
   try {
     var addrRes = await fetch(CONFIG.addressLookupPath);
     if (addrRes.ok) addrLookup = await addrRes.json();
+  } catch (e) { /* non-fatal */ }
+
+  // Holder locations (one point per landlord address); optional
+  var holderGeojson = null;
+  try {
+    var holderRes = await fetch(CONFIG.holderLocationsPath);
+    if (holderRes.ok) holderGeojson = await holderRes.json();
   } catch (e) { /* non-fatal */ }
 
   // ── Aggregate LSOA counts ─────────────────────────────────────────────
@@ -346,6 +354,19 @@ function buildLegend(colourScale, breaks, valueLabel) {
     return { label: ag.label, layer: buildAgentHaloLayer(ag.match) };
   });
 
+  // ── Holder (landlord) marker layer ────────────────────────────────────
+  var holderMarkerLayer = holderGeojson ? buildPointMarkers(holderGeojson, {
+    radius:    5,
+    fillColor: '#111827',   // near-black
+    tooltipFn: function (p) {
+      var lines = [];
+      if (p.holder_names)   lines.push('<strong>' + p.holder_names + '</strong>');
+      if (p.holder_address) lines.push(p.holder_address);
+      if (p.property_count) lines.push('Properties: ' + p.property_count);
+      return lines.join('<br>');
+    },
+  }) : null;
+
   // Default: markers on, combined density on
   // Halos go on first so they sit behind the main markers
   hmoMarkerLayer.addTo(map);
@@ -356,6 +377,7 @@ function buildLegend(colourScale, breaks, valueLabel) {
   var overlays = {};
   overlays['🔵 HMO licence markers']      = hmoMarkerLayer;
   overlays['🟢 Selective licence markers'] = selMarkerLayer;
+  if (holderMarkerLayer) overlays['⚫ Licence holder addresses'] = holderMarkerLayer;
   overlays['Combined density']             = combChoro.wardLayer;
   overlays['HMO density']                  = hmoChoro.wardLayer;
   overlays['Selective density']            = selChoro.wardLayer;
