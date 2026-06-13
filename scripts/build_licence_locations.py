@@ -78,9 +78,14 @@ CACHE_PATH    = os.path.join(DATA_DIR, "geocode_cache.json")
 
 # ── Nominatim ──────────────────────────────────────────────────────────────
 
-NOMINATIM_URL  = "https://nominatim.openstreetmap.org/search"
+NOMINATIM_URL   = "https://nominatim.openstreetmap.org/search"
 NOMINATIM_DELAY = 1.1
-USER_AGENT     = "oru-hmo-map-geocoder/1.0 (open-source research tool)"
+USER_AGENT      = "oru-hmo-map-geocoder/1.0 (open-source research tool)"
+
+GOOGLE_GEOCODING_URL = "https://maps.googleapis.com/maps/api/geocode/json"
+GOOGLE_API_KEY       = os.environ.get("GOOGLE_GEOCODING_KEY", "")
+POSTCODES_IO_URL = "https://api.postcodes.io/postcodes"
+POSTCODES_BATCH  = 100   # max per postcodes.io bulk request
 
 # ── Address normalisation ──────────────────────────────────────────────────
 
@@ -241,6 +246,33 @@ def save_cache(cache):
         json.dump(cache, f, indent=2)
 
 
+def bulk_postcode_lookup(postcodes, session):
+    """
+    Look up a list of UK postcodes via postcodes.io bulk API.
+    Returns dict: postcode -> (lon, lat)  for those that resolve.
+    Batches requests in groups of POSTCODES_BATCH.  No rate limit.
+    """
+    result = {}
+    unique = list({pc.strip().upper() for pc in postcodes if pc.strip()})
+    for i in range(0, len(unique), POSTCODES_BATCH):
+        batch = unique[i:i + POSTCODES_BATCH]
+        try:
+            resp = session.post(
+                POSTCODES_IO_URL,
+                json={"postcodes": batch},
+                timeout=15,
+            )
+            if resp.status_code == 200:
+                for item in resp.json().get("result", []):
+                    r = item.get("result")
+                    if r and r.get("longitude") is not None:
+                        pc = item["query"].strip().upper()
+                        result[pc] = (float(r["longitude"]), float(r["latitude"]))
+        except Exception as exc:
+            print(f"    postcodes.io error: {exc}")
+    return result
+
+
 def _nominatim_get(query, session):
     try:
         resp = session.get(
@@ -255,6 +287,27 @@ def _nominatim_get(query, session):
                 return (float(results[0]["lon"]), float(results[0]["lat"]))
     except Exception as exc:
         print(f"    Nominatim error for '{query}': {exc}")
+    return None
+
+
+def _google_get(query):
+    """Call Google Maps Geocoding API. Returns (lon, lat) or None."""
+    if not GOOGLE_API_KEY:
+        return None
+    try:
+        resp = requests.get(
+            GOOGLE_GEOCODING_URL,
+            params={"address": query, "key": GOOGLE_API_KEY, "region": "gb"},
+            timeout=10,
+        )
+        data = resp.json()
+        if data.get("status") == "OK" and data.get("results"):
+            loc = data["results"][0]["geometry"]["location"]
+            return (loc["lng"], loc["lat"])
+        if data.get("status") not in ("ZERO_RESULTS", "OK"):
+            print(f"    Google error: {data.get('status')} for '{query}'")
+    except Exception as exc:
+        print(f"    Google request error for '{query}': {exc}")
     return None
 
 
@@ -311,11 +364,15 @@ def geocode(raw_address, session, cache):
             street2 = expand_abbreviations(street2)
             result = _nominatim_get(f"{hn2} {street2}, {postcode}, UK", session)
 
-    # Strategy 4: original address unchanged (last resort)
+    # Strategy 4: original address unchanged
     if not result:
         q4 = f"{raw_address}, Oxford, UK" if postcode not in raw_address else f"{raw_address}, UK"
         if q4 != q1:
             result = _nominatim_get(q4, session)
+
+    # Strategy 5: Google Maps Geocoding (only if Nominatim exhausted)
+    if not result and GOOGLE_API_KEY:
+        result = _google_get(f"{raw_address}, UK")
 
     if result:
         cache[cache_key] = {"lon": result[0], "lat": result[1]}

@@ -30,6 +30,9 @@ NOMINATIM_URL  = "https://nominatim.openstreetmap.org/search"
 NOMINATIM_DELAY = 1.1   # seconds between requests (Nominatim ToS)
 USER_AGENT     = "oru-hmo-map-geocoder/1.0 (open-source research tool)"
 
+GOOGLE_GEOCODING_URL = "https://maps.googleapis.com/maps/api/geocode/json"
+GOOGLE_API_KEY       = os.environ.get("GOOGLE_GEOCODING_KEY", "")
+
 UK_POSTCODE_RE = re.compile(r'[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}', re.IGNORECASE)
 
 SUBUNIT_RE = re.compile(
@@ -125,6 +128,27 @@ def looks_like_uk(address):
     return False
 
 
+def google_get(query):
+    """Call Google Maps Geocoding API. Returns (lon, lat) or None."""
+    if not GOOGLE_API_KEY:
+        return None
+    try:
+        resp = requests.get(
+            GOOGLE_GEOCODING_URL,
+            params={"address": query, "key": GOOGLE_API_KEY, "region": "gb"},
+            timeout=10,
+        )
+        data = resp.json()
+        if data.get("status") == "OK" and data.get("results"):
+            loc = data["results"][0]["geometry"]["location"]
+            return (loc["lng"], loc["lat"])
+        if data.get("status") not in ("ZERO_RESULTS", "OK"):
+            print(f"    Google error: {data.get('status')} for '{query}'")
+    except Exception as exc:
+        print(f"    Google request error for '{query}': {exc}")
+    return None
+
+
 def nominatim_query(q, session):
     time.sleep(NOMINATIM_DELAY)
     resp = session.get(
@@ -183,6 +207,10 @@ def geocode(address, session, cache):
         q4 = f"{address}, UK"
         if q4 != q1:
             result = nominatim_query(q4, session)
+
+    # Strategy 5: Google Maps Geocoding (only if Nominatim exhausted)
+    if not result and GOOGLE_API_KEY:
+        result = google_get(f"{address}, UK")
 
     if result:
         cache[address] = {"lon": result[0], "lat": result[1]}
