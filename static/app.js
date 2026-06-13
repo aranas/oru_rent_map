@@ -297,13 +297,8 @@ function buildLegend(colourScale, breaks, valueLabel) {
     var meta  = addrLookup[p.id] || {};
     var addr  = meta.address || '';
     var agent = meta.agent  || '';
-    var holder = meta.holder || '';
-    if (addr)            lines.push('<strong>' + addr + '</strong>');
-    if (agent)           lines.push('Agent: ' + agent);
-    if (holder)          lines.push('Holder: ' + holder);
-    if (p.id)            lines.push('ID: ' + p.id);
-    if (p.licence_start) lines.push('Start: ' + p.licence_start);
-    if (p.licence_end)   lines.push('End: ' + p.licence_end);
+    if (addr)  lines.push('<strong>' + addr + '</strong>');
+    if (agent) lines.push('Agent: ' + agent);
     return lines.join('<br>');
   }
 

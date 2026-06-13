@@ -14,6 +14,7 @@ data/geocode_failures.csv
 data/licence_address_lookup.json
 data/holder_locations.geojson
 data/holder_geocode_failures.csv
+# licence_locations.geojson is intentionally tracked (no personal data)
 oru-map/
 
 # Source registers — not needed at runtime, contain personal data
