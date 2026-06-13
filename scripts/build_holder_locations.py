@@ -32,6 +32,64 @@ USER_AGENT     = "oru-hmo-map-geocoder/1.0 (open-source research tool)"
 
 UK_POSTCODE_RE = re.compile(r'[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}', re.IGNORECASE)
 
+SUBUNIT_RE = re.compile(
+    r"^(flat\s+\S+|room\s+\S+|unit\s+\S+|apt\.?\s+\S+|apartment\s+\S+|"
+    r"studio\s+\S+|basement|ground\s+floor|first\s+floor|second\s+floor|"
+    r"third\s+floor|top\s+floor|lower\s+ground|first\s+and\s+second\s+floor|"
+    r"second\s+and\s+third\s+floor|floor\s+\d+|maisonette|annexe|annex|"
+    r"the\s+flat|the\s+annexe)\s*,\s*",
+    re.IGNORECASE,
+)
+
+STREET_ABBREVIATIONS = {
+    r"\bRd\b": "Road",   r"\bSt\b": "Street",  r"\bAve?\b": "Avenue",
+    r"\bDr\b": "Drive",  r"\bCl\b": "Close",   r"\bCres\b":  "Crescent",
+    r"\bPl\b": "Place",  r"\bLn\b": "Lane",    r"\bTce\b":   "Terrace",
+    r"\bGdns\b": "Gardens", r"\bSq\b": "Square", r"\bCt\b":  "Court",
+}
+
+# Finds the first house number anywhere in an address string
+_HOUSENUMBER_IN_STRING_RE = re.compile(r"(?:^|,\s*)(\d+[A-Za-z]?)\s+([A-Za-z][^,]+)")
+
+
+def strip_sub_unit(address):
+    m = SUBUNIT_RE.match(address)
+    return address[len(m.group(0)):] if m else address
+
+
+def expand_abbreviations(address):
+    for pattern, replacement in STREET_ABBREVIATIONS.items():
+        address = re.sub(pattern, replacement, address, flags=re.IGNORECASE)
+    return address
+
+
+def extract_postcode(address):
+    m = UK_POSTCODE_RE.search(address)
+    return m.group(0).upper().strip() if m else ""
+
+
+def extract_housenumber(address):
+    m = re.match(r"^(\d+[A-Za-z]?)\b", address.strip())
+    return m.group(1) if m else ""
+
+
+def extract_housenumber_anywhere(address):
+    """Find the first house number buried anywhere in the string."""
+    for m in _HOUSENUMBER_IN_STRING_RE.finditer(address):
+        hn, street = m.group(1), m.group(2).strip()
+        if UK_POSTCODE_RE.match(street) or len(street) < 4:
+            continue
+        return hn, street
+    return "", ""
+
+
+def clean_for_nominatim(address):
+    cleaned = re.sub(r",?\s*\bOxford\b,?", "", address, flags=re.IGNORECASE)
+    cleaned = expand_abbreviations(cleaned)
+    cleaned = re.sub(r",\s*,", ",", cleaned)
+    return cleaned.strip().strip(",").strip()
+
+
 # ── Helpers ────────────────────────────────────────────────────────────────
 
 def find_file(pattern, label):
@@ -86,22 +144,48 @@ def nominatim_query(q, session):
 
 
 def geocode(address, session, cache):
-    """Returns (lon, lat) or None. Skips non-UK addresses."""
+    """Returns (lon, lat) or None. Skips non-UK addresses. Tries multiple strategies."""
     if not looks_like_uk(address):
-        return None   # Don't bother geocoding foreign addresses
+        return None
 
-    key = address
-    if key in cache:
-        return cache[key]   # None means previously failed
+    # Return cached success immediately; None entries purged at startup
+    if address in cache and cache[address] is not None:
+        e = cache[address]
+        return (e["lon"], e["lat"])
 
-    time.sleep(NOMINATIM_DELAY)
-    try:
-        result = nominatim_query(address, session)
-    except Exception as e:
-        print(f"  Request error for [{address}]: {e}")
-        result = None
+    postcode = extract_postcode(address)
+    core     = strip_sub_unit(address)
+    expanded = clean_for_nominatim(core)
+    hn       = extract_housenumber(expanded)
 
-    cache[key] = result
+    result = None
+
+    # Strategy 1: expanded (sub-unit stripped) address + postcode
+    q1 = f"{expanded}, {postcode}, UK" if postcode else f"{expanded}, UK"
+    result = nominatim_query(q1, session)
+
+    # Strategy 2: house number at start of stripped address + postcode
+    if not result and hn and postcode:
+        result = nominatim_query(f"{hn} {postcode}, UK", session)
+
+    # Strategy 3: house number found anywhere in string + street + postcode
+    if not result and postcode:
+        hn2, street2 = extract_housenumber_anywhere(address)
+        if hn2 and street2 and hn2 != hn:
+            result = nominatim_query(f"{hn2} {expand_abbreviations(street2)}, {postcode}, UK", session)
+
+    # Strategy 4: original address unchanged
+    if not result:
+        q4 = f"{address}, UK"
+        if q4 != q1:
+            result = nominatim_query(q4, session)
+
+    if result:
+        cache[address] = {"lon": result[0], "lat": result[1]}
+    else:
+        cache[address] = None
+
+    save_cache(cache)
     return result
 
 
@@ -150,11 +234,18 @@ def main():
 
     print("[3/4] Geocoding (UK addresses only)…")
     cache = load_cache()
+
+    # Purge cached failures so they get retried with improved strategies
+    failures_purged = sum(1 for v in cache.values() if v is None)
+    cache = {k: v for k, v in cache.items() if v is not None}
+    if failures_purged:
+        print(f"  Purged {failures_purged} cached failures — will retry with improved strategies")
+        save_cache(cache)
+
     session = requests.Session()
 
-    # Count how many need network requests
-    to_fetch = [a for a in unique_addrs if a not in cache and looks_like_uk(a)]
     skipped_foreign = sum(1 for a in unique_addrs if not looks_like_uk(a))
+    to_fetch = [a for a in unique_addrs if looks_like_uk(a) and a not in cache]
     print(f"  {len(to_fetch)} new UK addresses to geocode, {skipped_foreign} non-UK skipped")
 
     coords = {}   # address -> (lon, lat) or None
