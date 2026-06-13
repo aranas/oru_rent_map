@@ -117,15 +117,11 @@ def save_cache(cache):
         json.dump(cache, f)
 
 
-def looks_like_uk(address):
-    """Rough heuristic: has a UK postcode, or ends with common UK place/country."""
-    if UK_POSTCODE_RE.search(address):
-        return True
-    low = address.lower()
-    for term in [", uk", ", england", ", wales", ", scotland", ", united kingdom"]:
-        if low.endswith(term):
-            return True
-    return False
+OX_POSTCODE_RE = re.compile(r'\bOX[1-4]\b', re.IGNORECASE)  # OX1–OX4 = Oxford city
+
+def looks_like_oxford(address):
+    """Only geocode addresses with an Oxford city postcode (OX1–OX4)."""
+    return bool(OX_POSTCODE_RE.search(address))
 
 
 def google_get(query):
@@ -170,7 +166,7 @@ def nominatim_query(q, session):
 
 def geocode(address, session, cache):
     """Returns (lon, lat) or None. Skips non-UK addresses. Tries multiple strategies."""
-    if not looks_like_uk(address):
+    if not looks_like_oxford(address):
         return None
 
     # Return cached success immediately; None entries purged at startup
@@ -276,8 +272,8 @@ def main():
 
     session = requests.Session()
 
-    skipped_foreign = sum(1 for a in unique_addrs if not looks_like_uk(a))
-    to_fetch = [a for a in unique_addrs if looks_like_uk(a) and a not in cache]
+    skipped_foreign = sum(1 for a in unique_addrs if not looks_like_oxford(a))
+    to_fetch = [a for a in unique_addrs if looks_like_oxford(a) and a not in cache]
     print(f"  {len(to_fetch)} new UK addresses to geocode, {skipped_foreign} non-UK skipped")
 
     coords = {}   # address -> (lon, lat) or None
@@ -308,7 +304,7 @@ def main():
                 "holder_address": addr,
                 "holder_names":   "; ".join(sorted(group["names"])),
                 "property_count": group["count"],
-                "reason":         "non-UK" if not looks_like_uk(addr) else "geocode_failed",
+                "reason":         "non-oxford" if not looks_like_oxford(addr) else "geocode_failed",
             })
             continue
         lon, lat = round(c[0], 6), round(c[1], 6)
