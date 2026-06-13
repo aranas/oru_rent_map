@@ -319,16 +319,24 @@ function buildLegend(colourScale, breaks, valueLabel) {
 
   // ── Agent halo layers (selective only) ───────────────────────────────
   // Each highlights properties managed by a specific agent with a red halo.
+  // match: string or array of strings — any substring match (case-insensitive) counts
   var AGENT_HIGHLIGHTS = [
-    { label: 'Chancellors',  match: 'chancellors',  colour: '#ef4444' },
-    { label: 'Scott Fraser', match: 'scott fraser', colour: '#f97316' },
-    { label: 'NOPS',         match: 'nops',         colour: '#a855f7' },
+    { label: 'Chancellors',     match: ['chancellors'] },
+    { label: 'Scott Fraser',    match: ['scott fraser', 'scottfraser'] },
+    { label: 'NOPS',            match: ['nops', 'north oxford property services'] },
+    { label: 'Finders Keepers', match: ['finders keepers'] },
+    { label: 'Breckon & Breckon', match: ['breckon'] },
+    { label: 'Penny & Sinclair', match: ['penny & sinclair', 'penny and sinclair'] },
+    { label: 'Carter Jonas',    match: ['carter jonas'] },
+    { label: 'Savills',         match: ['savills'] },
+    { label: 'College and County', match: ['college and county', 'college & county'] },
+    { label: 'LPM Residential', match: ['lpm residential'] },
   ];
 
-  function buildAgentHaloLayer(matchStr) {
+  function buildAgentHaloLayer(terms) {
     var matched = selFeatures.filter(function (f) {
       var agent = ((addrLookup[f.properties.id] || {}).agent || '').toLowerCase();
-      return agent.indexOf(matchStr) !== -1;
+      return terms.some(function (t) { return agent.indexOf(t) !== -1; });
     });
     return L.geoJSON({ type: 'FeatureCollection', features: matched }, {
       pointToLayer: function (feature, latlng) {
