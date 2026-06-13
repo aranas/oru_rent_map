@@ -126,6 +126,7 @@ def looks_like_uk(address):
 
 
 def nominatim_query(q, session):
+    time.sleep(NOMINATIM_DELAY)
     resp = session.get(
         NOMINATIM_URL,
         params={"q": q, "format": "json", "limit": 1},
