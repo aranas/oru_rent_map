@@ -272,13 +272,16 @@ def main():
 
     session = requests.Session()
 
-    skipped_foreign = sum(1 for a in unique_addrs if not looks_like_oxford(a))
-    to_fetch = [a for a in unique_addrs if looks_like_oxford(a) and a not in cache]
-    print(f"  {len(to_fetch)} new UK addresses to geocode, {skipped_foreign} non-UK skipped")
+    oxford_addrs    = [a for a in unique_addrs if looks_like_oxford(a)]
+    non_oxford      = len(unique_addrs) - len(oxford_addrs)
+    already_cached  = sum(1 for a in oxford_addrs if a in cache)
+    to_fetch        = len(oxford_addrs) - already_cached
+    print(f"  {len(oxford_addrs)} Oxford (OX1-OX4) addresses, {non_oxford} non-Oxford skipped")
+    print(f"  {already_cached} already cached, {to_fetch} new Nominatim/Google requests needed")
 
     coords = {}   # address -> (lon, lat) or None
     done = 0
-    for addr in unique_addrs:
+    for addr in oxford_addrs:
         result = geocode(addr, session, cache)
         coords[addr] = result
         done += 1
@@ -286,7 +289,7 @@ def main():
             save_cache(cache)
             geocoded = sum(1 for v in coords.values() if v)
             failed   = sum(1 for v in coords.values() if v is None)
-            print(f"  {done}/{len(unique_addrs)} — geocoded: {geocoded}, failed/skipped: {failed}")
+            print(f"  {done}/{len(oxford_addrs)} — geocoded: {geocoded}, failed: {failed}")
 
     save_cache(cache)
     geocoded_total = sum(1 for v in coords.values() if v)
@@ -298,13 +301,15 @@ def main():
     failures = []
 
     for addr, group in addr_groups.items():
+        if not looks_like_oxford(addr):
+            continue  # silently skip non-Oxford addresses
         c = coords.get(addr)
         if c is None:
             failures.append({
                 "holder_address": addr,
                 "holder_names":   "; ".join(sorted(group["names"])),
                 "property_count": group["count"],
-                "reason":         "non-oxford" if not looks_like_oxford(addr) else "geocode_failed",
+                "reason":         "geocode_failed",
             })
             continue
         lon, lat = round(c[0], 6), round(c[1], 6)
