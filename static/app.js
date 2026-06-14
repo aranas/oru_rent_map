@@ -331,9 +331,36 @@ function buildLegend(colourScale, breaks, valueLabel) {
     });
   }
 
-  var agentHaloLayers = AGENT_HIGHLIGHTS.map(function (ag) {
-    return { label: ag.label, layer: buildAgentHaloLayer(ag.match) };
-  });
+  var activeHaloLayer = null;
+
+  function setAgentHalo(agentIndex) {
+    if (activeHaloLayer) { map.removeLayer(activeHaloLayer); activeHaloLayer = null; }
+    if (agentIndex === '') return;
+    activeHaloLayer = buildAgentHaloLayer(AGENT_HIGHLIGHTS[agentIndex].match);
+    activeHaloLayer.addTo(map);
+    // Keep marker layers on top
+    if (map.hasLayer(hmoMarkerLayer)) hmoMarkerLayer.bringToFront();
+    if (map.hasLayer(selMarkerLayer)) selMarkerLayer.bringToFront();
+  }
+
+  // ── Agent dropdown control ────────────────────────────────────────────
+  var agentControl = L.control({ position: 'topright' });
+  agentControl.onAdd = function () {
+    var div = L.DomUtil.create('div', 'agent-dropdown-control');
+    div.innerHTML =
+      '<label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">🔴 Agent highlight</label>' +
+      '<select id="agent-select" style="width:100%;font-size:12px;padding:2px 4px;">' +
+      '<option value="">— none —</option>' +
+      AGENT_HIGHLIGHTS.map(function (ag, i) {
+        return '<option value="' + i + '">' + ag.label + '</option>';
+      }).join('') +
+      '</select>';
+    L.DomEvent.disableClickPropagation(div);
+    div.querySelector('#agent-select').addEventListener('change', function () {
+      setAgentHalo(this.value);
+    });
+    return div;
+  };
 
   // ── Holder (landlord) marker layer ────────────────────────────────────
   var holderMarkerLayer = holderGeojson ? buildPointMarkers(holderGeojson, {
@@ -361,12 +388,10 @@ function buildLegend(colourScale, breaks, valueLabel) {
   overlays['Combined density']             = combChoro.wardLayer;
   overlays['HMO density']                  = hmoChoro.wardLayer;
   overlays['Selective density']            = selChoro.wardLayer;
-  agentHaloLayers.forEach(function (ag) {
-    overlays['🔴 ' + ag.label] = ag.layer;
-  });
 
   var layerControl = L.control.layers(null, overlays, { collapsed: false, position: 'topright' });
   layerControl.addTo(map);
+  agentControl.addTo(map);
 
   // ── Legend (combined by default) ──────────────────────────────────────
   var activeLegend = buildLegend(combChoro.colourScale, combChoro.breaks, 'Combined licences');
@@ -393,12 +418,6 @@ function buildLegend(colourScale, breaks, valueLabel) {
   }
 
   map.on('overlayadd overlayremove', updateLegend);
-
-  // Keep marker layers on top whenever a halo layer is toggled on
-  map.on('overlayadd', function () {
-    if (map.hasLayer(hmoMarkerLayer)) hmoMarkerLayer.bringToFront();
-    if (map.hasLayer(selMarkerLayer)) selMarkerLayer.bringToFront();
-  });
 
   // ── Disclaimer ────────────────────────────────────────────────────────
   var hmoTotal = hmoFeatures.length;
