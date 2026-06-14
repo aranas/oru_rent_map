@@ -99,9 +99,7 @@ function hideInfo() {
 
 // ── Reusable layer builders ───────────────────────────────────────────────
 
-// opts.hoverHtmlFn(feature) → HTML string for info panel (overrides default count display)
-function buildChoropleth(wardGeojson, countProp, valueLabel, colourRange, opts) {
-  opts = opts || {};
+function buildChoropleth(wardGeojson, countProp, valueLabel, colourRange) {
   var allValues = wardGeojson.features.map(function (f) {
     return f.properties[countProp] || 0;
   });
@@ -130,16 +128,7 @@ function buildChoropleth(wardGeojson, countProp, valueLabel, colourRange, opts) 
       layer.on('mouseover', function (e) {
         this.setStyle({ weight: 3, color: CONFIG.highlightBorderColour });
         this.bringToFront();
-        if (opts.hoverHtmlFn) {
-          var html = opts.hoverHtmlFn(feature);
-          infoName.textContent = name;
-          infoValue.innerHTML  = html;
-          infoPanel.style.display = 'block';
-          infoPanel.style.left = (e.originalEvent.clientX + 14) + 'px';
-          infoPanel.style.top  = (e.originalEvent.clientY + 14) + 'px';
-        } else {
-          showInfo(e, name, count, valueLabel);
-        }
+        showInfo(e, name, count, valueLabel);
       });
       layer.on('mousemove', function (e) {
         infoPanel.style.left = (e.originalEvent.clientX + 14) + 'px';

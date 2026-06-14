@@ -168,7 +168,7 @@ def nominatim_query(q, session):
 
 
 def geocode(address, session, cache):
-    """Returns (lon, lat) or None. Skips non-UK addresses. Tries multiple strategies."""
+    """Returns (lon, lat) or None. Skips non-Oxford (non OX1–OX4) addresses."""
     if not looks_like_oxford(address):
         return None
 
@@ -263,14 +263,14 @@ def main():
     unique_addrs = list(addr_groups.keys())
     print(f"  {len(unique_addrs)} unique holder addresses")
 
-    print("[3/4] Geocoding (UK addresses only)…")
+    print("[3/4] Geocoding Oxford addresses…")
     cache = load_cache()
 
-    # Purge cached failures so they get retried with improved strategies
+    # Purge cached failures so they are retried on this run
     failures_purged = sum(1 for v in cache.values() if v is None)
     cache = {k: v for k, v in cache.items() if v is not None}
     if failures_purged:
-        print(f"  Purged {failures_purged} cached failures — will retry with improved strategies")
+        print(f"  Purged {failures_purged} cached failures — will retry")
         save_cache(cache)
 
     session = requests.Session()

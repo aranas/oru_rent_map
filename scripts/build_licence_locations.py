@@ -18,13 +18,16 @@ No personal data (holder names, holder addresses) is written.
 Address matching strategy (in order):
   1. Direct lookup in oxford_buildings.geojson by normalised match_key
      (housenumber + street) — uses OSM-tagged building centroid.
-  2. Nominatim geocoding with abbreviation expansion
-     (Rd→Road, St→Street, etc.)
-  3. Fallback: housenumber + postcode only (bypasses street name entirely)
-  4. Fallback: original unmodified address string
+  2. Nominatim: sub-unit stripped address + abbreviation expansion + postcode
+  3. Nominatim: house number + postcode only (bypasses street name)
+  4. Nominatim: house number found anywhere in string + street + postcode
+     (handles "Flat 1, Building Name, 42 Some Street, OX1 1AA")
+  5. Nominatim: original unmodified address
+  6. Google Maps Geocoding API — handles named developments and new builds
+     not yet in OSM (only called if all Nominatim strategies fail)
 
-Nominatim results are cached in data/geocode_cache.json (gitignored)
-and shared with geocode_hmo.py — safe to interrupt and re-run.
+Results are cached in data/geocode_cache.json (gitignored) — safe to
+interrupt and re-run.
 
 Usage
 -----
@@ -76,7 +79,7 @@ HOODS_GJ      = os.path.join(DATA_DIR, "neighbourhoods.geojson")
 OUTPUT_GJ     = os.path.join(DATA_DIR, "licence_locations.geojson")
 CACHE_PATH    = os.path.join(DATA_DIR, "geocode_cache.json")
 
-# ── Nominatim ──────────────────────────────────────────────────────────────
+# ── Geocoding ──────────────────────────────────────────────────────────────
 
 NOMINATIM_URL   = "https://nominatim.openstreetmap.org/search"
 NOMINATIM_DELAY = 1.1
@@ -84,8 +87,6 @@ USER_AGENT      = "oru-hmo-map-geocoder/1.0 (open-source research tool)"
 
 GOOGLE_GEOCODING_URL = "https://maps.googleapis.com/maps/api/geocode/json"
 GOOGLE_API_KEY       = os.environ.get("GOOGLE_GEOCODING_KEY", "")
-POSTCODES_IO_URL = "https://api.postcodes.io/postcodes"
-POSTCODES_BATCH  = 100   # max per postcodes.io bulk request
 
 # ── Address normalisation ──────────────────────────────────────────────────
 
@@ -244,33 +245,6 @@ def load_cache():
 def save_cache(cache):
     with open(CACHE_PATH, "w") as f:
         json.dump(cache, f, indent=2)
-
-
-def bulk_postcode_lookup(postcodes, session):
-    """
-    Look up a list of UK postcodes via postcodes.io bulk API.
-    Returns dict: postcode -> (lon, lat)  for those that resolve.
-    Batches requests in groups of POSTCODES_BATCH.  No rate limit.
-    """
-    result = {}
-    unique = list({pc.strip().upper() for pc in postcodes if pc.strip()})
-    for i in range(0, len(unique), POSTCODES_BATCH):
-        batch = unique[i:i + POSTCODES_BATCH]
-        try:
-            resp = session.post(
-                POSTCODES_IO_URL,
-                json={"postcodes": batch},
-                timeout=15,
-            )
-            if resp.status_code == 200:
-                for item in resp.json().get("result", []):
-                    r = item.get("result")
-                    if r and r.get("longitude") is not None:
-                        pc = item["query"].strip().upper()
-                        result[pc] = (float(r["longitude"]), float(r["latitude"]))
-        except Exception as exc:
-            print(f"    postcodes.io error: {exc}")
-    return result
 
 
 def _nominatim_get(query, session):
@@ -477,12 +451,12 @@ def main():
     print("[3/5] Matching addresses...")
     cache   = load_cache()
 
-    # Purge cached failures so they get retried with the improved strategies.
+    # Purge cached failures so they are retried on this run.
     # Cached successes (non-None) are kept — they won't be re-requested.
     failures_purged = sum(1 for v in cache.values() if v is None)
     cache = {k: v for k, v in cache.items() if v is not None}
     if failures_purged:
-        print(f"  Purged {failures_purged} cached failures — will retry with improved strategies")
+        print(f"  Purged {failures_purged} cached failures — will retry")
         save_cache(cache)
 
     session = requests.Session()
