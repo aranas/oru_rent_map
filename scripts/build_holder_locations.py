@@ -146,21 +146,24 @@ def google_get(query):
 
 
 def nominatim_query(q, session):
-    time.sleep(NOMINATIM_DELAY)
-    resp = session.get(
-        NOMINATIM_URL,
-        params={"q": q, "format": "json", "limit": 1},
-        headers={"User-Agent": USER_AGENT},
-        timeout=10,
-    )
-    if resp.status_code == 429:
-        print("  Rate-limited (429), waiting 60s…")
-        time.sleep(60)
-        return nominatim_query(q, session)
-    resp.raise_for_status()
-    results = resp.json()
-    if results:
-        return float(results[0]["lon"]), float(results[0]["lat"])
+    try:
+        time.sleep(NOMINATIM_DELAY)
+        resp = session.get(
+            NOMINATIM_URL,
+            params={"q": q, "format": "json", "limit": 1},
+            headers={"User-Agent": USER_AGENT},
+            timeout=10,
+        )
+        if resp.status_code == 429:
+            print("  Rate-limited (429), waiting 60s…")
+            time.sleep(60)
+            return nominatim_query(q, session)
+        if resp.status_code == 200:
+            results = resp.json()
+            if results:
+                return float(results[0]["lon"]), float(results[0]["lat"])
+    except Exception as exc:
+        print(f"    Nominatim error for '{q}': {exc}")
     return None
 
 
@@ -278,6 +281,7 @@ def main():
     to_fetch        = len(oxford_addrs) - already_cached
     print(f"  {len(oxford_addrs)} Oxford (OX1-OX4) addresses, {non_oxford} non-Oxford skipped")
     print(f"  {already_cached} already cached, {to_fetch} new Nominatim/Google requests needed")
+    print(f"  Google API key: {'✓ loaded' if GOOGLE_API_KEY else '✗ NOT SET — set GOOGLE_GEOCODING_KEY env var for better results'}")
 
     coords = {}   # address -> (lon, lat) or None
     done = 0
