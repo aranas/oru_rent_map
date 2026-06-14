@@ -273,21 +273,52 @@ function buildLegend(colourScale, breaks, valueLabel) {
     return f.properties.type === 'selective';
   });
 
+  // ── Deduplicate features by coordinate ───────────────────────────────
+  // Multiple licences geocoded to the same point become one merged marker.
+  function mergeByCoord(features) {
+    var groups = {};
+    features.forEach(function (f) {
+      var key = f.geometry.coordinates[0] + ',' + f.geometry.coordinates[1];
+      if (!groups[key]) {
+        groups[key] = { feature: f, addresses: [], agents: [] };
+      }
+      var p = f.properties;
+      if (p.address) groups[key].addresses.push(p.address);
+      if (p.agent && groups[key].agents.indexOf(p.agent) === -1) {
+        groups[key].agents.push(p.agent);
+      }
+    });
+
+    return Object.values(groups).map(function (g) {
+      var merged = JSON.parse(JSON.stringify(g.feature));
+      merged.properties.addresses = g.addresses;
+      merged.properties.agents    = g.agents;
+      merged.properties.count     = g.addresses.length;
+      return merged;
+    });
+  }
+
+  var hmoMerged = mergeByCoord(hmoFeatures);
+  var selMerged = mergeByCoord(selFeatures);
+
   function licTooltip(p) {
     var lines = [];
-    if (p.address) lines.push('<strong>' + p.address + '</strong>');
-    if (p.agent)   lines.push('Agent: ' + p.agent);
+    var addrs = p.addresses || (p.address ? [p.address] : []);
+    var agents = p.agents || (p.agent ? [p.agent] : []);
+    if (p.count > 1) lines.push('<strong>' + p.count + ' licences at this location</strong>');
+    addrs.forEach(function (a) { lines.push(p.count > 1 ? '• ' + a : '<strong>' + a + '</strong>'); });
+    if (agents.length) lines.push('Agent: ' + agents.join(', '));
     return lines.join('<br>');
   }
 
   // ── Build pre-loaded layers ───────────────────────────────────────────
   var hmoMarkerLayer = buildPointMarkers(
-    { type: 'FeatureCollection', features: hmoFeatures },
+    { type: 'FeatureCollection', features: hmoMerged },
     { fillColor: CONFIG.hmoMarkerColour, tooltipFn: licTooltip }
   );
 
   var selMarkerLayer = buildPointMarkers(
-    { type: 'FeatureCollection', features: selFeatures },
+    { type: 'FeatureCollection', features: selMerged },
     { fillColor: CONFIG.selectiveMarkerColour, tooltipFn: licTooltip }
   );
 
@@ -312,9 +343,11 @@ function buildLegend(colourScale, breaks, valueLabel) {
   ];
 
   function buildAgentHaloLayer(terms) {
-    var matched = selFeatures.filter(function (f) {
-      var agent = (f.properties.agent || '').toLowerCase();
-      return terms.some(function (t) { return agent.indexOf(t) !== -1; });
+    var matched = selMerged.filter(function (f) {
+      return (f.properties.agents || []).some(function (a) {
+        var al = a.toLowerCase();
+        return terms.some(function (t) { return al.indexOf(t) !== -1; });
+      });
     });
     return L.geoJSON({ type: 'FeatureCollection', features: matched }, {
       pointToLayer: function (feature, latlng) {
