@@ -341,8 +341,7 @@ function buildLegend(colourScale, breaks, valueLabel) {
     fillColor: '#111827',   // near-black
     tooltipFn: function (p) {
       var lines = [];
-      if (p.holder_names)   lines.push('<strong>' + p.holder_names + '</strong>');
-      if (p.holder_address) lines.push(p.holder_address);
+      if (p.holder_address) lines.push('<strong>' + p.holder_address + '</strong>');
       if (p.property_count) lines.push('Properties: ' + p.property_count);
       return lines.join('<br>');
     },
