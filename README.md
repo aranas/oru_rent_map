@@ -20,11 +20,11 @@ Pre-loaded from the Oxford City Council licence registers:
 
 | Layer | Description |
 |-------|-------------|
-| 🔵 HMO markers | One blue dot per HMO licence, positioned at the geocoded property address |
+| 🔵 HMO markers | One blue dot per HMO licence |
 | 🟢 Selective markers | One green dot per Selective licence |
 | Combined / HMO / Selective density | LSOA choropleth shaded by licence count (toggle independently) |
 | ⚫ Licence holder addresses | Black dots at the home addresses of Oxford-based landlords (OX1–OX4 only) |
-| 🔴 Agent highlights | Toggle per-agent halos to see the geographic footprint of individual letting agents (Chancellors, Scott Fraser, NOPS, and more) |
+| 🔴 Agent highlight | Dropdown to select an agent and overlay red halos on their managed properties |
 
 Hover any marker to see the property address and managing agent. Hover an LSOA to see its licence count.
 
