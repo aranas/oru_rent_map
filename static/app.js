@@ -7,7 +7,6 @@ var CONFIG = {
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   neighbourhoodsPath:     'data/neighbourhoods.geojson',
   licenceLocationsPath:   'data/licence_locations.geojson',
-  addressLookupPath:      'data/licence_address_lookup.json',
   holderLocationsPath:    'data/holder_locations.geojson',
   numQuantiles: 4,
   // Choropleth colour ranges per type
@@ -237,13 +236,6 @@ function buildLegend(colourScale, breaks, valueLabel) {
   var licRes     = await fetch(CONFIG.licenceLocationsPath);
   var licGeojson = await licRes.json();
 
-  // Address lookup (id → {address, agent, holder}); fails gracefully if absent
-  var addrLookup = {};
-  try {
-    var addrRes = await fetch(CONFIG.addressLookupPath);
-    if (addrRes.ok) addrLookup = await addrRes.json();
-  } catch (e) { /* non-fatal */ }
-
   // Holder locations (one point per landlord address); optional
   var holderGeojson = null;
   try {
@@ -283,11 +275,8 @@ function buildLegend(colourScale, breaks, valueLabel) {
 
   function licTooltip(p) {
     var lines = [];
-    var meta  = addrLookup[p.id] || {};
-    var addr  = meta.address || '';
-    var agent = meta.agent  || '';
-    if (addr)  lines.push('<strong>' + addr + '</strong>');
-    if (agent) lines.push('Agent: ' + agent);
+    if (p.address) lines.push('<strong>' + p.address + '</strong>');
+    if (p.agent)   lines.push('Agent: ' + p.agent);
     return lines.join('<br>');
   }
 
@@ -324,7 +313,7 @@ function buildLegend(colourScale, breaks, valueLabel) {
 
   function buildAgentHaloLayer(terms) {
     var matched = selFeatures.filter(function (f) {
-      var agent = ((addrLookup[f.properties.id] || {}).agent || '').toLowerCase();
+      var agent = (f.properties.agent || '').toLowerCase();
       return terms.some(function (t) { return agent.indexOf(t) !== -1; });
     });
     return L.geoJSON({ type: 'FeatureCollection', features: matched }, {
