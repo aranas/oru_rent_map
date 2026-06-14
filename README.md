@@ -22,7 +22,7 @@ Pre-loaded from the Oxford City Council licence registers:
 |-------|-------------|
 | 🔵 HMO markers | One blue dot per HMO licence |
 | 🟢 Selective markers | One green dot per Selective licence |
-| Combined / HMO / Selective density | LSOA choropleth shaded by licence count (toggle independently) |
+| Combined / HMO / Selective density | Lower Super Output Area (LSOA) choropleth shaded by licence count (toggle independently) |
 | ⚫ Licence holder addresses | Black dots at the home addresses of Oxford-based landlords (OX1–OX4 only) |
 | 🔴 Agent highlight | Dropdown to select an agent and overlay red halos on their managed properties |
 
