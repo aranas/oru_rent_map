@@ -474,26 +474,21 @@ function buildLegend(colourScale, breaks, valueLabel) {
   var hmoChoro  = buildChoropleth(wardGeojson, 'hmo_count',      'HMO count per area',        CONFIG.choroplethHmo);
   var selChoro  = buildChoropleth(wardGeojson, 'selective_count', 'Private renters per area',  CONFIG.choroplethSelective);
 
-  // ── Agent / college halo layers ───────────────────────────────────────
-  // Collect canonical names from both HMO and Selective features
-  var allAgentNames = [];   // commercial letting agents
-  var allUniNames   = [];   // Oxford colleges / university institutions
-  var _agentSeen = {};
+  // ── Agent halo layer ─────────────────────────────────────────────────
+  // Count properties per canonical agent; only show agents with >= 5
+  var _agentCount = {};
   hmoMerged.concat(selMerged).forEach(function (f) {
     (f.properties.agents || []).forEach(function (a) {
       if (!a) return;
       var canon = canonicalAgent(a);
-      if (!_agentSeen[canon]) {
-        _agentSeen[canon] = true;
-        if (UNI_LABELS.has(canon)) allUniNames.push(canon);
-        else                        allAgentNames.push(canon);
-      }
+      _agentCount[canon] = (_agentCount[canon] || 0) + 1;
     });
   });
-  allAgentNames.sort(function (a, b) { return a.localeCompare(b); });
-  allUniNames.sort(function (a, b)   { return a.localeCompare(b); });
+  var allAgentNames = Object.keys(_agentCount)
+    .filter(function (name) { return _agentCount[name] >= 5 && !UNI_LABELS.has(name); })
+    .sort(function (a, b) { return a.localeCompare(b); });
 
-  function buildHaloLayer(canonName, colour) {
+  function buildAgentHaloLayer(canonName) {
     var matched = hmoMerged.concat(selMerged).filter(function (f) {
       return (f.properties.agents || []).some(function (a) {
         return canonicalAgent(a) === canonName;
@@ -503,9 +498,9 @@ function buildLegend(colourScale, breaks, valueLabel) {
       pointToLayer: function (feature, latlng) {
         return L.circleMarker(latlng, {
           radius:      11,
-          fillColor:   colour,
+          fillColor:   '#ef4444',
           fillOpacity: 0.30,
-          color:       colour,
+          color:       '#ef4444',
           weight:      2.5,
           opacity:     0.7,
           interactive: false,
@@ -516,10 +511,10 @@ function buildLegend(colourScale, breaks, valueLabel) {
 
   var activeHaloLayer = null;
 
-  function setHalo(canonName, colour) {
+  function setAgentHalo(agentName) {
     if (activeHaloLayer) { map.removeLayer(activeHaloLayer); activeHaloLayer = null; }
-    if (!canonName) return;
-    activeHaloLayer = buildHaloLayer(canonName, colour);
+    if (!agentName) return;
+    activeHaloLayer = buildAgentHaloLayer(agentName);
     activeHaloLayer.addTo(map);
     if (map.hasLayer(hmoMarkerLayer)) hmoMarkerLayer.bringToFront();
     if (map.hasLayer(selMarkerLayer)) selMarkerLayer.bringToFront();
@@ -539,32 +534,7 @@ function buildLegend(colourScale, breaks, valueLabel) {
       '</select>';
     L.DomEvent.disableClickPropagation(div);
     div.querySelector('#agent-select').addEventListener('change', function () {
-      // Clear the university dropdown when an agent is chosen
-      var uniSel = document.getElementById('uni-select');
-      if (uniSel) uniSel.value = '';
-      setHalo(this.value, '#ef4444');
-    });
-    return div;
-  };
-
-  // ── University / college dropdown control ─────────────────────────────
-  var uniControl = L.control({ position: 'topright' });
-  uniControl.onAdd = function () {
-    var div = L.DomUtil.create('div', 'agent-dropdown-control');
-    div.innerHTML =
-      '<label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">🟣 College highlight</label>' +
-      '<select id="uni-select" style="width:100%;font-size:12px;padding:2px 4px;">' +
-      '<option value="">— none —</option>' +
-      allUniNames.map(function (name) {
-        return '<option value="' + name.replace(/"/g, '&quot;') + '">' + name + '</option>';
-      }).join('') +
-      '</select>';
-    L.DomEvent.disableClickPropagation(div);
-    div.querySelector('#uni-select').addEventListener('change', function () {
-      // Clear the agent dropdown when a college is chosen
-      var agentSel = document.getElementById('agent-select');
-      if (agentSel) agentSel.value = '';
-      setHalo(this.value, '#a855f7');
+      setAgentHalo(this.value);
     });
     return div;
   };
@@ -596,7 +566,6 @@ function buildLegend(colourScale, breaks, valueLabel) {
   var layerControl = L.control.layers(null, overlays, { collapsed: false, position: 'topright' });
   layerControl.addTo(map);
   agentControl.addTo(map);
-  uniControl.addTo(map);
 
   // ── Legend (shown when a density layer is active) ─────────────────────
   var activeLegend = null;
