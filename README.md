@@ -22,19 +22,19 @@ Pre-loaded from the Oxford City Council licence registers:
 |-------|-------------|
 | 🔵 HMO markers | One blue dot per HMO licence |
 | 🟢 Selective markers | One green dot per Selective licence |
-| Combined / HMO / Selective density | Lower Super Output Area (LSOA) choropleth shaded by licence count (toggle independently) |
+| HMO / Private renters density | Lower Super Output Area (LSOA) choropleth shaded by licence count (toggle independently) |
 | ⚫ Licence holder addresses | Black dots at the home addresses of Oxford-based landlords (OX1–OX4 only) |
-| 🔴 Agent highlight | Dropdown to select an agent and overlay red halos on their managed properties |
+| 🔴 Agent highlight | Dropdown to select a letting agency and overlay red halos on their managed properties |
 
-Hover any marker to see the property address and managing agent. Hover an LSOA to see its licence count.
+Hover any marker to see the property address, licence holder name, and managing agent.
+Hover an LSOA to see its licence count.
 
 **CSV upload** — the bottom-left panel accepts a custom CSV for overlaying additional data on top of the pre-loaded layers. Uploaded data never leaves your browser.
 
 ## Generating the data files
 
-The map loads three pre-built data files that are not committed to the repo
-(they derive from source registers which contain personal data). Run these
-scripts locally after cloning:
+The map loads pre-built data files committed to the repo. To regenerate them
+after receiving new register data, run the scripts below in order.
 
 ### 1. Install dependencies
 
@@ -46,17 +46,30 @@ pip install -r requirements.txt
 
 ### 2. Place source registers in `data/`
 
-- `data/Oxford HMO Register - Parsed.xlsx` — Oxford City Council HMO register
-- `data/Selective_Licence_Register_*.csv` — Oxford City Council Selective Licence register (latin-1 encoded)
+- `data/HMO_Register_April_*_details.csv` — HMO property addresses (one row per licence)
+- `data/HMO_Register_April_*_contacts_cells.csv` — HMO contacts (agent + holder rows per licence)
+- `data/Selective_Licence_Register*.csv` — Selective Licence register (latin-1 encoded)
 
-### 3. Build address + agent lookup (~2 seconds)
+These files are gitignored (they contain personal data).
+
+### 3. Build address + agent + holder lookup (~2 seconds)
 
 ```bash
 python3 scripts/build_address_lookup.py
 ```
 
 Produces `data/licence_address_lookup.json` — maps each licence ID to its
-address, managing agent, and licence holder name. Used for marker tooltips.
+property address, managing agent, and licence holder name/address.
+
+**Agent resolution** — for each HMO licence the contacts CSV has up to two rows
+(agent and holder). The script applies these rules in order:
+
+1. If agent name == holder name → self-managed property; use holder name as agent.
+2. If agent address == holder address but names differ → a letting agency employee
+   is at the same office as the holder. The script looks up which agency is known
+   at that address (from an *agency address table* built by scanning all entries
+   where the agent name looks like a company). If found → use the agency name.
+3. Otherwise → use the agent name as-is.
 
 ### 4. Geocode licence locations (~1–3 hours first run, fast on re-runs)
 
@@ -66,27 +79,33 @@ python3 scripts/build_licence_locations.py
 ```
 
 Produces `data/licence_locations.geojson` — one GeoJSON Point per licence
-(HMO or Selective), containing only: type, licence ID, start/end dates, and
-LSOA. No personal data.
+(HMO or Selective), with coordinates and LSOA. Address/agent/holder metadata
+is added by the next step.
 
 **Geocoding strategy** — for each address the script tries in order:
 1. Direct match against `oxford_buildings.geojson` (OSM building centroids)
 2. Nominatim: expanded address + postcode
 3. Nominatim: house number + postcode only
-4. Nominatim: house number found anywhere in the string + street + postcode  
-   *(handles "Flat 1, Oakthorpe Mansions, 205 Banbury Road, OX2 7HG")*
+4. Nominatim: house number found anywhere in the string + street + postcode
 5. Nominatim: original address unchanged
-6. **Google Maps Geocoding API** — only called if all Nominatim strategies fail;
-   handles named developments and new builds that aren't in OSM
+6. **Google Maps Geocoding API** — only called if all Nominatim strategies fail
 
 Results are cached in `data/geocode_cache.json`. Re-running the script is fast:
-cached successes (~10k+) are returned instantly; only new or previously-failed
-addresses hit the network.
+cached successes are returned instantly; only new addresses hit the network.
 
-`data/licence_locations.geojson` **is committed** to the repo (no personal data)
-so the map works on GitHub Pages without running this script.
+### 5. Patch metadata into the geojson (~5 seconds)
 
-### 5. Geocode licence holder (landlord) addresses (optional)
+```bash
+python3 scripts/patch_geojson_properties.py
+```
+
+Merges address, agent, and holder from `licence_address_lookup.json` into
+`licence_locations.geojson` in-place. No geocoding — completes in seconds.
+
+Commit the updated `data/licence_locations.geojson` to the repo so GitHub Pages
+serves the new data.
+
+### 6. Geocode licence holder (landlord) addresses (optional)
 
 ```bash
 export GOOGLE_GEOCODING_KEY="your-key-here"
@@ -94,32 +113,24 @@ python3 scripts/build_holder_locations.py
 ```
 
 Produces `data/holder_locations.geojson` — one point per unique landlord
-address, with the holder name(s) and property count.
+home address, with property count. Sources both HMO and Selective registers.
 
-**Oxford-only filter**: only addresses with an OX1–OX4 postcode are geocoded
-(~2,976 of 7,544 unique holder addresses). Landlords based outside Oxford city
-are excluded — the layer is intended to show where Oxford-based landlords live
-relative to their properties, not to map the entire national landlord base.
+**Oxford-only filter**: only addresses with an OX1–OX4 postcode are geocoded.
+Landlords based outside Oxford city are excluded.
 
-The same 6-strategy geocoding cascade is used as for licence locations.
-
-`data/holder_locations.geojson` is **gitignored** (contains holder names and
-addresses). Each team member who wants the layer must run this script locally.
+`data/holder_locations.geojson` is committed to the repo (holder names are
+excluded from tooltips; addresses are public register data).
 
 ### Why Google Maps Geocoding?
 
 Nominatim (OpenStreetMap) covers most Oxford street addresses well but fails on:
-- **Named developments** with no street number (`Almero Student The Park, Horspath Driftway`)
+- **Named developments** (`Almero Student The Park, Horspath Driftway`)
 - **Flat-only addresses** where the building isn't individually mapped in OSM
 - **New builds** not yet added to OpenStreetMap
 
-Google Maps handles these cases reliably. The API is free up to 40,000 requests/month
-(well above the ~3,400 addresses that Nominatim can't resolve). A billing account
-is required to activate the free tier but no charges are incurred within the quota.
-
+Google Maps handles these cases reliably. The API is free up to 40,000 requests/month.
 Get a key at [console.cloud.google.com](https://console.cloud.google.com) →
-Geocoding API → Credentials → Create API Key. Restrict the key to the
-Geocoding API only.
+Geocoding API → Credentials → Create API Key.
 
 ## File structure
 
@@ -131,16 +142,17 @@ oru_rent_map/
     hmo-upload.js                   — CSV parsing + address matching (in-browser)
   data/
     licence_locations.geojson       — pre-geocoded HMO + Selective points (committed)
+    holder_locations.geojson        — landlord home addresses (committed, names excluded)
     neighbourhoods.geojson          — Oxford LSOA boundary polygons (ONS)
     oxford_buildings.geojson        — OSM building footprints with address tags
-    licence_address_lookup.json     — id → {address, agent, holder} (gitignored)
-    holder_locations.geojson        — landlord home addresses (gitignored)
+    licence_address_lookup.json     — id → {address, agent, holder, holder_address} (gitignored)
     geocode_cache.json              — Nominatim + Google results cache (gitignored)
     geocode_failures.csv            — addresses that could not be geocoded (gitignored)
   scripts/
+    build_address_lookup.py         — build id → address/agent/holder lookup (run first)
     build_licence_locations.py      — geocode HMO + Selective property addresses
+    patch_geojson_properties.py     — merge lookup metadata into licence_locations.geojson
     build_holder_locations.py       — geocode landlord home addresses (Oxford only)
-    build_address_lookup.py         — build id → address/agent/holder lookup
     generate_building_data.py       — regenerate oxford_buildings.geojson from Overpass
     generate_placeholder.py         — regenerate LSOA boundaries from ONS + Overpass
   requirements.txt
@@ -164,8 +176,9 @@ oru_rent_map/
 ## Privacy
 
 - Uploaded CSV data is parsed entirely in the browser — **no data leaves your machine**
-- `licence_locations.geojson` contains no personal data (coordinates, type, dates, LSOA only)
-- Source registers, address lookups, and holder locations are gitignored
+- `licence_locations.geojson` contains no personal data (coordinates, type, LSOA, address, agent name only)
+- `holder_locations.geojson` contains holder addresses (public register) but not holder names
+- Source registers and address lookups are gitignored
 - At runtime, the map makes no external API calls (all data is served as static files)
 
 ## Data licences

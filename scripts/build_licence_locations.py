@@ -6,14 +6,14 @@ Generates data/licence_locations.geojson from the Oxford HMO and
 Selective Licence registers.  This is the pre-baked dataset the map
 loads on startup — no CSV upload required.
 
-Each feature is a GeoJSON Point containing only:
-  type          – "hmo" or "selective"
-  id            – original register reference (for back-identification)
-  licence_start – ISO date (YYYY-MM-DD)
-  licence_end   – ISO date (YYYY-MM-DD)
-  lsoa          – LSOA name the property falls in
+After running this script, run patch_geojson_properties.py to embed
+address, agent, and holder metadata into the geojson features.
 
-No personal data (holder names, holder addresses) is written.
+Each feature is a GeoJSON Point containing:
+  type   – "hmo" or "selective"
+  id     – original register reference (for back-identification)
+  lsoa   – LSOA name the property falls in
+  address / agent / holder — added by patch_geojson_properties.py
 
 Address matching strategy (in order):
   1. Direct lookup in oxford_buildings.geojson by normalised match_key
@@ -34,18 +34,19 @@ Usage
   python scripts/build_licence_locations.py
 
 Required inputs:
-  data/Oxford HMO Register - Parsed.xlsx
-  data/Selective_Licence_Register_April_2026(1).csv
+  data/HMO_Register_April_*_details.csv      (HMO addresses)
+  data/Selective_Licence_Register*.csv       (Selective addresses)
   data/oxford_buildings.geojson
   data/neighbourhoods.geojson
 
 Output:
   data/licence_locations.geojson
 
-Requires: requests, shapely, openpyxl  (pip install -r requirements.txt)
+Requires: requests, shapely  (pip install -r requirements.txt)
 """
 
 import csv
+import glob
 import json
 import os
 import re
@@ -67,12 +68,21 @@ except ImportError:
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
 
-HMO_CSV       = os.path.join(DATA_DIR, "HMO_Register_April_2026_details.csv")
-SELECTIVE_CSV = os.path.join(DATA_DIR, "Selective_Licence_Register_April_2026(1).csv")
+HMO_CSV_GLOB      = os.path.join(DATA_DIR, "HMO_Register_April_*_details.csv")
+SELECTIVE_CSV_GLOB = os.path.join(DATA_DIR, "Selective_Licence_Register*.csv")
 BUILDINGS_GJ  = os.path.join(DATA_DIR, "oxford_buildings.geojson")
 HOODS_GJ      = os.path.join(DATA_DIR, "neighbourhoods.geojson")
 OUTPUT_GJ     = os.path.join(DATA_DIR, "licence_locations.geojson")
 CACHE_PATH    = os.path.join(DATA_DIR, "geocode_cache.json")
+
+
+def find_file(pattern, label):
+    matches = sorted(glob.glob(pattern))
+    if not matches:
+        sys.exit(f"ERROR: no {label} file found matching {pattern}")
+    if len(matches) > 1:
+        print(f"  Warning: multiple {label} files found, using {matches[-1]}")
+    return matches[-1]
 
 # ── Geocoding ──────────────────────────────────────────────────────────────
 
@@ -356,9 +366,10 @@ def geocode(raw_address, session, cache):
 
 def parse_hmo_csv():
     """Returns list of dicts with keys: id, address, street, start, end."""
-    print(f"  Parsing {HMO_CSV}...")
+    path = find_file(HMO_CSV_GLOB, "HMO details CSV")
+    print(f"  Parsing {os.path.basename(path)}...")
     records = []
-    with open(HMO_CSV, newline="", encoding="utf-8-sig") as f:
+    with open(path, newline="", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
         for row in reader:
             rid  = row.get("Case Number", "").strip()
@@ -378,9 +389,10 @@ def parse_hmo_csv():
 
 def parse_selective_csv():
     """Returns list of dicts with keys: id, address, street, start, end."""
-    print(f"  Parsing {SELECTIVE_CSV}...")
+    path = find_file(SELECTIVE_CSV_GLOB, "Selective CSV")
+    print(f"  Parsing {os.path.basename(path)}...")
     records = []
-    with open(SELECTIVE_CSV, newline="", encoding="latin-1") as f:
+    with open(path, newline="", encoding="latin-1") as f:
         reader = csv.DictReader(f)
         headers_lower = {h.lower().strip(): h for h in reader.fieldnames or []}
 
@@ -407,7 +419,7 @@ def parse_selective_csv():
 # ── Main ───────────────────────────────────────────────────────────────────
 
 def main():
-    for path in [HMO_CSV, SELECTIVE_CSV, BUILDINGS_GJ, HOODS_GJ]:
+    for path in [BUILDINGS_GJ, HOODS_GJ]:
         if not os.path.exists(path):
             sys.exit(f"ERROR: required file not found: {path}")
 
