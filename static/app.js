@@ -309,33 +309,6 @@ function buildLegend(colourScale, breaks, valueLabel) {
   var hmoMerged = mergeByCoord(hmoFeatures);
   var selMerged = mergeByCoord(selFeatures);
 
-  function licTooltip(p) {
-    var lines = [];
-    var addrs  = p.addresses || (p.address ? [p.address] : []);
-    var agents = (p.agents || (p.agent ? [p.agent] : []))
-      .map(canonicalAgent)
-      .filter(function (a, i, arr) { return arr.indexOf(a) === i; }); // dedupe after normalisation
-    if (p.count > 1) lines.push('<strong>' + p.count + ' licences at this location</strong>');
-    addrs.forEach(function (a) { lines.push(p.count > 1 ? '• ' + a : '<strong>' + a + '</strong>'); });
-    if (agents.length) lines.push('Agent: ' + agents.join(', '));
-    return lines.join('<br>');
-  }
-
-  // ── Build pre-loaded layers ───────────────────────────────────────────
-  var hmoMarkerLayer = buildPointMarkers(
-    { type: 'FeatureCollection', features: hmoMerged },
-    { fillColor: CONFIG.hmoMarkerColour, tooltipFn: licTooltip }
-  );
-
-  var selMarkerLayer = buildPointMarkers(
-    { type: 'FeatureCollection', features: selMerged },
-    { fillColor: CONFIG.selectiveMarkerColour, tooltipFn: licTooltip }
-  );
-
-  var hmoChoro  = buildChoropleth(wardGeojson, 'hmo_count',      'HMO count per area',        CONFIG.choroplethHmo);
-  var selChoro  = buildChoropleth(wardGeojson, 'selective_count', 'Private renters per area',  CONFIG.choroplethSelective);
-  var combChoro = buildChoropleth(wardGeojson, 'combined_count',  'All licences per area',     CONFIG.choroplethCombined, CONFIG.choroplethBreaks);
-
   // ── Agent name normalisation ──────────────────────────────────────────
   // Each entry: { label: 'Canonical Name', match: [substrings] }
   // Raw agent names are matched case-insensitively; first match wins.
@@ -366,7 +339,7 @@ function buildLegend(colourScale, breaks, valueLabel) {
     { label: 'Hutton Parker',            match: ['hutton parker'] },
     { label: 'Enfields Lettings',        match: ['enfields lettings'] },
     { label: 'Homes for Students',       match: ['homes for students'] },
-    { label: 'WEST Property',            match: ['west - the property', 'west - the property'] },
+    { label: 'WEST Property',            match: ['west - the property'] },
     { label: "Amelie's",                 match: ["amelies", "amelie's"] },
     { label: 'Hunters',                  match: ['hunters'] },
     { label: 'Nicholas Jones',           match: ['nicholas jones residential'] },
@@ -396,8 +369,35 @@ function buildLegend(colourScale, breaks, valueLabel) {
         if (lower.indexOf(terms[j]) !== -1) return AGENT_NORM[i].label;
       }
     }
-    return raw;  // unmatched — show as-is
+    return raw;
   }
+
+  function licTooltip(p) {
+    var lines = [];
+    var addrs  = p.addresses || (p.address ? [p.address] : []);
+    var agents = (p.agents || (p.agent ? [p.agent] : []))
+      .map(canonicalAgent)
+      .filter(function (a, i, arr) { return arr.indexOf(a) === i; }); // dedupe after normalisation
+    if (p.count > 1) lines.push('<strong>' + p.count + ' licences at this location</strong>');
+    addrs.forEach(function (a) { lines.push(p.count > 1 ? '• ' + a : '<strong>' + a + '</strong>'); });
+    if (agents.length) lines.push('Agent: ' + agents.join(', '));
+    return lines.join('<br>');
+  }
+
+  // ── Build pre-loaded layers ───────────────────────────────────────────
+  var hmoMarkerLayer = buildPointMarkers(
+    { type: 'FeatureCollection', features: hmoMerged },
+    { fillColor: CONFIG.hmoMarkerColour, tooltipFn: licTooltip }
+  );
+
+  var selMarkerLayer = buildPointMarkers(
+    { type: 'FeatureCollection', features: selMerged },
+    { fillColor: CONFIG.selectiveMarkerColour, tooltipFn: licTooltip }
+  );
+
+  var hmoChoro  = buildChoropleth(wardGeojson, 'hmo_count',      'HMO count per area',        CONFIG.choroplethHmo);
+  var selChoro  = buildChoropleth(wardGeojson, 'selective_count', 'Private renters per area',  CONFIG.choroplethSelective);
+  var combChoro = buildChoropleth(wardGeojson, 'combined_count',  'All licences per area',     CONFIG.choroplethCombined, CONFIG.choroplethBreaks);
 
   // ── Agent halo layer ─────────────────────────────────────────────────
   // Collect canonical agent names from both HMO and Selective features
