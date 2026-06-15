@@ -8,7 +8,7 @@ var CONFIG = {
   neighbourhoodsPath:     'data/neighbourhoods.geojson',
   licenceLocationsPath:   'data/licence_locations.geojson',
   holderLocationsPath:    'data/holder_locations.geojson',
-  numQuantiles: 4,
+  numQuantiles: 6,
   // Choropleth colour ranges per type
   choroplethHmo:       ['#dbeafe', '#1e40af'],  // blue
   choroplethSelective: ['#dcfce7', '#166534'],  // green
