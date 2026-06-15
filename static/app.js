@@ -326,28 +326,20 @@ function buildLegend(colourScale, breaks, valueLabel) {
   var selChoro  = buildChoropleth(wardGeojson, 'selective_count',  'Selective licences', CONFIG.choroplethSelective);
   var combChoro = buildChoropleth(wardGeojson, 'combined_count',   'Combined licences',  CONFIG.choroplethCombined);
 
-  // ── Agent halo layers (selective only) ───────────────────────────────
-  // Each highlights properties managed by a specific agent with a red halo.
-  // match: string or array of strings — any substring match (case-insensitive) counts
-  var AGENT_HIGHLIGHTS = [
-    { label: 'Chancellors',     match: ['chancellors'] },
-    { label: 'Scott Fraser',    match: ['scott fraser', 'scottfraser'] },
-    { label: 'NOPS',            match: ['nops', 'north oxford property services'] },
-    { label: 'Finders Keepers', match: ['finders keepers'] },
-    { label: 'Breckon & Breckon', match: ['breckon'] },
-    { label: 'Penny & Sinclair', match: ['penny & sinclair', 'penny and sinclair'] },
-    { label: 'Carter Jonas',    match: ['carter jonas'] },
-    { label: 'Savills',         match: ['savills'] },
-    { label: 'College and County', match: ['college and county', 'college & county'] },
-    { label: 'LPM Residential', match: ['lpm residential'] },
-  ];
+  // ── Agent halo layer ─────────────────────────────────────────────────
+  // Collect all unique agent names from both HMO and Selective features
+  var allAgents = [];
+  var _agentSeen = {};
+  hmoMerged.concat(selMerged).forEach(function (f) {
+    (f.properties.agents || []).forEach(function (a) {
+      if (a && !_agentSeen[a]) { _agentSeen[a] = true; allAgents.push(a); }
+    });
+  });
+  allAgents.sort(function (a, b) { return a.localeCompare(b); });
 
-  function buildAgentHaloLayer(terms) {
-    var matched = selMerged.filter(function (f) {
-      return (f.properties.agents || []).some(function (a) {
-        var al = a.toLowerCase();
-        return terms.some(function (t) { return al.indexOf(t) !== -1; });
-      });
+  function buildAgentHaloLayer(agentName) {
+    var matched = hmoMerged.concat(selMerged).filter(function (f) {
+      return (f.properties.agents || []).indexOf(agentName) !== -1;
     });
     return L.geoJSON({ type: 'FeatureCollection', features: matched }, {
       pointToLayer: function (feature, latlng) {
@@ -366,12 +358,11 @@ function buildLegend(colourScale, breaks, valueLabel) {
 
   var activeHaloLayer = null;
 
-  function setAgentHalo(agentIndex) {
+  function setAgentHalo(agentName) {
     if (activeHaloLayer) { map.removeLayer(activeHaloLayer); activeHaloLayer = null; }
-    if (agentIndex === '') return;
-    activeHaloLayer = buildAgentHaloLayer(AGENT_HIGHLIGHTS[agentIndex].match);
+    if (!agentName) return;
+    activeHaloLayer = buildAgentHaloLayer(agentName);
     activeHaloLayer.addTo(map);
-    // Keep marker layers on top
     if (map.hasLayer(hmoMarkerLayer)) hmoMarkerLayer.bringToFront();
     if (map.hasLayer(selMarkerLayer)) selMarkerLayer.bringToFront();
   }
@@ -384,8 +375,8 @@ function buildLegend(colourScale, breaks, valueLabel) {
       '<label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">🔴 Agent highlight</label>' +
       '<select id="agent-select" style="width:100%;font-size:12px;padding:2px 4px;">' +
       '<option value="">— none —</option>' +
-      AGENT_HIGHLIGHTS.map(function (ag, i) {
-        return '<option value="' + i + '">' + ag.label + '</option>';
+      allAgents.map(function (name) {
+        return '<option value="' + name.replace(/"/g, '&quot;') + '">' + name + '</option>';
       }).join('') +
       '</select>';
     L.DomEvent.disableClickPropagation(div);
