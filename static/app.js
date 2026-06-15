@@ -11,10 +11,6 @@ var CONFIG = {
   // Choropleth colour ranges per type
   choroplethHmo:       ['#dbeafe', '#1e40af'],  // blue
   choroplethSelective: ['#dcfce7', '#166534'],  // green
-  choroplethCombined:  ['#f3e8ff', '#6b21a8'],  // purple
-  // Custom breaks for combined choropleth — tighter bins at higher values
-  // where the interesting variation lies (most LSOAs fall in the 50–285 range)
-  choroplethBreaks: [0, 50, 80, 110, 140, 175, 220],
 defaultFillOpacity:  0.55,
   defaultBorderColour: '#666',
   highlightBorderColour: '#222',
@@ -270,7 +266,6 @@ function buildLegend(colourScale, breaks, valueLabel) {
     var name = f.properties.LSOA21NM || '';
     f.properties.hmo_count       = hmoLsoa[name] || 0;
     f.properties.selective_count = selLsoa[name] || 0;
-    f.properties.combined_count  = (hmoLsoa[name] || 0) + (selLsoa[name] || 0);
   });
 
   // ── Split licence features by type ───────────────────────────────────
@@ -419,7 +414,6 @@ function buildLegend(colourScale, breaks, valueLabel) {
 
   var hmoChoro  = buildChoropleth(wardGeojson, 'hmo_count',      'HMO count per area',        CONFIG.choroplethHmo);
   var selChoro  = buildChoropleth(wardGeojson, 'selective_count', 'Private renters per area',  CONFIG.choroplethSelective);
-  var combChoro = buildChoropleth(wardGeojson, 'combined_count',  'All licences per area',     CONFIG.choroplethCombined, CONFIG.choroplethBreaks);
 
   // ── Agent halo layer ─────────────────────────────────────────────────
   // Collect canonical agent names from both HMO and Selective features
@@ -497,11 +491,9 @@ function buildLegend(colourScale, breaks, valueLabel) {
     },
   }) : null;
 
-  // Default: markers on, combined density on
-  // Halos go on first so they sit behind the main markers
+  // Default: markers on
   hmoMarkerLayer.addTo(map);
   selMarkerLayer.addTo(map);
-  combChoro.wardLayer.addTo(map);
 
   // ── Layer control ─────────────────────────────────────────────────────
   var overlays = {};
@@ -515,20 +507,17 @@ function buildLegend(colourScale, breaks, valueLabel) {
   layerControl.addTo(map);
   agentControl.addTo(map);
 
-  // ── Legend (combined by default) ──────────────────────────────────────
-  var activeLegend = buildLegend(combChoro.colourScale, combChoro.breaks, 'All licences per area');
-  activeLegend.addTo(map);
+  // ── Legend (shown when a density layer is active) ─────────────────────
+  var activeLegend = null;
 
   // Swap legend when density layers are toggled
   var legendMap = {
-    combined:  { choro: combChoro, label: 'All licences per area' },
     hmo:       { choro: hmoChoro,  label: 'HMO count per area' },
     selective: { choro: selChoro,  label: 'Private renters per area' },
   };
 
   function updateLegend() {
     var active = null;
-    if (map.hasLayer(combChoro.wardLayer)) active = 'combined';
     if (map.hasLayer(hmoChoro.wardLayer))  active = 'hmo';
     if (map.hasLayer(selChoro.wardLayer))  active = 'selective';
     if (activeLegend) { map.removeControl(activeLegend); activeLegend = null; }
