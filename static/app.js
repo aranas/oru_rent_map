@@ -489,7 +489,7 @@ function buildLegend(colourScale, breaks, valueLabel) {
     });
   });
   var allAgentNames = Object.keys(_agentCount)
-    .filter(function (name) { return _agentCount[name] >= 5 && !UNI_LABELS.has(name); })
+    .filter(function (name) { return _agentCount[name] >= 10 && !UNI_LABELS.has(name); })
     .sort(function (a, b) { return a.localeCompare(b); });
 
   function buildAgentHaloLayer(canonName) {
