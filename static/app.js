@@ -311,8 +311,10 @@ function buildLegend(colourScale, breaks, valueLabel) {
 
   function licTooltip(p) {
     var lines = [];
-    var addrs = p.addresses || (p.address ? [p.address] : []);
-    var agents = p.agents || (p.agent ? [p.agent] : []);
+    var addrs  = p.addresses || (p.address ? [p.address] : []);
+    var agents = (p.agents || (p.agent ? [p.agent] : []))
+      .map(canonicalAgent)
+      .filter(function (a, i, arr) { return arr.indexOf(a) === i; }); // dedupe after normalisation
     if (p.count > 1) lines.push('<strong>' + p.count + ' licences at this location</strong>');
     addrs.forEach(function (a) { lines.push(p.count > 1 ? '• ' + a : '<strong>' + a + '</strong>'); });
     if (agents.length) lines.push('Agent: ' + agents.join(', '));
@@ -334,20 +336,87 @@ function buildLegend(colourScale, breaks, valueLabel) {
   var selChoro  = buildChoropleth(wardGeojson, 'selective_count', 'Selective licences', CONFIG.choroplethSelective);
   var combChoro = buildChoropleth(wardGeojson, 'combined_count',  'Combined licences',  CONFIG.choroplethCombined, CONFIG.choroplethBreaks);
 
+  // ── Agent name normalisation ──────────────────────────────────────────
+  // Each entry: { label: 'Canonical Name', match: [substrings] }
+  // Raw agent names are matched case-insensitively; first match wins.
+  // Names not matched by any rule are shown as-is.
+  var AGENT_NORM = [
+    { label: 'Chancellors',              match: ['chancellors'] },
+    { label: 'Finders Keepers',          match: ['finders keepers', 'finders-keepers'] },
+    { label: 'Breckon & Breckon',        match: ['breckon'] },
+    { label: 'Scott Fraser',             match: ['scott fraser', 'scottfraser', 'leaders limited'] },
+    { label: 'NOPS',                     match: ['north oxford property services', 'nops'] },
+    { label: 'College and County',       match: ['college and county', 'college & county'] },
+    { label: 'LPM Residential',          match: ['lpm residential'] },
+    { label: 'Penny & Sinclair',         match: ['penny & sinclair', 'penny and sinclair', 'penny & sinclair limited'] },
+    { label: 'Carter Jonas',             match: ['carter jonas'] },
+    { label: 'Savills',                  match: ['savills'] },
+    { label: 'Martin & Co',             match: ['martin & co', 'martin and co', 'urwin (oxford)'] },
+    { label: 'Oxford Lettings',          match: ['oxford lettings'] },
+    { label: 'Thomas Merrifield',        match: ['thomas merrifield'] },
+    { label: 'Portfolio Properties',     match: ['portfolio properties oxford'] },
+    { label: 'RMA Properties',           match: ['rma properties'] },
+    { label: 'Abbey Group',              match: ['abbey group'] },
+    { label: 'Chesterton Yeates',        match: ['chesterton yeates'] },
+    { label: 'Elwood & Co',             match: ['elwood & co', 'elwood and co'] },
+    { label: 'Taylors',                  match: ['taylors'] },
+    { label: 'John D Wood & Co',        match: ['john d wood'] },
+    { label: 'Host Student Housing',     match: ['host student housing'] },
+    { label: 'Lee & Lindars',           match: ['lee & lindars'] },
+    { label: 'Hutton Parker',            match: ['hutton parker'] },
+    { label: 'Enfields Lettings',        match: ['enfields lettings'] },
+    { label: 'Homes for Students',       match: ['homes for students'] },
+    { label: 'WEST Property',            match: ['west - the property', 'west - the property'] },
+    { label: "Amelie's",                 match: ["amelies", "amelie's"] },
+    { label: 'Hunters',                  match: ['hunters'] },
+    { label: 'Nicholas Jones',           match: ['nicholas jones residential'] },
+    { label: 'Bright Properties',        match: ['bright properties'] },
+    { label: 'Top Lettings',             match: ['top lettings'] },
+    { label: 'NMH Residential',          match: ['nmh residential'] },
+    { label: 'Reaston-Brown Rentals',    match: ['reaston-brown'] },
+    { label: 'City Properties',          match: ['city properties'] },
+    { label: 'Andrews',                  match: ['andrews'] },
+    { label: 'Sterling Lettings',        match: ['sterling lettings'] },
+    { label: 'Almero Students',          match: ['almero students'] },
+    { label: 'City Estates',             match: ['city estates'] },
+    { label: 'Bloomsbury Property',      match: ['bloomsbury property'] },
+    { label: 'Oxfordshire Lettings',     match: ['oxfordshire lettings'] },
+    { label: 'Hamways',                  match: ['hamways'] },
+    { label: 'James C Penny',            match: ['james c penny'] },
+    { label: 'Stonecopper',              match: ['stonecopper'] },
+    { label: 'The Rent Guru',            match: ['rent guru'] },
+    { label: 'Oxford Heritage',          match: ['oxford heritage'] },
+  ];
+
+  function canonicalAgent(raw) {
+    var lower = raw.toLowerCase();
+    for (var i = 0; i < AGENT_NORM.length; i++) {
+      var terms = AGENT_NORM[i].match;
+      for (var j = 0; j < terms.length; j++) {
+        if (lower.indexOf(terms[j]) !== -1) return AGENT_NORM[i].label;
+      }
+    }
+    return raw;  // unmatched — show as-is
+  }
+
   // ── Agent halo layer ─────────────────────────────────────────────────
-  // Collect all unique agent names from both HMO and Selective features
+  // Collect canonical agent names from both HMO and Selective features
   var allAgents = [];
   var _agentSeen = {};
   hmoMerged.concat(selMerged).forEach(function (f) {
     (f.properties.agents || []).forEach(function (a) {
-      if (a && !_agentSeen[a]) { _agentSeen[a] = true; allAgents.push(a); }
+      if (!a) return;
+      var canon = canonicalAgent(a);
+      if (!_agentSeen[canon]) { _agentSeen[canon] = true; allAgents.push(canon); }
     });
   });
   allAgents.sort(function (a, b) { return a.localeCompare(b); });
 
-  function buildAgentHaloLayer(agentName) {
+  function buildAgentHaloLayer(canonName) {
     var matched = hmoMerged.concat(selMerged).filter(function (f) {
-      return (f.properties.agents || []).indexOf(agentName) !== -1;
+      return (f.properties.agents || []).some(function (a) {
+        return canonicalAgent(a) === canonName;
+      });
     });
     return L.geoJSON({ type: 'FeatureCollection', features: matched }, {
       pointToLayer: function (feature, latlng) {
