@@ -332,9 +332,9 @@ function buildLegend(colourScale, breaks, valueLabel) {
     { fillColor: CONFIG.selectiveMarkerColour, tooltipFn: licTooltip }
   );
 
-  var hmoChoro  = buildChoropleth(wardGeojson, 'hmo_count',      'HMO licences',      CONFIG.choroplethHmo);
-  var selChoro  = buildChoropleth(wardGeojson, 'selective_count', 'Selective licences', CONFIG.choroplethSelective);
-  var combChoro = buildChoropleth(wardGeojson, 'combined_count',  'Combined licences',  CONFIG.choroplethCombined, CONFIG.choroplethBreaks);
+  var hmoChoro  = buildChoropleth(wardGeojson, 'hmo_count',      'HMO count per area',        CONFIG.choroplethHmo);
+  var selChoro  = buildChoropleth(wardGeojson, 'selective_count', 'Private renters per area',  CONFIG.choroplethSelective);
+  var combChoro = buildChoropleth(wardGeojson, 'combined_count',  'All licences per area',     CONFIG.choroplethCombined, CONFIG.choroplethBreaks);
 
   // ── Agent name normalisation ──────────────────────────────────────────
   // Each entry: { label: 'Canonical Name', match: [substrings] }
@@ -483,26 +483,25 @@ function buildLegend(colourScale, breaks, valueLabel) {
 
   // ── Layer control ─────────────────────────────────────────────────────
   var overlays = {};
-  overlays['🔵 HMO licence markers']      = hmoMarkerLayer;
-  overlays['🟢 Selective licence markers'] = selMarkerLayer;
-  if (holderMarkerLayer) overlays['⚫ Licence holder addresses'] = holderMarkerLayer;
-  overlays['Combined density']             = combChoro.wardLayer;
-  overlays['HMO density']                  = hmoChoro.wardLayer;
-  overlays['Selective density']            = selChoro.wardLayer;
+  overlays['🔵 HMO rented properties']          = hmoMarkerLayer;
+  overlays['🟢 Privately rented properties']     = selMarkerLayer;
+  if (holderMarkerLayer) overlays['⚫ Landlords (licence holder)'] = holderMarkerLayer;
+  overlays['HMO count per area']                 = hmoChoro.wardLayer;
+  overlays['Private renters per area']           = selChoro.wardLayer;
 
   var layerControl = L.control.layers(null, overlays, { collapsed: false, position: 'topright' });
   layerControl.addTo(map);
   agentControl.addTo(map);
 
   // ── Legend (combined by default) ──────────────────────────────────────
-  var activeLegend = buildLegend(combChoro.colourScale, combChoro.breaks, 'Combined licences');
+  var activeLegend = buildLegend(combChoro.colourScale, combChoro.breaks, 'All licences per area');
   activeLegend.addTo(map);
 
   // Swap legend when density layers are toggled
   var legendMap = {
-    combined:  { choro: combChoro, label: 'Combined licences' },
-    hmo:       { choro: hmoChoro,  label: 'HMO licences' },
-    selective: { choro: selChoro,  label: 'Selective licences' },
+    combined:  { choro: combChoro, label: 'All licences per area' },
+    hmo:       { choro: hmoChoro,  label: 'HMO count per area' },
+    selective: { choro: selChoro,  label: 'Private renters per area' },
   };
 
   function updateLegend() {
@@ -526,8 +525,8 @@ function buildLegend(colourScale, breaks, valueLabel) {
   var disc = document.getElementById('disclaimer');
   if (disc) {
     disc.innerHTML =
-      'Showing Oxford licence data: <strong>' + hmoTotal + ' HMO</strong> licences (blue) ' +
-      'and <strong>' + selTotal + ' selective</strong> licences (green). ' +
+      '<strong>' + hmoTotal + ' HMO</strong> rented properties (blue) and ' +
+      '<strong>' + selTotal + '</strong> privately rented properties (green). ' +
       'Data: Oxford City Council.' +
       ' <button onclick="dismissDisclaimer()" aria-label="Dismiss">&times;</button>';
     disc.style.display = '';
