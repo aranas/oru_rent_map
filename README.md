@@ -31,6 +31,59 @@ Hover an LSOA to see its licence count.
 
 **CSV upload** — the bottom-left panel accepts a custom CSV for overlaying additional data on top of the pre-loaded layers. Uploaded data never leaves your browser.
 
+## Preprocessing pipeline
+
+```
+Oxford City Council registers (CSV, gitignored)
+│
+│  HMO_Register_April_*_details.csv          — one row per HMO licence (Case Number, address)
+│  HMO_Register_April_*_contacts_cells.csv   — one or two rows per licence (agent + holder name/address)
+│  Selective_Licence_Register*.csv           — one row per selective licence (address, agent, holder)
+│
+├─► build_address_lookup.py  ──────────────────────────────────────────────── ~2 s, no network
+│     Joins details + contacts CSVs on Case Number.
+│     Builds an agency-address table: scans every agent row; where the agent
+│     name looks like a company (Ltd/LLP/&/letting/management/…), records
+│     office_address → company_name.
+│     Resolves agent per licence:
+│       1. agent name == holder name  →  self-managed; use holder name
+│       2. agent address == holder address (different names)  →  letting agency;
+│          look up company name from agency-address table
+│       3. otherwise  →  use agent name as-is
+│     Output: data/licence_address_lookup.json  (gitignored)
+│             { licence_id: { address, agent, holder, holder_address } }
+│
+├─► build_licence_locations.py  ───────────────────────────────── ~1–3 h first run, fast after
+│     Reads property addresses from both registers.
+│     For each address tries (in order):
+│       1. OSM building centroid match (oxford_buildings.geojson)
+│       2–5. Nominatim (4 query strategies, 1 req/s)
+│       6. Google Maps Geocoding API (fallback, needs GOOGLE_GEOCODING_KEY)
+│     Assigns each geocoded point to an LSOA polygon (shapely point-in-polygon).
+│     Results cached in data/geocode_cache.json — safe to interrupt and resume.
+│     Output: data/licence_locations.geojson  (committed, no personal data)
+│             GeoJSON Points { type, id, lsoa, coordinates }
+│
+├─► patch_geojson_properties.py  ──────────────────────────────────────────── ~5 s, no network
+│     Merges address + agent + holder from licence_address_lookup.json into
+│     licence_locations.geojson in-place (joined on licence id).
+│     Output: data/licence_locations.geojson  (updated in-place, commit after running)
+│             GeoJSON Points { type, id, lsoa, address, agent, holder, coordinates }
+│
+└─► build_holder_locations.py  ────────────────────────────────── ~varies, uses geocode cache
+      Reads licence holder home addresses from both registers.
+      Filters to OX1–OX4 postcodes only (Oxford-based landlords).
+      Geocodes using the same 6-strategy cascade; reuses existing cache.
+      Groups by address: one point per unique address with property count.
+      Holder names are intentionally excluded from the output.
+      Output: data/holder_locations.geojson  (committed)
+              GeoJSON Points { holder_address, property_count, coordinates }
+```
+
+The two committed geojson files (`licence_locations.geojson`,
+`holder_locations.geojson`) are all the map needs at runtime — no server, no
+database, no API calls.
+
 ## Generating the data files
 
 The map loads pre-built data files committed to the repo. To regenerate them
