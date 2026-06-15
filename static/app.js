@@ -8,11 +8,13 @@ var CONFIG = {
   neighbourhoodsPath:     'data/neighbourhoods.geojson',
   licenceLocationsPath:   'data/licence_locations.geojson',
   holderLocationsPath:    'data/holder_locations.geojson',
-  numQuantiles: 6,
   // Choropleth colour ranges per type
   choroplethHmo:       ['#dbeafe', '#1e40af'],  // blue
   choroplethSelective: ['#dcfce7', '#166534'],  // green
   choroplethCombined:  ['#f3e8ff', '#6b21a8'],  // purple
+  // Custom breaks for combined choropleth — tighter bins at higher values
+  // where the interesting variation lies (most LSOAs fall in the 50–285 range)
+  choroplethBreaks: [0, 50, 80, 110, 140, 175, 220],
 defaultFillOpacity:  0.55,
   defaultBorderColour: '#666',
   highlightBorderColour: '#222',
@@ -98,14 +100,20 @@ function hideInfo() {
 
 // ── Reusable layer builders ───────────────────────────────────────────────
 
-function buildChoropleth(wardGeojson, countProp, valueLabel, colourRange) {
+function buildChoropleth(wardGeojson, countProp, valueLabel, colourRange, customBreaks) {
   var allValues = wardGeojson.features.map(function (f) {
     return f.properties[countProp] || 0;
   });
-  var breaks      = quantileBreaks(allValues, CONFIG.numQuantiles);
-  var minVal      = Math.min.apply(null, allValues);
-  var maxVal      = Math.max.apply(null, allValues);
-  var classBounds = [minVal].concat(breaks, [maxVal]);
+  var maxVal = Math.max.apply(null, allValues);
+  var classBounds, breaks;
+  if (customBreaks) {
+    classBounds = customBreaks.concat([maxVal]);
+    breaks = customBreaks.slice(1);  // for legend (skip the leading 0)
+  } else {
+    var minVal = Math.min.apply(null, allValues);
+    breaks = quantileBreaks(allValues, CONFIG.numQuantiles);
+    classBounds = [minVal].concat(breaks, [maxVal]);
+  }
   var colourScale = chroma.scale(colourRange).classes(classBounds);
 
   function wardStyle(feature) {
@@ -322,9 +330,9 @@ function buildLegend(colourScale, breaks, valueLabel) {
     { fillColor: CONFIG.selectiveMarkerColour, tooltipFn: licTooltip }
   );
 
-  var hmoChoro  = buildChoropleth(wardGeojson, 'hmo_count',       'HMO licences',     CONFIG.choroplethHmo);
-  var selChoro  = buildChoropleth(wardGeojson, 'selective_count',  'Selective licences', CONFIG.choroplethSelective);
-  var combChoro = buildChoropleth(wardGeojson, 'combined_count',   'Combined licences',  CONFIG.choroplethCombined);
+  var hmoChoro  = buildChoropleth(wardGeojson, 'hmo_count',      'HMO licences',      CONFIG.choroplethHmo);
+  var selChoro  = buildChoropleth(wardGeojson, 'selective_count', 'Selective licences', CONFIG.choroplethSelective);
+  var combChoro = buildChoropleth(wardGeojson, 'combined_count',  'Combined licences',  CONFIG.choroplethCombined, CONFIG.choroplethBreaks);
 
   // ── Agent halo layer ─────────────────────────────────────────────────
   // Collect all unique agent names from both HMO and Selective features
