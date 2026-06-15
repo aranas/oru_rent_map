@@ -20,4 +20,5 @@ oru-map/
 # Source registers — not needed at runtime, contain personal data
 data/Oxford HMO Register*.xlsx
 data/Oxford HMO Register*.csv
+data/HMO_Register_April_*.csv
 data/Selective_Licence_Register*.csv

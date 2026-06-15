@@ -7,21 +7,18 @@ Produces data/licence_address_lookup.json — a mapping of licence ID → metada
 Each entry:
   { "address": "...", "agent": "...", "holder": "..." }
 
-"agent" and "holder" are only populated for Selective licences (HMO register
-does not include that information).
-
 Run time: a few seconds (no network calls).
 Output is gitignored because it derives from the source registers.
 """
 
 import csv, json, glob, os, sys
-import openpyxl
 
-ROOT       = os.path.join(os.path.dirname(__file__), "..")
-DATA       = os.path.join(ROOT, "data")
-OUT        = os.path.join(DATA, "licence_address_lookup.json")
+ROOT = os.path.join(os.path.dirname(__file__), "..")
+DATA = os.path.join(ROOT, "data")
+OUT  = os.path.join(DATA, "licence_address_lookup.json")
 
-HMO_XLSX_GLOB      = os.path.join(DATA, "Oxford HMO Register*.xlsx")
+HMO_DETAILS_GLOB  = os.path.join(DATA, "HMO_Register_April_*_details.csv")
+HMO_CONTACTS_GLOB = os.path.join(DATA, "HMO_Register_April_*_contacts_cells.csv")
 SELECTIVE_CSV_GLOB = os.path.join(DATA, "Selective_Licence_Register*.csv")
 
 
@@ -35,32 +32,46 @@ def find_file(pattern, label):
     return matches[-1]
 
 
-def parse_hmo(path):
-    print(f"  Parsing HMO xlsx: {os.path.basename(path)}")
-    wb = openpyxl.load_workbook(path, data_only=True)
-    ws = wb.active
-    rows = list(ws.iter_rows(values_only=True))
-    headers = [str(h).lower().strip() if h else "" for h in rows[0]]
+def parse_hmo_contacts(contacts_path):
+    """Returns dict: case_number -> {agent, holder}."""
+    print(f"  Parsing HMO contacts: {os.path.basename(contacts_path)}")
+    contacts = {}
+    with open(contacts_path, newline="", encoding="utf-8-sig") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            case = row.get("Case Number", "").strip()
+            if not case:
+                continue
+            party = row.get("Party Type", "").strip().lower()
+            name  = row.get("Name", "").strip()
+            if case not in contacts:
+                contacts[case] = {"agent": "", "holder": ""}
+            if "agent" in party:
+                contacts[case]["agent"] = name
+            elif "holder" in party:
+                contacts[case]["holder"] = name
+    print(f"  {len(contacts)} cases with contact info")
+    return contacts
 
-    def col(frag):
-        for i, h in enumerate(headers):
-            if frag in h:
-                return i
-        return -1
 
-    id_col   = col("id")
-    addr_col = col("address")
-    st_col   = col("street")
-
+def parse_hmo(details_path, contacts_path):
+    """Returns lookup dict: case_number -> {address, agent, holder}."""
+    print(f"  Parsing HMO details: {os.path.basename(details_path)}")
+    contacts = parse_hmo_contacts(contacts_path)
     lookup = {}
-    for row in rows[1:]:
-        rid  = str(row[id_col]).strip()   if id_col   >= 0 and row[id_col]   else ""
-        addr = str(row[addr_col]).strip() if addr_col >= 0 and row[addr_col] else ""
-        st   = str(row[st_col]).strip()   if st_col   >= 0 and row[st_col]   else ""
-        if not rid or not addr or addr == "None":
-            continue
-        full = f"{addr}, {st}, Oxford" if st and st.lower() not in addr.lower() else f"{addr}, Oxford"
-        lookup[rid] = {"address": full, "agent": "", "holder": ""}
+    with open(details_path, newline="", encoding="utf-8-sig") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            rid  = row.get("Case Number", "").strip()
+            addr = row.get("address", "").strip()
+            if not rid or not addr:
+                continue
+            c = contacts.get(rid, {})
+            lookup[rid] = {
+                "address": addr,
+                "agent":   c.get("agent", ""),
+                "holder":  c.get("holder", ""),
+            }
     print(f"  {len(lookup)} HMO entries")
     return lookup
 
@@ -88,11 +99,12 @@ def parse_selective(path):
 
 
 def main():
-    hmo_path = find_file(HMO_XLSX_GLOB, "HMO xlsx")
-    sel_path = find_file(SELECTIVE_CSV_GLOB, "Selective CSV")
+    details_path  = find_file(HMO_DETAILS_GLOB,  "HMO details CSV")
+    contacts_path = find_file(HMO_CONTACTS_GLOB, "HMO contacts CSV")
+    sel_path      = find_file(SELECTIVE_CSV_GLOB, "Selective CSV")
 
     lookup = {}
-    lookup.update(parse_hmo(hmo_path))
+    lookup.update(parse_hmo(details_path, contacts_path))
     lookup.update(parse_selective(sel_path))
 
     with open(OUT, "w") as f:

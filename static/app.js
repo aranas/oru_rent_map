@@ -309,67 +309,89 @@ function buildLegend(colourScale, breaks, valueLabel) {
   var hmoMerged = mergeByCoord(hmoFeatures);
   var selMerged = mergeByCoord(selFeatures);
 
-  // ── Agent name normalisation ──────────────────────────────────────────
-  // Each entry: { label: 'Canonical Name', match: [substrings] }
-  // Raw agent names are matched case-insensitively; first match wins.
-  // Names not matched by any rule are shown as-is.
+  // ── Agent name normalisation ─────────────────────────────────────────
+  // Stage 1: pre-process every raw name to strip noise before matching.
+  // Stage 2: AGENT_NORM maps remaining known aliases to canonical labels.
+
+  // Words that indicate a parenthetical is part of the company name, not a person
+  var _COMPANY_PAREN_RE = /\b(letting|management|property|properties|estate|residential|students|ltd|limited|llp|uk)\b/i;
+  var _LEGAL_RE = /\b(limited|ltd\.?|llp|plc|l\.l\.p\.?)\b\.?/gi;
+
+  function preprocess(raw) {
+    var s = raw.trim();
+    // Strip trailing (Person Name) — only if content looks like a person, not a company
+    s = s.replace(/\s*\(([^)]*)\)\s*$/, function (_, inner) {
+      return _COMPANY_PAREN_RE.test(inner) ? ' (' + inner + ')' : '';
+    });
+    // Strip legal suffixes
+    s = s.replace(_LEGAL_RE, '');
+    // Normalise & ↔ and, collapse whitespace
+    s = s.replace(/\band\b/gi, '&');
+    s = s.replace(/\s+/g, ' ').trim().replace(/,\s*$/, '').trim();
+    return s;
+  }
+
+  // Stage 2: explicit aliases for names that survive pre-processing differently
+  // (NOPS vs North Oxford Property Services, Chancellors vs The Chancellors Group, etc.)
   var AGENT_NORM = [
-    { label: 'Chancellors',              match: ['chancellors'] },
-    { label: 'Finders Keepers',          match: ['finders keepers', 'finders-keepers'] },
-    { label: 'Breckon & Breckon',        match: ['breckon'] },
-    { label: 'Scott Fraser',             match: ['scott fraser', 'scottfraser', 'leaders limited'] },
-    { label: 'NOPS',                     match: ['north oxford property services', 'nops'] },
-    { label: 'College and County',       match: ['college and county', 'college & county'] },
-    { label: 'LPM Residential',          match: ['lpm residential'] },
-    { label: 'Penny & Sinclair',         match: ['penny & sinclair', 'penny and sinclair', 'penny & sinclair limited'] },
-    { label: 'Carter Jonas',             match: ['carter jonas'] },
-    { label: 'Savills',                  match: ['savills'] },
-    { label: 'Martin & Co',             match: ['martin & co', 'martin and co', 'urwin (oxford)'] },
-    { label: 'Oxford Lettings',          match: ['oxford lettings'] },
-    { label: 'Thomas Merrifield',        match: ['thomas merrifield'] },
-    { label: 'Portfolio Properties',     match: ['portfolio properties oxford'] },
-    { label: 'RMA Properties',           match: ['rma properties'] },
-    { label: 'Abbey Group',              match: ['abbey group'] },
-    { label: 'Chesterton Yeates',        match: ['chesterton yeates'] },
-    { label: 'Elwood & Co',             match: ['elwood & co', 'elwood and co'] },
-    { label: 'Taylors',                  match: ['taylors'] },
-    { label: 'John D Wood & Co',        match: ['john d wood'] },
-    { label: 'Host Student Housing',     match: ['host student housing'] },
-    { label: 'Lee & Lindars',           match: ['lee & lindars'] },
-    { label: 'Hutton Parker',            match: ['hutton parker'] },
-    { label: 'Enfields Lettings',        match: ['enfields lettings'] },
-    { label: 'Homes for Students',       match: ['homes for students'] },
-    { label: 'WEST Property',            match: ['west - the property'] },
-    { label: "Amelie's",                 match: ["amelies", "amelie's"] },
-    { label: 'Hunters',                  match: ['hunters'] },
-    { label: 'Nicholas Jones',           match: ['nicholas jones residential'] },
-    { label: 'Bright Properties',        match: ['bright properties'] },
-    { label: 'Top Lettings',             match: ['top lettings'] },
-    { label: 'NMH Residential',          match: ['nmh residential'] },
-    { label: 'Reaston-Brown Rentals',    match: ['reaston-brown'] },
-    { label: 'City Properties',          match: ['city properties'] },
-    { label: 'Andrews',                  match: ['andrews'] },
-    { label: 'Sterling Lettings',        match: ['sterling lettings'] },
-    { label: 'Almero Students',          match: ['almero students'] },
-    { label: 'City Estates',             match: ['city estates'] },
-    { label: 'Bloomsbury Property',      match: ['bloomsbury property'] },
-    { label: 'Oxfordshire Lettings',     match: ['oxfordshire lettings'] },
-    { label: 'Hamways',                  match: ['hamways'] },
-    { label: 'James C Penny',            match: ['james c penny'] },
-    { label: 'Stonecopper',              match: ['stonecopper'] },
-    { label: 'The Rent Guru',            match: ['rent guru'] },
-    { label: 'Oxford Heritage',          match: ['oxford heritage'] },
+    { label: 'Chancellors',           match: ['chancellors'] },
+    { label: 'Finders Keepers',       match: ['finders keepers'] },
+    { label: 'Breckon & Breckon',     match: ['breckon & breckon'] },
+    { label: 'Scott Fraser',          match: ['scott fraser', 'scottfraser', 'leaders'] },
+    { label: 'NOPS',                  match: ['north oxford property services', 'nops'] },
+    { label: 'College & County',      match: ['college & county'] },
+    { label: 'LPM Residential',       match: ['lpm residential'] },
+    { label: 'Penny & Sinclair',      match: ['penny & sinclair'] },
+    { label: 'Carter Jonas',          match: ['carter jonas'] },
+    { label: 'Savills',               match: ['savills'] },
+    { label: 'Martin & Co',           match: ['martin & co', 'urwin (oxford)'] },
+    { label: 'Oxford Lettings',       match: ['oxford lettings'] },
+    { label: 'Thomas Merrifield',     match: ['thomas merrifield'] },
+    { label: 'Portfolio Properties',  match: ['portfolio properties oxford'] },
+    { label: 'RMA Properties',        match: ['rma properties'] },
+    { label: 'Abbey Group',           match: ['abbey group'] },
+    { label: 'Chesterton Yeates',     match: ['chesterton yeates'] },
+    { label: 'Elwood & Co',          match: ['elwood & co'] },
+    { label: 'Taylors',               match: ['taylors'] },
+    { label: 'John D Wood & Co',     match: ['john d wood'] },
+    { label: 'Host Student Housing',  match: ['host student housing'] },
+    { label: 'Lee & Lindars',        match: ['lee & lindars'] },
+    { label: 'Hutton Parker',         match: ['hutton parker'] },
+    { label: 'Enfields Lettings',     match: ['enfields lettings'] },
+    { label: 'Homes for Students',    match: ['homes for students'] },
+    { label: 'WEST Property',         match: ['west - the property'] },
+    { label: "Amelie's",              match: ["amelies", "amelie's"] },
+    { label: 'Hunters',               match: ['hunters'] },
+    { label: 'Nicholas Jones',        match: ['nicholas jones residential'] },
+    { label: 'Bright Properties',     match: ['bright properties'] },
+    { label: 'Top Lettings',          match: ['top lettings'] },
+    { label: 'NMH Residential',       match: ['nmh residential'] },
+    { label: 'Reaston-Brown Rentals', match: ['reaston-brown'] },
+    { label: 'City Properties',       match: ['city properties'] },
+    { label: 'Andrews',               match: ['andrews'] },
+    { label: 'Sterling Lettings',     match: ['sterling lettings'] },
+    { label: 'Almero Students',       match: ['almero students'] },
+    { label: 'City Estates',          match: ['city estates'] },
+    { label: 'Bloomsbury Property',   match: ['bloomsbury property'] },
+    { label: 'Oxfordshire Lettings',  match: ['oxfordshire lettings'] },
+    { label: 'Hamways',               match: ['hamways'] },
+    { label: 'James C Penny',         match: ['james c penny'] },
+    { label: 'Stonecopper',           match: ['stonecopper'] },
+    { label: 'The Rent Guru',         match: ['rent guru'] },
+    { label: 'Oxford Heritage',       match: ['oxford heritage'] },
   ];
 
   function canonicalAgent(raw) {
-    var lower = raw.toLowerCase();
+    var pre   = preprocess(raw);
+    var lower = pre.toLowerCase();
     for (var i = 0; i < AGENT_NORM.length; i++) {
       var terms = AGENT_NORM[i].match;
       for (var j = 0; j < terms.length; j++) {
         if (lower.indexOf(terms[j]) !== -1) return AGENT_NORM[i].label;
       }
     }
-    return raw;
+    // Return the pre-processed name (cleaned but unmatched)
+    return pre;
   }
 
   function licTooltip(p) {

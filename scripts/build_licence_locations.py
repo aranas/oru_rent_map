@@ -63,16 +63,11 @@ try:
 except ImportError:
     sys.exit("Missing dependency: pip install shapely")
 
-try:
-    import openpyxl
-except ImportError:
-    sys.exit("Missing dependency: pip install openpyxl")
-
 # ── Paths ──────────────────────────────────────────────────────────────────
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
 
-HMO_XLSX      = os.path.join(DATA_DIR, "Oxford HMO Register - Parsed.xlsx")
+HMO_CSV       = os.path.join(DATA_DIR, "HMO_Register_April_2026_details.csv")
 SELECTIVE_CSV = os.path.join(DATA_DIR, "Selective_Licence_Register_April_2026(1).csv")
 BUILDINGS_GJ  = os.path.join(DATA_DIR, "oxford_buildings.geojson")
 HOODS_GJ      = os.path.join(DATA_DIR, "neighbourhoods.geojson")
@@ -359,39 +354,24 @@ def geocode(raw_address, session, cache):
 
 # ── Register parsers ───────────────────────────────────────────────────────
 
-def parse_hmo_xlsx():
+def parse_hmo_csv():
     """Returns list of dicts with keys: id, address, street, start, end."""
-    print(f"  Parsing {HMO_XLSX}...")
-    wb = openpyxl.load_workbook(HMO_XLSX, data_only=True)
-    ws = wb.active
-    rows = list(ws.iter_rows(values_only=True))
-    # First row is header
-    headers = [str(h).lower().strip() if h else "" for h in rows[0]]
-
-    def col(name_fragment):
-        for i, h in enumerate(headers):
-            if name_fragment in h:
-                return i
-        return -1
-
-    id_col    = col("id")
-    addr_col  = col("address")
-    st_col    = col("street")
-    start_col = col("start")
-    end_col   = col("end")
-
+    print(f"  Parsing {HMO_CSV}...")
     records = []
-    for row in rows[1:]:
-        addr = str(row[addr_col]).strip() if addr_col >= 0 and row[addr_col] else ""
-        if not addr or addr == "None":
-            continue
-        records.append({
-            "id":      str(row[id_col]).strip()    if id_col >= 0    and row[id_col]    else "",
-            "address": addr,
-            "street":  str(row[st_col]).strip()    if st_col >= 0    and row[st_col]    else "",
-            "start":   iso_date(row[start_col])    if start_col >= 0 and row[start_col] else "",
-            "end":     iso_date(row[end_col])      if end_col >= 0   and row[end_col]   else "",
-        })
+    with open(HMO_CSV, newline="", encoding="utf-8-sig") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            rid  = row.get("Case Number", "").strip()
+            addr = row.get("address", "").strip()
+            if not rid or not addr:
+                continue
+            records.append({
+                "id":      rid,
+                "address": addr,
+                "street":  "",
+                "start":   "",
+                "end":     "",
+            })
     print(f"  {len(records)} HMO records")
     return records
 
@@ -427,7 +407,7 @@ def parse_selective_csv():
 # ── Main ───────────────────────────────────────────────────────────────────
 
 def main():
-    for path in [HMO_XLSX, SELECTIVE_CSV, BUILDINGS_GJ, HOODS_GJ]:
+    for path in [HMO_CSV, SELECTIVE_CSV, BUILDINGS_GJ, HOODS_GJ]:
         if not os.path.exists(path):
             sys.exit(f"ERROR: required file not found: {path}")
 
@@ -438,7 +418,7 @@ def main():
 
     # ── Parse registers ───────────────────────────────────────────────────
     print("[2/5] Parsing licence registers...")
-    hmo_records        = parse_hmo_xlsx()
+    hmo_records        = parse_hmo_csv()
     selective_records  = parse_selective_csv()
 
     all_records = (
