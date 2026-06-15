@@ -34,11 +34,13 @@ for feat in gj["features"]:
     meta = lookup.get(rid, {})
 
     p["address"] = meta.get("address", p.get("address", ""))
-    p["agent"]   = meta.get("agent", "")
+    p["agent"]   = meta.get("agent",   "")
+    p["holder"]  = meta.get("holder",  "")
 
     # Drop fields not needed at runtime
-    p.pop("licence_start", None)
-    p.pop("licence_end",   None)
+    p.pop("licence_start",   None)
+    p.pop("licence_end",     None)
+    p.pop("holder_address",  None)  # holder home address not stored on property marker
 
     if meta:
         matched += 1

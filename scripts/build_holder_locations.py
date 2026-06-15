@@ -22,6 +22,7 @@ ROOT  = os.path.join(os.path.dirname(__file__), "..")
 DATA  = os.path.join(ROOT, "data")
 
 SELECTIVE_CSV_GLOB = os.path.join(DATA, "Selective_Licence_Register*.csv")
+HMO_CONTACTS_GLOB  = os.path.join(DATA, "HMO_Register_April_*_contacts_cells.csv")
 CACHE_FILE         = os.path.join(DATA, "geocode_cache.json")
 OUT_GEOJSON        = os.path.join(DATA, "holder_locations.geojson")
 OUT_FAILURES       = os.path.join(DATA, "holder_geocode_failures.csv")
@@ -220,7 +221,7 @@ def geocode(address, session, cache):
     return result
 
 
-# ── Parse register ─────────────────────────────────────────────────────────
+# ── Parse registers ────────────────────────────────────────────────────────
 
 def parse_selective(path):
     """Returns list of dicts: {holder_name, holder_address}."""
@@ -238,17 +239,39 @@ def parse_selective(path):
             addr = row.get(addr_col, "").strip() if addr_col else ""
             if addr:
                 records.append({"holder_name": name, "holder_address": addr})
+    print(f"  {len(records)} Selective rows with holder addresses")
+    return records
+
+
+def parse_hmo_holders(contacts_path):
+    """
+    Returns list of dicts: {holder_name, holder_address}
+    from the HMO contacts CSV (rows where Party Type = HMO Licence Holder).
+    """
+    records = []
+    with open(contacts_path, newline="", encoding="utf-8-sig") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            party   = row.get("Party Type", "").strip().lower()
+            name    = row.get("Name", "").strip()
+            address = row.get("Address", "").strip()
+            if "holder" in party and address:
+                records.append({"holder_name": name, "holder_address": address})
+    print(f"  {len(records)} HMO rows with holder addresses")
     return records
 
 
 # ── Main ───────────────────────────────────────────────────────────────────
 
 def main():
-    sel_path = find_file(SELECTIVE_CSV_GLOB, "Selective CSV")
+    sel_path      = find_file(SELECTIVE_CSV_GLOB, "Selective CSV")
+    contacts_path = find_file(HMO_CONTACTS_GLOB,  "HMO contacts CSV")
 
-    print("[1/4] Parsing Selective register…")
-    records = parse_selective(sel_path)
-    print(f"  {len(records)} rows with holder addresses")
+    print("[1/4] Parsing registers…")
+    sel_records = parse_selective(sel_path)
+    hmo_records = parse_hmo_holders(contacts_path)
+    records = sel_records + hmo_records
+    print(f"  {len(records)} total rows with holder addresses")
 
     print("[2/4] Grouping by holder address…")
     # address -> {names: set, count: int}

@@ -283,19 +283,19 @@ function buildLegend(colourScale, breaks, valueLabel) {
     features.forEach(function (f) {
       var key = f.geometry.coordinates[0] + ',' + f.geometry.coordinates[1];
       if (!groups[key]) {
-        groups[key] = { feature: f, addresses: [], agents: [] };
+        groups[key] = { feature: f, addresses: [], agents: [], holders: [] };
       }
       var p = f.properties;
       if (p.address) groups[key].addresses.push(p.address);
-      if (p.agent && groups[key].agents.indexOf(p.agent) === -1) {
-        groups[key].agents.push(p.agent);
-      }
+      if (p.agent  && groups[key].agents.indexOf(p.agent)   === -1) groups[key].agents.push(p.agent);
+      if (p.holder && groups[key].holders.indexOf(p.holder) === -1) groups[key].holders.push(p.holder);
     });
 
     return Object.values(groups).map(function (g) {
       var merged = JSON.parse(JSON.stringify(g.feature));
       merged.properties.addresses = g.addresses;
       merged.properties.agents    = g.agents;
+      merged.properties.holders   = g.holders;
       merged.properties.count     = g.addresses.length;
       return merged;
     });
@@ -450,13 +450,16 @@ function buildLegend(colourScale, breaks, valueLabel) {
 
   function licTooltip(p) {
     var lines = [];
-    var addrs  = p.addresses || (p.address ? [p.address] : []);
-    var agents = (p.agents || (p.agent ? [p.agent] : []))
+    var addrs   = p.addresses || (p.address ? [p.address] : []);
+    var agents  = (p.agents  || (p.agent  ? [p.agent]  : []))
       .map(canonicalAgent)
       .filter(function (a, i, arr) { return arr.indexOf(a) === i; }); // dedupe after normalisation
+    var holders = (p.holders || (p.holder ? [p.holder] : []))
+      .filter(function (h, i, arr) { return h && arr.indexOf(h) === i; }); // dedupe
     if (p.count > 1) lines.push('<strong>' + p.count + ' licences at this location</strong>');
     addrs.forEach(function (a) { lines.push(p.count > 1 ? '• ' + a : '<strong>' + a + '</strong>'); });
-    if (agents.length) lines.push('Agent: ' + agents.join(', '));
+    if (holders.length) lines.push('Holder: ' + holders.join(', '));
+    if (agents.length)  lines.push('Agent: '  + agents.join(', '));
     return lines.join('<br>');
   }
 
