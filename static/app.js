@@ -11,7 +11,8 @@ var CONFIG = {
   // Choropleth colour ranges per type
   choroplethHmo:       ['#dbeafe', '#1e40af'],  // blue
   choroplethSelective: ['#dcfce7', '#166534'],  // green
-defaultFillOpacity:  0.55,
+  numQuantiles: 6,
+  defaultFillOpacity:  0.55,
   defaultBorderColour: '#666',
   highlightBorderColour: '#222',
   // Marker colours
