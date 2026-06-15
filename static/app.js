@@ -328,7 +328,51 @@ function buildLegend(colourScale, breaks, valueLabel) {
 
   // Stage 2: explicit aliases for names that survive pre-processing differently
   // (NOPS vs North Oxford Property Services, Chancellors vs The Chancellors Group, etc.)
+  // Oxford colleges come FIRST so they are matched before 'college & county'.
   var AGENT_NORM = [
+    // ── Oxford University colleges & institutions ──────────────────────────
+    { label: 'Balliol College',            match: ['balliol college'] },
+    { label: 'Brasenose College',          match: ['brasenose college'] },
+    { label: 'Christ Church',              match: ['christ church'] },
+    { label: 'Corpus Christi College',     match: ['corpus christi college'] },
+    { label: 'Exeter College',             match: ['exeter college'] },
+    { label: 'Hertford College',           match: ['hertford college'] },
+    { label: 'Jesus College',              match: ['jesus college'] },
+    { label: 'Keble College',              match: ['keble college'] },
+    { label: 'Lady Margaret Hall',         match: ['lady margaret hall'] },
+    { label: 'Linacre College',            match: ['linacre college'] },
+    { label: 'Lincoln College',            match: ['lincoln college'] },
+    { label: 'Magdalen College',           match: ['magdalen college'] },
+    { label: 'Mansfield College',          match: ['mansfield college'] },
+    { label: 'Merton College',             match: ['merton college'] },
+    { label: 'New College',               match: ['new college'] },
+    { label: 'Nuffield College',           match: ['nuffield college'] },
+    { label: 'Oriel College',              match: ['oriel college'] },
+    { label: 'Pembroke College',           match: ['pembroke college'] },
+    { label: "Queen's College",            match: ["queen's college"] },
+    { label: 'Reuben College',             match: ['reuben college'] },
+    { label: 'Regent\'s Park College',     match: ["regent's park college"] },
+    { label: 'Somerville College',         match: ['somerville college'] },
+    { label: 'St Anne\'s College',         match: ["st anne's college"] },
+    { label: 'St Antony\'s College',       match: ["st antony's college"] },
+    { label: 'St Catherine\'s College',    match: ["st catherine's college"] },
+    { label: 'St Cross College',           match: ['st cross college'] },
+    { label: 'St Edmund Hall',             match: ['st edmund hall'] },
+    { label: 'St Hilda\'s College',        match: ["st hilda's college"] },
+    { label: 'St Hugh\'s College',         match: ["st hugh's college"] },
+    { label: 'St John\'s College',         match: ["st john's college"] },
+    { label: 'St Peter\'s College',        match: ["st peter's college"] },
+    { label: 'Trinity College',            match: ['trinity college'] },
+    { label: 'University College',         match: ['university college'] },
+    { label: 'Wadham College',             match: ['wadham college'] },
+    { label: 'Wolfson College',            match: ['wolfson college'] },
+    { label: 'Worcester College',          match: ['worcester college'] },
+    { label: 'Wycliffe Hall',              match: ['wycliffe hall'] },
+    { label: 'Green Templeton College',    match: ['green templeton'] },
+    { label: 'Harris Manchester College',  match: ['harris manchester'] },
+    { label: 'Kellogg College',            match: ['kellogg college'] },
+    { label: 'Oxford Brookes University',  match: ['oxford brookes'] },
+    // ── Commercial letting agencies ────────────────────────────────────────
     { label: 'Chancellors',           match: ['chancellors'] },
     { label: 'Finders Keepers',       match: ['finders keepers'] },
     { label: 'Breckon & Breckon',     match: ['breckon & breckon'] },
@@ -376,6 +420,21 @@ function buildLegend(colourScale, breaks, valueLabel) {
     { label: 'Oxford Heritage',       match: ['oxford heritage'] },
   ];
 
+  // Set of canonical labels that belong to Oxford University / colleges
+  var UNI_LABELS = new Set([
+    'Balliol College', 'Brasenose College', 'Christ Church', 'Corpus Christi College',
+    'Exeter College', 'Hertford College', 'Jesus College', 'Keble College',
+    'Lady Margaret Hall', 'Linacre College', 'Lincoln College', 'Magdalen College',
+    'Mansfield College', 'Merton College', 'New College', 'Nuffield College',
+    'Oriel College', 'Pembroke College', "Queen's College", 'Reuben College',
+    "Regent's Park College", 'Somerville College', "St Anne's College",
+    "St Antony's College", "St Catherine's College", 'St Cross College',
+    'St Edmund Hall', "St Hilda's College", "St Hugh's College", "St John's College",
+    "St Peter's College", 'Trinity College', 'University College', 'Wadham College',
+    'Wolfson College', 'Worcester College', 'Wycliffe Hall', 'Green Templeton College',
+    'Harris Manchester College', 'Kellogg College', 'Oxford Brookes University',
+  ]);
+
   function canonicalAgent(raw) {
     var pre   = preprocess(raw);
     var lower = pre.toLowerCase();
@@ -415,20 +474,26 @@ function buildLegend(colourScale, breaks, valueLabel) {
   var hmoChoro  = buildChoropleth(wardGeojson, 'hmo_count',      'HMO count per area',        CONFIG.choroplethHmo);
   var selChoro  = buildChoropleth(wardGeojson, 'selective_count', 'Private renters per area',  CONFIG.choroplethSelective);
 
-  // ── Agent halo layer ─────────────────────────────────────────────────
-  // Collect canonical agent names from both HMO and Selective features
-  var allAgents = [];
+  // ── Agent / college halo layers ───────────────────────────────────────
+  // Collect canonical names from both HMO and Selective features
+  var allAgentNames = [];   // commercial letting agents
+  var allUniNames   = [];   // Oxford colleges / university institutions
   var _agentSeen = {};
   hmoMerged.concat(selMerged).forEach(function (f) {
     (f.properties.agents || []).forEach(function (a) {
       if (!a) return;
       var canon = canonicalAgent(a);
-      if (!_agentSeen[canon]) { _agentSeen[canon] = true; allAgents.push(canon); }
+      if (!_agentSeen[canon]) {
+        _agentSeen[canon] = true;
+        if (UNI_LABELS.has(canon)) allUniNames.push(canon);
+        else                        allAgentNames.push(canon);
+      }
     });
   });
-  allAgents.sort(function (a, b) { return a.localeCompare(b); });
+  allAgentNames.sort(function (a, b) { return a.localeCompare(b); });
+  allUniNames.sort(function (a, b)   { return a.localeCompare(b); });
 
-  function buildAgentHaloLayer(canonName) {
+  function buildHaloLayer(canonName, colour) {
     var matched = hmoMerged.concat(selMerged).filter(function (f) {
       return (f.properties.agents || []).some(function (a) {
         return canonicalAgent(a) === canonName;
@@ -438,9 +503,9 @@ function buildLegend(colourScale, breaks, valueLabel) {
       pointToLayer: function (feature, latlng) {
         return L.circleMarker(latlng, {
           radius:      11,
-          fillColor:   '#ef4444',
+          fillColor:   colour,
           fillOpacity: 0.30,
-          color:       '#ef4444',
+          color:       colour,
           weight:      2.5,
           opacity:     0.7,
           interactive: false,
@@ -451,10 +516,10 @@ function buildLegend(colourScale, breaks, valueLabel) {
 
   var activeHaloLayer = null;
 
-  function setAgentHalo(agentName) {
+  function setHalo(canonName, colour) {
     if (activeHaloLayer) { map.removeLayer(activeHaloLayer); activeHaloLayer = null; }
-    if (!agentName) return;
-    activeHaloLayer = buildAgentHaloLayer(agentName);
+    if (!canonName) return;
+    activeHaloLayer = buildHaloLayer(canonName, colour);
     activeHaloLayer.addTo(map);
     if (map.hasLayer(hmoMarkerLayer)) hmoMarkerLayer.bringToFront();
     if (map.hasLayer(selMarkerLayer)) selMarkerLayer.bringToFront();
@@ -468,13 +533,38 @@ function buildLegend(colourScale, breaks, valueLabel) {
       '<label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">🔴 Agent highlight</label>' +
       '<select id="agent-select" style="width:100%;font-size:12px;padding:2px 4px;">' +
       '<option value="">— none —</option>' +
-      allAgents.map(function (name) {
+      allAgentNames.map(function (name) {
         return '<option value="' + name.replace(/"/g, '&quot;') + '">' + name + '</option>';
       }).join('') +
       '</select>';
     L.DomEvent.disableClickPropagation(div);
     div.querySelector('#agent-select').addEventListener('change', function () {
-      setAgentHalo(this.value);
+      // Clear the university dropdown when an agent is chosen
+      var uniSel = document.getElementById('uni-select');
+      if (uniSel) uniSel.value = '';
+      setHalo(this.value, '#ef4444');
+    });
+    return div;
+  };
+
+  // ── University / college dropdown control ─────────────────────────────
+  var uniControl = L.control({ position: 'topright' });
+  uniControl.onAdd = function () {
+    var div = L.DomUtil.create('div', 'agent-dropdown-control');
+    div.innerHTML =
+      '<label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">🟣 College highlight</label>' +
+      '<select id="uni-select" style="width:100%;font-size:12px;padding:2px 4px;">' +
+      '<option value="">— none —</option>' +
+      allUniNames.map(function (name) {
+        return '<option value="' + name.replace(/"/g, '&quot;') + '">' + name + '</option>';
+      }).join('') +
+      '</select>';
+    L.DomEvent.disableClickPropagation(div);
+    div.querySelector('#uni-select').addEventListener('change', function () {
+      // Clear the agent dropdown when a college is chosen
+      var agentSel = document.getElementById('agent-select');
+      if (agentSel) agentSel.value = '';
+      setHalo(this.value, '#a855f7');
     });
     return div;
   };
@@ -506,6 +596,7 @@ function buildLegend(colourScale, breaks, valueLabel) {
   var layerControl = L.control.layers(null, overlays, { collapsed: false, position: 'topright' });
   layerControl.addTo(map);
   agentControl.addTo(map);
+  uniControl.addTo(map);
 
   // ── Legend (shown when a density layer is active) ─────────────────────
   var activeLegend = null;
