@@ -95,6 +95,68 @@ function hideInfo() {
 }
 
 
+// ── Grid heatmap ──────────────────────────────────────────────────────────
+// Divides the map into ~1 km² cells and counts all licences per cell.
+
+function buildGridHeatmap(features) {
+  // At Oxford's latitude (~51.75°), 1 km ≈ 0.009° lat, ≈ 0.01455° lon
+  var CELL_LAT = 0.009;
+  var CELL_LON = 0.01455;
+
+  // Count points per cell
+  var cells = {};
+  features.forEach(function (f) {
+    var coords = f.geometry && f.geometry.coordinates;
+    if (!coords) return;
+    var lon = coords[0], lat = coords[1];
+    var row = Math.floor(lat / CELL_LAT);
+    var col = Math.floor(lon / CELL_LON);
+    var key = row + ',' + col;
+    if (!cells[key]) cells[key] = { row: row, col: col, count: 0 };
+    cells[key].count++;
+  });
+
+  var cellList = Object.values(cells);
+  if (!cellList.length) return L.geoJSON();
+
+  var maxCount = Math.max.apply(null, cellList.map(function (c) { return c.count; }));
+  var colourScale = chroma.scale(['#ffffb2', '#fd8d3c', '#bd0026'])
+                         .domain([0, maxCount]);
+
+  var gridFeatures = cellList.map(function (c) {
+    var minLon = c.col * CELL_LON,       maxLon = (c.col + 1) * CELL_LON;
+    var minLat = c.row * CELL_LAT,       maxLat = (c.row + 1) * CELL_LAT;
+    return {
+      type: 'Feature',
+      geometry: {
+        type: 'Polygon',
+        coordinates: [[
+          [minLon, minLat], [maxLon, minLat],
+          [maxLon, maxLat], [minLon, maxLat],
+          [minLon, minLat],
+        ]],
+      },
+      properties: { count: c.count },
+    };
+  });
+
+  return L.geoJSON({ type: 'FeatureCollection', features: gridFeatures }, {
+    style: function (feature) {
+      return {
+        fillColor:   colourScale(feature.properties.count).hex(),
+        fillOpacity: 0.55,
+        color:       'none',
+        weight:      0,
+      };
+    },
+    onEachFeature: function (feature, layer) {
+      layer.bindTooltip(feature.properties.count + ' licences in this grid cell',
+                        { sticky: true });
+    },
+  });
+}
+
+
 // ── Reusable layer builders ───────────────────────────────────────────────
 
 function buildChoropleth(wardGeojson, countProp, valueLabel, colourRange, customBreaks) {
@@ -555,6 +617,10 @@ function buildLegend(colourScale, breaks, valueLabel) {
     },
   }) : null;
 
+  // ── Grid heatmap (all licences) ───────────────────────────────────────
+  var allLicenceFeatures = hmoFeatures.concat(selFeatures);
+  var gridHeatmap = buildGridHeatmap(allLicenceFeatures);
+
   // Default: markers on
   hmoMarkerLayer.addTo(map);
   selMarkerLayer.addTo(map);
@@ -566,6 +632,7 @@ function buildLegend(colourScale, breaks, valueLabel) {
   if (holderMarkerLayer) overlays['⚫ Landlords (licence holder)'] = holderMarkerLayer;
   overlays['HMO count per area']                 = hmoChoro.wardLayer;
   overlays['Private renters per area']           = selChoro.wardLayer;
+  overlays['🟥 Licence density grid (~1 km²)']  = gridHeatmap;
 
   var layerControl = L.control.layers(null, overlays, { collapsed: false, position: 'topright' });
   layerControl.addTo(map);
