@@ -99,9 +99,9 @@ function hideInfo() {
 // Divides the map into ~1 km² cells and counts all licences per cell.
 
 function buildGridHeatmap(features) {
-  // At Oxford's latitude (~51.75°), 1 km ≈ 0.009° lat, ≈ 0.01455° lon
-  var CELL_LAT = 0.009;
-  var CELL_LON = 0.01455;
+  // At Oxford's latitude (~51.75°), 500 m ≈ 0.0045° lat, ≈ 0.00728° lon
+  var CELL_LAT = 0.0045;
+  var CELL_LON = 0.00728;
 
   // Count points per cell
   var cells = {};
@@ -632,7 +632,7 @@ function buildLegend(colourScale, breaks, valueLabel) {
   if (holderMarkerLayer) overlays['⚫ Landlords (licence holder)'] = holderMarkerLayer;
   overlays['HMO count per area']                 = hmoChoro.wardLayer;
   overlays['Private renters per area']           = selChoro.wardLayer;
-  overlays['🟥 Licence density grid (~1 km²)']  = gridHeatmap;
+  overlays['🟥 Licence density grid (~500 m²)'] = gridHeatmap;
 
   var layerControl = L.control.layers(null, overlays, { collapsed: false, position: 'topright' });
   layerControl.addTo(map);
