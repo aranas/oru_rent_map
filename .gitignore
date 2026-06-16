@@ -9,3 +9,17 @@ data/overpass_wards_raw.json
 data/lsoa_raw.json
 data/amenities_raw.json
 data/buildings_raw.json
+data/geocode_cache.json
+data/geocode_failures.csv
+data/licence_address_lookup.json
+data/holder_geocode_failures.csv
+data/holder_normalised.csv
+# licence_locations.geojson is intentionally tracked (no personal data)
+# holder_locations.geojson is intentionally tracked (names excluded, addresses are public register data)
+oru-map/
+
+# Source registers — not needed at runtime, contain personal data
+data/Oxford HMO Register*.xlsx
+data/Oxford HMO Register*.csv
+data/HMO_Register_April_*.csv
+data/Selective_Licence_Register*.csv

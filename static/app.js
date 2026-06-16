@@ -5,15 +5,20 @@ var CONFIG = {
   tileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
   tileAttribution:
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-  neighbourhoodsPath: 'data/neighbourhoods.geojson',
-  amenitiesPath:      'data/amenities.geojson',
-  numQuantiles: 4,
-  colourRange: ['#fee5d9', '#a50f15'],
-  defaultFillOpacity: 0.55,
+  neighbourhoodsPath:     'data/neighbourhoods.geojson',
+  licenceLocationsPath:   'data/licence_locations.geojson',
+  holderLocationsPath:    'data/holder_locations.geojson',
+  // Choropleth colour ranges per type
+  choroplethHmo:       ['#dbeafe', '#1e40af'],  // blue
+  choroplethSelective: ['#dcfce7', '#166534'],  // green
+  numQuantiles: 6,
+  defaultFillOpacity:  0.55,
   defaultBorderColour: '#666',
   highlightBorderColour: '#222',
-  amenityMarkerRadius: 4,
-  amenityMarkerColour: '#2563eb',
+  // Marker colours
+  hmoMarkerColour:       '#2563eb',  // blue
+  selectiveMarkerColour: '#16a34a',  // green
+  // CSV upload (existing HMO footprint matching)
   hmoBuildingFill:   '#2563eb',
   hmoBuildingStroke: '#1d4ed8',
   hmoFallbackColour: '#ea580c',
@@ -90,25 +95,31 @@ function hideInfo() {
 }
 
 
-// ── Reusable layer builders ──────────────────────────────────────────────
+// ── Reusable layer builders ───────────────────────────────────────────────
 
-function buildChoropleth(map, wardGeojson, countProp, valueLabel) {
+function buildChoropleth(wardGeojson, countProp, valueLabel, colourRange, customBreaks) {
   var allValues = wardGeojson.features.map(function (f) {
     return f.properties[countProp] || 0;
   });
-  var breaks     = quantileBreaks(allValues, CONFIG.numQuantiles);
-  var minVal     = Math.min.apply(null, allValues);
-  var maxVal     = Math.max.apply(null, allValues);
-  var classBounds = [minVal].concat(breaks, [maxVal]);
-  var colourScale = chroma.scale(CONFIG.colourRange).classes(classBounds);
+  var maxVal = Math.max.apply(null, allValues);
+  var classBounds, breaks;
+  if (customBreaks) {
+    classBounds = customBreaks.concat([maxVal]);
+    breaks = customBreaks.slice(1);  // for legend (skip the leading 0)
+  } else {
+    var minVal = Math.min.apply(null, allValues);
+    breaks = quantileBreaks(allValues, CONFIG.numQuantiles);
+    classBounds = [minVal].concat(breaks, [maxVal]);
+  }
+  var colourScale = chroma.scale(colourRange).classes(classBounds);
 
   function wardStyle(feature) {
     var count = feature.properties[countProp] || 0;
     return {
-      fillColor: colourScale(count).hex(),
+      fillColor:   colourScale(count).hex(),
       fillOpacity: CONFIG.defaultFillOpacity,
-      color: CONFIG.defaultBorderColour,
-      weight: 1.5,
+      color:       CONFIG.defaultBorderColour,
+      weight:      1.5,
     };
   }
 
@@ -138,22 +149,20 @@ function buildChoropleth(map, wardGeojson, countProp, valueLabel) {
 }
 
 
-function buildPointMarkers(map, pointGeojson, opts) {
+function buildPointMarkers(pointGeojson, opts) {
   opts = opts || {};
-  var radius    = opts.radius    || CONFIG.amenityMarkerRadius;
-  var fillColor = opts.fillColor || CONFIG.amenityMarkerColour;
-  var tooltipFn = opts.tooltipFn || function (p) {
-    return p.name ? p.name + ' (' + p.amenity + ')' : p.amenity;
-  };
+  var radius    = opts.radius    || 5;
+  var fillColor = opts.fillColor || CONFIG.hmoMarkerColour;
+  var tooltipFn = opts.tooltipFn || function () { return ''; };
 
   return L.geoJSON(pointGeojson, {
     pointToLayer: function (feature, latlng) {
       return L.circleMarker(latlng, {
-        radius: radius,
-        fillColor: fillColor,
-        fillOpacity: 0.7,
-        color: '#fff',
-        weight: 1,
+        radius:      radius,
+        fillColor:   fillColor,
+        fillOpacity: 0.8,
+        color:       '#fff',
+        weight:      1,
       });
     },
     onEachFeature: function (feature, layer) {
@@ -164,25 +173,25 @@ function buildPointMarkers(map, pointGeojson, opts) {
 }
 
 
-function buildBuildingFootprints(map, buildingGeojson) {
+function buildBuildingFootprints(buildingGeojson) {
   return L.geoJSON(buildingGeojson, {
     style: function () {
       return {
-        fillColor: CONFIG.hmoBuildingFill,
+        fillColor:   CONFIG.hmoBuildingFill,
         fillOpacity: 0.35,
-        color: CONFIG.hmoBuildingStroke,
-        weight: 2,
+        color:       CONFIG.hmoBuildingStroke,
+        weight:      2,
       };
     },
     onEachFeature: function (feature, layer) {
       var p = feature.properties;
       var lines = [];
-      if (p.address)        lines.push(p.address);
-      if (p.sub_units)      lines.push('Units: ' + p.sub_units);
-      if (p.entry_count)    lines.push('<em>' + p.entry_count + ' separate HMO entries at this address</em>');
-      if (p.hmo_id)         lines.push('ID: ' + p.hmo_id);
-      if (p.licence_start)  lines.push('Start: ' + p.licence_start);
-      if (p.licence_end)    lines.push('End: ' + p.licence_end);
+      if (p.address)       lines.push(p.address);
+      if (p.sub_units)     lines.push('Units: ' + p.sub_units);
+      if (p.entry_count)   lines.push('<em>' + p.entry_count + ' separate HMO entries at this address</em>');
+      if (p.hmo_id)        lines.push('ID: ' + p.hmo_id);
+      if (p.licence_start) lines.push('Start: ' + p.licence_start);
+      if (p.licence_end)   lines.push('End: ' + p.licence_end);
       if (lines.length) {
         layer.bindTooltip(lines.join('<br>'), { direction: 'top', offset: [0, -6] });
       }
@@ -191,7 +200,7 @@ function buildBuildingFootprints(map, buildingGeojson) {
 }
 
 
-function buildLegend(map, colourScale, breaks, valueLabel) {
+function buildLegend(colourScale, breaks, valueLabel) {
   var legend = L.control({ position: 'bottomright' });
   legend.onAdd = function () {
     var div = L.DomUtil.create('div', 'legend');
@@ -225,142 +234,438 @@ function buildLegend(map, colourScale, breaks, valueLabel) {
   var map = L.map('map').setView(CONFIG.centre, CONFIG.zoom);
   L.tileLayer(CONFIG.tileUrl, { attribution: CONFIG.tileAttribution, maxZoom: 19 }).addTo(map);
 
-  // State references for layer swapping
-  var currentWardLayer   = null;
-  var currentMarkerLayer = null;
-  var currentBuildingLayer  = null;
-  var currentFallbackLayer  = null;
-  var currentLegend      = null;
-  var currentLayerControl = null;
-  var wardGeojson        = null;
+  // ── Load base data ────────────────────────────────────────────────────
+  var wardRes    = await fetch(CONFIG.neighbourhoodsPath);
+  var wardGeojson = await wardRes.json();
 
-  // Fetch base neighbourhood data (always needed for choropleth)
-  var wardRes = await fetch(CONFIG.neighbourhoodsPath);
-  wardGeojson = await wardRes.json();
+  var licRes     = await fetch(CONFIG.licenceLocationsPath);
+  var licGeojson = await licRes.json();
 
-  // ── Apply data and render layers ───────────────────────────────────────
+  // Holder locations (one point per landlord address); optional
+  var holderGeojson = null;
+  try {
+    var holderRes = await fetch(CONFIG.holderLocationsPath);
+    if (holderRes.ok) holderGeojson = await holderRes.json();
+  } catch (e) { /* non-fatal */ }
 
-  function applyData(countProp, valueLabel, pointGeojson, hmoBuildings, hmoFallback, matchStats) {
-    // Remove existing layers
-    if (currentWardLayer)     { map.removeLayer(currentWardLayer); }
-    if (currentMarkerLayer)   { map.removeLayer(currentMarkerLayer); }
-    if (currentBuildingLayer) { map.removeLayer(currentBuildingLayer); }
-    if (currentFallbackLayer) { map.removeLayer(currentFallbackLayer); }
-    if (currentLegend)        { map.removeControl(currentLegend); }
-    if (currentLayerControl)  { map.removeControl(currentLayerControl); }
+  // ── Aggregate LSOA counts ─────────────────────────────────────────────
+  var hmoLsoa = {};
+  var selLsoa = {};
 
-    // Build choropleth
-    var choro = buildChoropleth(map, wardGeojson, countProp, valueLabel);
-    currentWardLayer = choro.wardLayer;
-    currentWardLayer.addTo(map);
+  licGeojson.features.forEach(function (f) {
+    var lsoa = f.properties.lsoa || '';
+    if (!lsoa) return;
+    if (f.properties.type === 'hmo') {
+      hmoLsoa[lsoa] = (hmoLsoa[lsoa] || 0) + 1;
+    } else {
+      selLsoa[lsoa] = (selLsoa[lsoa] || 0) + 1;
+    }
+  });
 
-    // Build legend
-    currentLegend = buildLegend(map, choro.colourScale, choro.breaks, valueLabel);
-    currentLegend.addTo(map);
+  // Patch wardGeojson with counts
+  wardGeojson.features.forEach(function (f) {
+    var name = f.properties.LSOA21NM || '';
+    f.properties.hmo_count       = hmoLsoa[name] || 0;
+    f.properties.selective_count = selLsoa[name] || 0;
+  });
 
-    var overlays = {};
-    overlays['Neighbourhood density'] = currentWardLayer;
+  // ── Split licence features by type ───────────────────────────────────
+  var hmoFeatures = licGeojson.features.filter(function (f) {
+    return f.properties.type === 'hmo';
+  });
+  var selFeatures = licGeojson.features.filter(function (f) {
+    return f.properties.type === 'selective';
+  });
 
-    if (hmoBuildings && hmoBuildings.features.length > 0) {
-      currentBuildingLayer = buildBuildingFootprints(map, hmoBuildings);
-      currentBuildingLayer.addTo(map);
-      overlays['HMO buildings'] = currentBuildingLayer;
+  // ── Deduplicate features by coordinate ───────────────────────────────
+  // Multiple licences geocoded to the same point become one merged marker.
+  function mergeByCoord(features) {
+    var groups = {};
+    features.forEach(function (f) {
+      var key = f.geometry.coordinates[0] + ',' + f.geometry.coordinates[1];
+      if (!groups[key]) {
+        groups[key] = { feature: f, addresses: [], agents: [], holders: [] };
+      }
+      var p = f.properties;
+      if (p.address) groups[key].addresses.push(p.address);
+      if (p.agent  && groups[key].agents.indexOf(p.agent)   === -1) groups[key].agents.push(p.agent);
+      if (p.holder && groups[key].holders.indexOf(p.holder) === -1) groups[key].holders.push(p.holder);
+    });
+
+    return Object.values(groups).map(function (g) {
+      var merged = JSON.parse(JSON.stringify(g.feature));
+      merged.properties.addresses = g.addresses;
+      merged.properties.agents    = g.agents;
+      merged.properties.holders   = g.holders;
+      merged.properties.count     = g.addresses.length;
+      return merged;
+    });
+  }
+
+  var hmoMerged = mergeByCoord(hmoFeatures);
+  var selMerged = mergeByCoord(selFeatures);
+
+  // ── Agent name normalisation ─────────────────────────────────────────
+  // Stage 1: pre-process every raw name to strip noise before matching.
+  // Stage 2: AGENT_NORM maps remaining known aliases to canonical labels.
+
+  // Words that indicate a parenthetical is part of the company name, not a person
+  var _COMPANY_PAREN_RE = /\b(letting|management|property|properties|estate|residential|students|ltd|limited|llp|uk)\b/i;
+  var _LEGAL_RE = /\b(limited|ltd\.?|llp|plc|l\.l\.p\.?)\b\.?/gi;
+
+  function preprocess(raw) {
+    var s = raw.trim();
+    // Strip trailing (Person Name) — only if content looks like a person, not a company
+    s = s.replace(/\s*\(([^)]*)\)\s*$/, function (_, inner) {
+      return _COMPANY_PAREN_RE.test(inner) ? ' (' + inner + ')' : '';
+    });
+    // Strip legal suffixes
+    s = s.replace(_LEGAL_RE, '');
+    // Normalise & ↔ and, collapse whitespace
+    s = s.replace(/\band\b/gi, '&');
+    s = s.replace(/\s+/g, ' ').trim().replace(/,\s*$/, '').trim();
+    return s;
+  }
+
+  // Stage 2: explicit aliases for names that survive pre-processing differently
+  // (NOPS vs North Oxford Property Services, Chancellors vs The Chancellors Group, etc.)
+  // Oxford colleges come FIRST so they are matched before 'college & county'.
+  var AGENT_NORM = [
+    // ── Oxford University colleges & institutions ──────────────────────────
+    { label: 'Balliol College',            match: ['balliol college'] },
+    { label: 'Brasenose College',          match: ['brasenose college'] },
+    { label: 'Christ Church',              match: ['christ church'] },
+    { label: 'Corpus Christi College',     match: ['corpus christi college'] },
+    { label: 'Exeter College',             match: ['exeter college'] },
+    { label: 'Hertford College',           match: ['hertford college'] },
+    { label: 'Jesus College',              match: ['jesus college'] },
+    { label: 'Keble College',              match: ['keble college'] },
+    { label: 'Lady Margaret Hall',         match: ['lady margaret hall'] },
+    { label: 'Linacre College',            match: ['linacre college'] },
+    { label: 'Lincoln College',            match: ['lincoln college'] },
+    { label: 'Magdalen College',           match: ['magdalen college'] },
+    { label: 'Mansfield College',          match: ['mansfield college'] },
+    { label: 'Merton College',             match: ['merton college'] },
+    { label: 'New College',               match: ['new college'] },
+    { label: 'Nuffield College',           match: ['nuffield college'] },
+    { label: 'Oriel College',              match: ['oriel college'] },
+    { label: 'Pembroke College',           match: ['pembroke college'] },
+    { label: "Queen's College",            match: ["queen's college"] },
+    { label: 'Reuben College',             match: ['reuben college'] },
+    { label: 'Regent\'s Park College',     match: ["regent's park college"] },
+    { label: 'Somerville College',         match: ['somerville college'] },
+    { label: 'St Anne\'s College',         match: ["st anne's college"] },
+    { label: 'St Antony\'s College',       match: ["st antony's college"] },
+    { label: 'St Catherine\'s College',    match: ["st catherine's college"] },
+    { label: 'St Cross College',           match: ['st cross college'] },
+    { label: 'St Edmund Hall',             match: ['st edmund hall'] },
+    { label: 'St Hilda\'s College',        match: ["st hilda's college"] },
+    { label: 'St Hugh\'s College',         match: ["st hugh's college"] },
+    { label: 'St John\'s College',         match: ["st john's college"] },
+    { label: 'St Peter\'s College',        match: ["st peter's college"] },
+    { label: 'Trinity College',            match: ['trinity college'] },
+    { label: 'University College',         match: ['university college'] },
+    { label: 'Wadham College',             match: ['wadham college'] },
+    { label: 'Wolfson College',            match: ['wolfson college'] },
+    { label: 'Worcester College',          match: ['worcester college'] },
+    { label: 'Wycliffe Hall',              match: ['wycliffe hall'] },
+    { label: 'Green Templeton College',    match: ['green templeton'] },
+    { label: 'Harris Manchester College',  match: ['harris manchester'] },
+    { label: 'Kellogg College',            match: ['kellogg college'] },
+    { label: 'Oxford Brookes University',  match: ['oxford brookes'] },
+    // ── Commercial letting agencies ────────────────────────────────────────
+    { label: 'Chancellors',           match: ['chancellors'] },
+    { label: 'Finders Keepers',       match: ['finders keepers'] },
+    { label: 'Breckon & Breckon',     match: ['breckon & breckon'] },
+    { label: 'Scott Fraser',          match: ['scott fraser', 'scottfraser', 'leaders'] },
+    { label: 'NOPS',                  match: ['north oxford property services', 'nops'] },
+    { label: 'College & County',      match: ['college & county'] },
+    { label: 'LPM Residential',       match: ['lpm residential'] },
+    { label: 'Penny & Sinclair',      match: ['penny & sinclair'] },
+    { label: 'Carter Jonas',          match: ['carter jonas'] },
+    { label: 'Savills',               match: ['savills'] },
+    { label: 'Martin & Co',           match: ['martin & co', 'urwin (oxford)'] },
+    { label: 'Oxford Lettings',       match: ['oxford lettings'] },
+    { label: 'Thomas Merrifield',     match: ['thomas merrifield'] },
+    { label: 'Portfolio Properties',  match: ['portfolio properties oxford'] },
+    { label: 'RMA Properties',        match: ['rma properties'] },
+    { label: 'Abbey Group',           match: ['abbey group'] },
+    { label: 'Chesterton Yeates',     match: ['chesterton yeates'] },
+    { label: 'Elwood & Co',          match: ['elwood & co'] },
+    { label: 'Taylors',               match: ['taylors'] },
+    { label: 'John D Wood & Co',     match: ['john d wood'] },
+    { label: 'Host Student Housing',  match: ['host student housing'] },
+    { label: 'Lee & Lindars',        match: ['lee & lindars'] },
+    { label: 'Hutton Parker',         match: ['hutton parker'] },
+    { label: 'Enfields Lettings',     match: ['enfields lettings'] },
+    { label: 'Homes for Students',    match: ['homes for students'] },
+    { label: 'WEST Property',         match: ['west - the property'] },
+    { label: "Amelie's",              match: ["amelies", "amelie's"] },
+    { label: 'Hunters',               match: ['hunters'] },
+    { label: 'Nicholas Jones',        match: ['nicholas jones residential'] },
+    { label: 'Bright Properties',     match: ['bright properties'] },
+    { label: 'Top Lettings',          match: ['top lettings'] },
+    { label: 'NMH Residential',       match: ['nmh residential'] },
+    { label: 'Reaston-Brown Rentals', match: ['reaston-brown'] },
+    { label: 'City Properties',       match: ['city properties'] },
+    { label: 'Andrews',               match: ['andrews'] },
+    { label: 'Sterling Lettings',     match: ['sterling lettings'] },
+    { label: 'Almero Students',       match: ['almero students'] },
+    { label: 'City Estates',          match: ['city estates'] },
+    { label: 'Bloomsbury Property',   match: ['bloomsbury property'] },
+    { label: 'Oxfordshire Lettings',  match: ['oxfordshire lettings'] },
+    { label: 'Hamways',               match: ['hamways'] },
+    { label: 'James C Penny',         match: ['james c penny'] },
+    { label: 'Stonecopper',           match: ['stonecopper'] },
+    { label: 'The Rent Guru',         match: ['rent guru'] },
+    { label: 'Oxford Heritage',       match: ['oxford heritage'] },
+  ];
+
+  // Set of canonical labels that belong to Oxford University / colleges
+  var UNI_LABELS = new Set([
+    'Balliol College', 'Brasenose College', 'Christ Church', 'Corpus Christi College',
+    'Exeter College', 'Hertford College', 'Jesus College', 'Keble College',
+    'Lady Margaret Hall', 'Linacre College', 'Lincoln College', 'Magdalen College',
+    'Mansfield College', 'Merton College', 'New College', 'Nuffield College',
+    'Oriel College', 'Pembroke College', "Queen's College", 'Reuben College',
+    "Regent's Park College", 'Somerville College', "St Anne's College",
+    "St Antony's College", "St Catherine's College", 'St Cross College',
+    'St Edmund Hall', "St Hilda's College", "St Hugh's College", "St John's College",
+    "St Peter's College", 'Trinity College', 'University College', 'Wadham College',
+    'Wolfson College', 'Worcester College', 'Wycliffe Hall', 'Green Templeton College',
+    'Harris Manchester College', 'Kellogg College', 'Oxford Brookes University',
+  ]);
+
+  function canonicalAgent(raw) {
+    var pre   = preprocess(raw);
+    var lower = pre.toLowerCase();
+    for (var i = 0; i < AGENT_NORM.length; i++) {
+      var terms = AGENT_NORM[i].match;
+      for (var j = 0; j < terms.length; j++) {
+        if (lower.indexOf(terms[j]) !== -1) return AGENT_NORM[i].label;
+      }
+    }
+    // Return the pre-processed name (cleaned but unmatched)
+    return pre;
+  }
+
+  function licTooltip(p) {
+    var lines = [];
+    var addrs   = p.addresses || (p.address ? [p.address] : []);
+    var agents  = (p.agents  || (p.agent  ? [p.agent]  : []))
+      .map(canonicalAgent)
+      .filter(function (a, i, arr) { return arr.indexOf(a) === i; }); // dedupe after normalisation
+    var holders = (p.holders || (p.holder ? [p.holder] : []))
+      .filter(function (h, i, arr) { return h && arr.indexOf(h) === i; }); // dedupe
+    if (p.count > 1) lines.push('<strong>' + p.count + ' licences at this location</strong>');
+    addrs.forEach(function (a) { lines.push(p.count > 1 ? '• ' + a : '<strong>' + a + '</strong>'); });
+    if (holders.length) lines.push('Holder: ' + holders.join(', '));
+    if (agents.length)  lines.push('Agent: '  + agents.join(', '));
+    return lines.join('<br>');
+  }
+
+  // ── Build pre-loaded layers ───────────────────────────────────────────
+  var hmoMarkerLayer = buildPointMarkers(
+    { type: 'FeatureCollection', features: hmoMerged },
+    { fillColor: CONFIG.hmoMarkerColour, tooltipFn: licTooltip }
+  );
+
+  var selMarkerLayer = buildPointMarkers(
+    { type: 'FeatureCollection', features: selMerged },
+    { fillColor: CONFIG.selectiveMarkerColour, tooltipFn: licTooltip }
+  );
+
+  var hmoChoro  = buildChoropleth(wardGeojson, 'hmo_count',      'HMO count per area',        CONFIG.choroplethHmo);
+  var selChoro  = buildChoropleth(wardGeojson, 'selective_count', 'Private renters per area',  CONFIG.choroplethSelective);
+
+  // ── Agent halo layer ─────────────────────────────────────────────────
+  // Count properties per canonical agent; only show agents with >= 5
+  var _agentCount = {};
+  hmoMerged.concat(selMerged).forEach(function (f) {
+    (f.properties.agents || []).forEach(function (a) {
+      if (!a) return;
+      var canon = canonicalAgent(a);
+      _agentCount[canon] = (_agentCount[canon] || 0) + 1;
+    });
+  });
+  var allAgentNames = Object.keys(_agentCount)
+    .filter(function (name) { return _agentCount[name] >= 10 && !UNI_LABELS.has(name); })
+    .sort(function (a, b) { return a.localeCompare(b); });
+
+  function buildAgentHaloLayer(canonName) {
+    var matched = hmoMerged.concat(selMerged).filter(function (f) {
+      return (f.properties.agents || []).some(function (a) {
+        return canonicalAgent(a) === canonName;
+      });
+    });
+    return L.geoJSON({ type: 'FeatureCollection', features: matched }, {
+      pointToLayer: function (feature, latlng) {
+        return L.circleMarker(latlng, {
+          radius:      11,
+          fillColor:   '#ef4444',
+          fillOpacity: 0.30,
+          color:       '#ef4444',
+          weight:      2.5,
+          opacity:     0.7,
+          interactive: false,
+        });
+      },
+    });
+  }
+
+  var activeHaloLayer = null;
+
+  function setAgentHalo(agentName) {
+    if (activeHaloLayer) { map.removeLayer(activeHaloLayer); activeHaloLayer = null; }
+    if (!agentName) return;
+    activeHaloLayer = buildAgentHaloLayer(agentName);
+    activeHaloLayer.addTo(map);
+    if (map.hasLayer(hmoMarkerLayer)) hmoMarkerLayer.bringToFront();
+    if (map.hasLayer(selMarkerLayer)) selMarkerLayer.bringToFront();
+  }
+
+  // ── Agent dropdown control ────────────────────────────────────────────
+  var agentControl = L.control({ position: 'topright' });
+  agentControl.onAdd = function () {
+    var div = L.DomUtil.create('div', 'agent-dropdown-control');
+    div.innerHTML =
+      '<label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">🔴 Agent highlight</label>' +
+      '<select id="agent-select" style="width:100%;font-size:12px;padding:2px 4px;">' +
+      '<option value="">— none —</option>' +
+      allAgentNames.map(function (name) {
+        return '<option value="' + name.replace(/"/g, '&quot;') + '">' + name + '</option>';
+      }).join('') +
+      '</select>';
+    L.DomEvent.disableClickPropagation(div);
+    div.querySelector('#agent-select').addEventListener('change', function () {
+      setAgentHalo(this.value);
+    });
+    return div;
+  };
+
+  // ── Holder (landlord) marker layer ────────────────────────────────────
+  var holderMarkerLayer = holderGeojson ? buildPointMarkers(holderGeojson, {
+    radius:    5,
+    fillColor: '#111827',   // near-black
+    tooltipFn: function (p) {
+      var lines = [];
+      if (p.holder_address) lines.push('<strong>' + p.holder_address + '</strong>');
+      if (p.property_count) lines.push('Properties: ' + p.property_count);
+      return lines.join('<br>');
+    },
+  }) : null;
+
+  // Default: markers on
+  hmoMarkerLayer.addTo(map);
+  selMarkerLayer.addTo(map);
+
+  // ── Layer control ─────────────────────────────────────────────────────
+  var overlays = {};
+  overlays['🔵 HMO rented properties']          = hmoMarkerLayer;
+  overlays['🟢 Privately rented properties']     = selMarkerLayer;
+  if (holderMarkerLayer) overlays['⚫ Landlords (licence holder)'] = holderMarkerLayer;
+  overlays['HMO count per area']                 = hmoChoro.wardLayer;
+  overlays['Private renters per area']           = selChoro.wardLayer;
+
+  var layerControl = L.control.layers(null, overlays, { collapsed: false, position: 'topright' });
+  layerControl.addTo(map);
+  agentControl.addTo(map);
+
+  // ── Legend (shown when a density layer is active) ─────────────────────
+  var activeLegend = null;
+
+  // Swap legend when density layers are toggled
+  var legendMap = {
+    hmo:       { choro: hmoChoro,  label: 'HMO count per area' },
+    selective: { choro: selChoro,  label: 'Private renters per area' },
+  };
+
+  function updateLegend() {
+    var active = null;
+    if (map.hasLayer(hmoChoro.wardLayer))  active = 'hmo';
+    if (map.hasLayer(selChoro.wardLayer))  active = 'selective';
+    if (activeLegend) { map.removeControl(activeLegend); activeLegend = null; }
+    if (active) {
+      var l = legendMap[active];
+      activeLegend = buildLegend(l.choro.colourScale, l.choro.breaks, l.label);
+      activeLegend.addTo(map);
+    }
+  }
+
+  map.on('overlayadd overlayremove', updateLegend);
+
+  // ── Disclaimer ────────────────────────────────────────────────────────
+  var hmoTotal = hmoFeatures.length;
+  var selTotal = selFeatures.length;
+  var disc = document.getElementById('disclaimer');
+  if (disc) {
+    disc.innerHTML =
+      '<strong>' + hmoTotal + ' HMO</strong> rented properties (blue) and ' +
+      '<strong>' + selTotal + '</strong> privately rented properties (green). ' +
+      'Data: Oxford City Council.' +
+      ' <button onclick="dismissDisclaimer()" aria-label="Dismiss">&times;</button>';
+    disc.style.display = '';
+    try { sessionStorage.removeItem('disclaimerDismissed'); } catch (_) {}
+  }
+
+  // ── CSV upload (adds extra layers on top of pre-loaded data) ──────────
+
+  // State for uploaded CSV layers
+  var uploadedLayers = [];
+
+  function clearUploadedLayers() {
+    uploadedLayers.forEach(function (l) {
+      if (map.hasLayer(l)) map.removeLayer(l);
+      layerControl.removeLayer(l);
+    });
+    uploadedLayers = [];
+  }
+
+  function addUploadedData(hmoData) {
+    clearUploadedLayers();
+
+    var stats = hmoData.matchStats;
+
+    if (hmoData.hmoBuildings && hmoData.hmoBuildings.features.length > 0) {
+      var bl = buildBuildingFootprints(hmoData.hmoBuildings);
+      bl.addTo(map);
+      layerControl.addOverlay(bl, 'Uploaded: HMO buildings');
+      uploadedLayers.push(bl);
     }
 
-    if (hmoFallback && hmoFallback.features.length > 0) {
-      currentFallbackLayer = buildPointMarkers(map, hmoFallback, {
-        radius: 5,
+    if (hmoData.hmoFallbackPoints && hmoData.hmoFallbackPoints.features.length > 0) {
+      var fl = buildPointMarkers(hmoData.hmoFallbackPoints, {
         fillColor: CONFIG.hmoFallbackColour,
         tooltipFn: function (p) {
           var lines = [];
-          if (p.address)        lines.push(p.address);
-          if (p.sub_units)      lines.push('Units: ' + p.sub_units);
-          if (p.entry_count)    lines.push(p.entry_count + ' separate HMO entries at this address');
-          if (p.hmo_id)         lines.push('ID: ' + p.hmo_id);
-          if (p.licence_start)  lines.push('Start: ' + p.licence_start);
-          if (p.licence_end)    lines.push('End: ' + p.licence_end);
-          return lines.join('\n');
+          if (p.address)       lines.push(p.address);
+          if (p.hmo_id)        lines.push('ID: ' + p.hmo_id);
+          if (p.licence_start) lines.push('Start: ' + p.licence_start);
+          if (p.licence_end)   lines.push('End: ' + p.licence_end);
+          return lines.join('<br>');
         },
       });
-      currentFallbackLayer.addTo(map);
-      overlays['Unmatched (postcode centroid)'] = currentFallbackLayer;
+      fl.addTo(map);
+      layerControl.addOverlay(fl, 'Uploaded: unmatched (point)');
+      uploadedLayers.push(fl);
     }
-
-    if (pointGeojson) {
-      currentMarkerLayer = buildPointMarkers(map, pointGeojson);
-      currentMarkerLayer.addTo(map);
-      overlays['Amenity markers'] = currentMarkerLayer;
-    }
-
-    currentLayerControl = L.control.layers(null, overlays, { collapsed: false, position: 'topright' });
-    currentLayerControl.addTo(map);
-  }
-
-  // ── Replace data with HMO results ─────────────────────────────────────
-
-  function replaceWithHmoData(hmoData) {
-    // Patch wardGeojson with HMO counts
-    wardGeojson.features.forEach(function (f) {
-      var name = f.properties.LSOA21NM || '';
-      f.properties.amenity_count = hmoData.lsoaCounts[name] || 0;
-    });
-
-    var stats = hmoData.matchStats;
-    var label = 'HMO count';
-
-    applyData('amenity_count', label, null, hmoData.hmoBuildings, hmoData.hmoFallbackPoints, stats);
 
     // Update disclaimer
-    var disc = document.getElementById('disclaimer');
     if (disc) {
-      var txt = 'Showing HMO licence data (' + stats.total + ' properties, ' +
-        stats.matched + ' matched to buildings';
-      if (stats.multiHousehold > 0) {
-        txt += ', ' + stats.multiHousehold + ' with multiple HMO entries at one address';
-      }
-      txt += ')';
-      disc.innerHTML = txt +
+      disc.innerHTML =
+        'Showing Oxford licence data: <strong>' + hmoTotal + ' HMO</strong> + ' +
+        '<strong>' + selTotal + ' selective</strong> licences (pre-loaded). ' +
+        'Uploaded CSV: ' + stats.total + ' properties, ' + stats.matched + ' matched to buildings.' +
         ' <button onclick="dismissDisclaimer()" aria-label="Dismiss">&times;</button>';
       disc.style.display = '';
       try { sessionStorage.removeItem('disclaimerDismissed'); } catch (_) {}
     }
 
-    // Show clear button
     var btn = document.getElementById('btn-clear-hmo');
     if (btn) btn.style.display = 'inline-block';
   }
 
-  // ── Revert to placeholder amenity data ─────────────────────────────────
-
-  async function revertToPlaceholder() {
-    var amenityRes = await fetch(CONFIG.amenitiesPath);
-    var amenityGeojson = await amenityRes.json();
-
-    // Restore original amenity counts from the GeoJSON
-    var freshWardRes = await fetch(CONFIG.neighbourhoodsPath);
-    var freshWardGeojson = await freshWardRes.json();
-    wardGeojson.features.forEach(function (f, i) {
-      f.properties.amenity_count = freshWardGeojson.features[i].properties.amenity_count;
-    });
-
-    applyData('amenity_count', 'OSM amenity count (placeholder)', amenityGeojson, null, null, null);
-
-    var disc = document.getElementById('disclaimer');
-    if (disc) {
-      disc.innerHTML =
-        'Showing placeholder data (OSM amenity counts per neighbourhood). Upload your HMO CSV to see real data.' +
-        ' <button onclick="dismissDisclaimer()" aria-label="Dismiss">&times;</button>';
-      disc.style.display = '';
-      try { sessionStorage.removeItem('disclaimerDismissed'); } catch (_) {}
-    }
-
-    var btn = document.getElementById('btn-clear-hmo');
-    if (btn) btn.style.display = 'none';
-
-    setUploadStatus('', '');
-  }
-
-  // ── Upload UI wiring ───────────────────────────────────────────────────
+  // ── Upload UI wiring ──────────────────────────────────────────────────
 
   var statusEl  = document.getElementById('upload-status');
   var dropZone  = document.getElementById('upload-drop-zone');
@@ -370,7 +675,7 @@ function buildLegend(map, colourScale, breaks, valueLabel) {
   function setUploadStatus(msg, className) {
     if (statusEl) {
       statusEl.textContent = msg;
-      statusEl.className = className || '';
+      statusEl.className   = className || '';
     }
   }
 
@@ -405,7 +710,7 @@ function buildLegend(map, colourScale, breaks, valueLabel) {
     window.HmoUpload.processHmoCsv(file, function (msg) {
       setUploadStatus(msg, '');
     }).then(function (result) {
-      replaceWithHmoData(result);
+      addUploadedData(result);
       setUploadStatus('CSV loaded', 'success');
     }).catch(function (err) {
       setUploadStatus('Error: ' + err.message, 'error');
@@ -415,13 +720,18 @@ function buildLegend(map, colourScale, breaks, valueLabel) {
 
   if (clearBtn) {
     clearBtn.addEventListener('click', function () {
-      revertToPlaceholder();
+      clearUploadedLayers();
+      clearBtn.style.display = 'none';
+      setUploadStatus('', '');
+      if (disc) {
+        disc.innerHTML =
+          'Showing Oxford licence data: <strong>' + hmoTotal + ' HMO</strong> licences (blue) ' +
+          'and <strong>' + selTotal + ' selective</strong> licences (green). ' +
+          'Data: Oxford City Council.' +
+          ' <button onclick="dismissDisclaimer()" aria-label="Dismiss">&times;</button>';
+        disc.style.display = '';
+        try { sessionStorage.removeItem('disclaimerDismissed'); } catch (_) {}
+      }
     });
   }
-
-  // ── Initial load: always start with placeholder data ───────────────────
-
-  var amenityRes = await fetch(CONFIG.amenitiesPath);
-  var amenityGeojson = await amenityRes.json();
-  applyData('amenity_count', 'OSM amenity count (placeholder)', amenityGeojson, null, null, null);
 })();
