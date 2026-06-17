@@ -109,6 +109,55 @@
     #upload-panel .upload-title {
       font-weight: 600;
       margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .csv-info-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #6b7280;
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      font-style: normal;
+      cursor: default;
+      position: relative;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .csv-info-tooltip {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1f2937;
+      color: #f9fafb;
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 1.5;
+      padding: 10px 12px;
+      border-radius: 6px;
+      width: 230px;
+      z-index: 2000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      pointer-events: none;
+      white-space: normal;
+    }
+    .csv-info-tooltip code {
+      background: #374151;
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+    .csv-info-icon:hover .csv-info-tooltip,
+    .csv-info-icon:focus .csv-info-tooltip {
+      display: block;
     }
     #upload-panel .upload-privacy {
       color: #888;
@@ -324,7 +373,23 @@
 
 <!-- Upload panel -->
 <div id="upload-panel">
-  <div class="upload-title">Upload custom CSV</div>
+  <div class="upload-title">
+    Upload custom CSV
+    <span class="csv-info-icon" tabindex="0" aria-label="CSV format help">ℹ
+      <span class="csv-info-tooltip">
+        <strong>Required columns</strong><br>
+        Your CSV must include at least one of:<br>
+        &bull; <code>address</code> — full property address<br>
+        &bull; <code>postcode</code> — UK postcode<br><br>
+        <strong>Optional columns</strong><br>
+        &bull; <code>uprn</code> — Unique Property Reference Number<br>
+        &bull; <code>lat</code> / <code>lon</code> — coordinates (skips geocoding)<br>
+        &bull; Any other columns appear in the marker tooltip.<br><br>
+        Matched properties are highlighted in orange on the map.<br>
+        No data leaves your browser.
+      </span>
+    </span>
+  </div>
   <div class="upload-privacy">Data stays in your browser only</div>
   <div id="upload-drop-zone">
     Drop CSV here or <strong>click to browse</strong>
