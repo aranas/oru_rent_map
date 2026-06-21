@@ -144,7 +144,7 @@ function buildGridHeatmap(features) {
     style: function (feature) {
       return {
         fillColor:   colourScale(feature.properties.count).hex(),
-        fillOpacity: 0.55,
+        fillOpacity: 0.75,
         color:       'none',
         weight:      0,
       };
@@ -665,7 +665,7 @@ function buildLegend(colourScale, breaks, valueLabel) {
         var val = Math.round(t * maxVal);
         var nextVal = i < steps.length - 1 ? Math.round(steps[i + 1] * maxVal) : null;
         div.innerHTML +=
-          '<i style="background:' + colourScale(t).hex() + ';width:14px;height:14px;display:inline-block;margin-right:5px;border-radius:2px;vertical-align:middle;opacity:0.85"></i>' +
+          '<i style="background:' + colourScale(t).hex() + ';width:14px;height:14px;display:inline-block;margin-right:5px;border-radius:2px;vertical-align:middle;opacity:1"></i>' +
           val + (nextVal !== null ? '–' + nextVal : '+') + '<br>';
       });
       return div;
