@@ -625,41 +625,96 @@ function buildLegend(colourScale, breaks, valueLabel) {
   hmoMarkerLayer.addTo(map);
   selMarkerLayer.addTo(map);
 
-  // ── Layer control ─────────────────────────────────────────────────────
+  // ── Layer control (markers only) ──────────────────────────────────────
   var overlays = {};
-  overlays['🔵 HMO rented properties']          = hmoMarkerLayer;
-  overlays['🟢 Privately rented properties']     = selMarkerLayer;
+  overlays['🔵 HMO rented properties']      = hmoMarkerLayer;
+  overlays['🟢 Privately rented properties'] = selMarkerLayer;
   if (holderMarkerLayer) overlays['⚫ Landlords (licence holder)'] = holderMarkerLayer;
-  overlays['HMO count per area']                 = hmoChoro.wardLayer;
-  overlays['Private renters per area']           = selChoro.wardLayer;
-  overlays['🟥 Licence density grid (~500 m²)'] = gridHeatmap;
 
   var layerControl = L.control.layers(null, overlays, { collapsed: false, position: 'topright' });
   layerControl.addTo(map);
   agentControl.addTo(map);
 
-  // ── Legend (shown when a density layer is active) ─────────────────────
-  var activeLegend = null;
+  // ── Density layer dropdown ─────────────────────────────────────────────
+  var activeDensityLayer = null;
+  var activeLegend       = null;
 
-  // Swap legend when density layers are toggled
-  var legendMap = {
-    hmo:       { choro: hmoChoro,  label: 'HMO count per area' },
-    selective: { choro: selChoro,  label: 'Private renters per area' },
+  // Grid legend uses a simple fixed colour scale (yellow→red)
+  var gridColourScale = chroma.scale(['#ffffb2', '#fd8d3c', '#bd0026']);
+  var gridMaxCount    = 0;
+  gridHeatmap.eachLayer(function (l) {
+    var c = l.feature && l.feature.properties && l.feature.properties.count || 0;
+    if (c > gridMaxCount) gridMaxCount = c;
+  });
+  gridColourScale = gridColourScale.domain([0, gridMaxCount]);
+
+  var densityOptions = {
+    '':        { layer: null,               colourScale: null,             breaks: null, label: '' },
+    'hmo':     { layer: hmoChoro.wardLayer, colourScale: hmoChoro.colourScale, breaks: hmoChoro.breaks, label: 'HMO count per area' },
+    'sel':     { layer: selChoro.wardLayer, colourScale: selChoro.colourScale, breaks: selChoro.breaks, label: 'Private renters per area' },
+    'grid':    { layer: gridHeatmap,        colourScale: gridColourScale,   breaks: null, label: 'Licence density (~500 m²)' },
   };
 
-  function updateLegend() {
-    var active = null;
-    if (map.hasLayer(hmoChoro.wardLayer))  active = 'hmo';
-    if (map.hasLayer(selChoro.wardLayer))  active = 'selective';
-    if (activeLegend) { map.removeControl(activeLegend); activeLegend = null; }
-    if (active) {
-      var l = legendMap[active];
-      activeLegend = buildLegend(l.choro.colourScale, l.choro.breaks, l.label);
-      activeLegend.addTo(map);
-    }
+  function buildGridLegend(colourScale, maxVal, label) {
+    var legend = L.control({ position: 'bottomright' });
+    legend.onAdd = function () {
+      var div = L.DomUtil.create('div', 'info legend');
+      var steps = [0, 0.2, 0.4, 0.6, 0.8, 1.0];
+      div.innerHTML = '<strong>' + label + '</strong><br>';
+      steps.forEach(function (t, i) {
+        var val = Math.round(t * maxVal);
+        var nextVal = i < steps.length - 1 ? Math.round(steps[i + 1] * maxVal) : null;
+        div.innerHTML +=
+          '<i style="background:' + colourScale(t).hex() + ';width:14px;height:14px;display:inline-block;margin-right:5px;border-radius:2px;vertical-align:middle;opacity:0.85"></i>' +
+          val + (nextVal !== null ? '–' + nextVal : '+') + '<br>';
+      });
+      return div;
+    };
+    return legend;
   }
 
-  map.on('overlayadd overlayremove', updateLegend);
+  function setDensityLayer(key) {
+    // Remove current density layer and legend
+    if (activeDensityLayer) { map.removeLayer(activeDensityLayer); activeDensityLayer = null; }
+    if (activeLegend)       { map.removeControl(activeLegend);     activeLegend = null; }
+
+    var opt = densityOptions[key];
+    if (!opt || !opt.layer) return;
+
+    opt.layer.addTo(map);
+    activeDensityLayer = opt.layer;
+
+    // Bring markers to front so they sit above the density layer
+    if (map.hasLayer(hmoMarkerLayer)) hmoMarkerLayer.bringToFront();
+    if (map.hasLayer(selMarkerLayer)) selMarkerLayer.bringToFront();
+
+    // Build appropriate legend
+    if (key === 'grid') {
+      activeLegend = buildGridLegend(gridColourScale, gridMaxCount, opt.label);
+    } else {
+      activeLegend = buildLegend(opt.colourScale, opt.breaks, opt.label);
+    }
+    activeLegend.addTo(map);
+  }
+
+  var densityControl = L.control({ position: 'topright' });
+  densityControl.onAdd = function () {
+    var div = L.DomUtil.create('div', 'agent-dropdown-control');
+    div.innerHTML =
+      '<label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">🗺 Density layer</label>' +
+      '<select id="density-select" style="width:100%;font-size:12px;padding:2px 4px;">' +
+      '<option value="">— none —</option>' +
+      '<option value="hmo">HMO count per area</option>' +
+      '<option value="sel">Private renters per area</option>' +
+      '<option value="grid">Licence density grid (~500 m²)</option>' +
+      '</select>';
+    L.DomEvent.disableClickPropagation(div);
+    div.querySelector('#density-select').addEventListener('change', function () {
+      setDensityLayer(this.value);
+    });
+    return div;
+  };
+  densityControl.addTo(map);
 
   // ── Disclaimer ────────────────────────────────────────────────────────
   var hmoTotal = hmoFeatures.length;
