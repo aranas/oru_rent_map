@@ -350,6 +350,19 @@ def geocode(raw_address, session, cache):
     if not result and hn and postcode:
         result = _nominatim_get(f"{hn} {postcode}, UK", session)
 
+    # Strategy 2b: strip letter suffix from house number (71a → 71) and retry
+    # Nominatim often only knows the base number, not the lettered sub-unit
+    hn_base = re.sub(r"[A-Za-z]+$", "", hn) if hn else ""
+    if not result and hn_base and hn_base != hn:
+        # Try base number + full street + postcode
+        expanded_base = re.sub(r"^\d+[A-Za-z]+\b", hn_base, expanded)
+        result = _nominatim_get(
+            f"{expanded_base}, {postcode}, Oxford, UK" if postcode else f"{expanded_base}, Oxford, UK",
+            session,
+        )
+        if not result and postcode:
+            result = _nominatim_get(f"{hn_base} {postcode}, UK", session)
+
     # Strategy 3: house number found anywhere in string + street + postcode
     # Catches "Flat 1, Building Name, 42 Some Street, OX1 1AA"
     if not result and postcode:

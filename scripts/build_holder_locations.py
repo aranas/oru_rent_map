@@ -211,6 +211,17 @@ def geocode(address, session, cache):
     if not result and hn and postcode:
         result = nominatim_query(f"{hn} {postcode}, UK", session)
 
+    # Strategy 2b: strip letter suffix from house number (71a → 71) and retry
+    hn_base = re.sub(r"[A-Za-z]+$", "", hn) if hn else ""
+    if not result and hn_base and hn_base != hn:
+        expanded_base = re.sub(r"^\d+[A-Za-z]+\b", hn_base, expanded)
+        result = nominatim_query(
+            f"{expanded_base}, {postcode}, UK" if postcode else f"{expanded_base}, UK",
+            session,
+        )
+        if not result and postcode:
+            result = nominatim_query(f"{hn_base} {postcode}, UK", session)
+
     # Strategy 3: house number found anywhere in string + street + postcode
     if not result and postcode:
         hn2, street2 = extract_housenumber_anywhere(address)
