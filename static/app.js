@@ -8,6 +8,8 @@ var CONFIG = {
   neighbourhoodsPath:     'data/neighbourhoods.geojson',
   licenceLocationsPath:   'data/licence_locations.geojson',
   holderLocationsPath:    'data/holder_locations.geojson',
+  doorknockStreetsPath:       'data/doorknock_streets.geojson',
+  doorknockMeetingPointsPath: 'data/doorknock_meeting_points.geojson',
   // Choropleth colour ranges per type
   choroplethHmo:       ['#dbeafe', '#1e40af'],  // blue
   choroplethSelective: ['#dcfce7', '#166534'],  // green
@@ -18,6 +20,8 @@ var CONFIG = {
   // Marker colours
   hmoMarkerColour:       '#2563eb',  // blue
   selectiveMarkerColour: '#16a34a',  // green
+  doorknockMarkerColour: '#f97316',  // orange
+  meetingPointColour:    '#7c3aed',  // violet
   // CSV upload (existing HMO footprint matching)
   hmoBuildingFill:   '#2563eb',
   hmoBuildingStroke: '#1d4ed8',
@@ -262,6 +266,31 @@ function buildBuildingFootprints(buildingGeojson) {
 }
 
 
+// Doorknocking meeting-point markers: a distinct flag icon (not a plain dot)
+// so canvassers can tell a gathering point apart from a rental-property door.
+function buildMeetingPointsLayer(pointGeojson, opts) {
+  opts = opts || {};
+  var tooltipFn = opts.tooltipFn || function () { return ''; };
+
+  var flagIcon = L.divIcon({
+    className: 'doorknock-meeting-icon',
+    html: '<div style="font-size:22px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5));">🚩</div>',
+    iconSize:   [22, 22],
+    iconAnchor: [4, 20],
+  });
+
+  return L.geoJSON(pointGeojson, {
+    pointToLayer: function (feature, latlng) {
+      return L.marker(latlng, { icon: flagIcon });
+    },
+    onEachFeature: function (feature, layer) {
+      var label = tooltipFn(feature.properties);
+      if (label) layer.bindTooltip(label, { direction: 'top', offset: [0, -18] });
+    },
+  });
+}
+
+
 function buildLegend(colourScale, breaks, valueLabel) {
   var legend = L.control({ position: 'bottomright' });
   legend.onAdd = function () {
@@ -308,6 +337,16 @@ function buildLegend(colourScale, breaks, valueLabel) {
   try {
     var holderRes = await fetch(CONFIG.holderLocationsPath);
     if (holderRes.ok) holderGeojson = await holderRes.json();
+  } catch (e) { /* non-fatal */ }
+
+  // Doorknocking overlay (Cowley streets shortlist); optional
+  var doorknockStreetsGeojson = null;
+  var doorknockMeetingGeojson = null;
+  try {
+    var dkStreetsRes = await fetch(CONFIG.doorknockStreetsPath);
+    if (dkStreetsRes.ok) doorknockStreetsGeojson = await dkStreetsRes.json();
+    var dkMeetingRes = await fetch(CONFIG.doorknockMeetingPointsPath);
+    if (dkMeetingRes.ok) doorknockMeetingGeojson = await dkMeetingRes.json();
   } catch (e) { /* non-fatal */ }
 
   // ── Aggregate LSOA counts ─────────────────────────────────────────────
@@ -617,6 +656,113 @@ function buildLegend(colourScale, breaks, valueLabel) {
     },
   }) : null;
 
+  // ── Doorknocking overlay (Cowley streets shortlist) ───────────────────
+  // Cowley streets with the highest renter density and top-20-rental-agency
+  // listing density, per 100m (see scripts/build_doorknock_streets.py). Off
+  // by default; toggled on from the layer control like any other overlay.
+  var doorknockLayerGroup  = null;
+  var doorknockOverlayName = '🚪 Doorknock streets (Cowley)';
+  var doorknockPanelControl = null;
+
+  if (doorknockStreetsGeojson && doorknockMeetingGeojson && doorknockMeetingGeojson.features.length) {
+    var doorMarkersLayer = buildPointMarkers(doorknockStreetsGeojson, {
+      radius:    5,
+      fillColor: CONFIG.doorknockMarkerColour,
+      tooltipFn: function (p) {
+        var lines = [];
+        lines.push('<strong>' + p.street + '</strong>');
+        (p.addresses || []).forEach(function (a) { lines.push(a); });
+        if (p.door_count > 1) lines.push(p.door_count + ' doors at this pin');
+        if (p.agents && p.agents.length) lines.push('Agent: ' + p.agents.join(', '));
+        if (p.top20_agency) lines.push('<em>Managed by a top-20 agency</em>');
+        return lines.join('<br>');
+      },
+    });
+
+    // A single overall meeting point for the whole shortlist (not one per
+    // street) — canvassers start together and split into teams from here.
+    var meetingFeature = doorknockMeetingGeojson.features[0];
+    var meetingProps    = meetingFeature.properties;
+
+    var meetingPointsLayer = buildMeetingPointsLayer(doorknockMeetingGeojson, {
+      tooltipFn: function (p) {
+        return [
+          '<strong>Doorknock meeting point</strong>',
+          'Meet at: ' + p.meeting_label,
+          p.total_doors + ' doors (' + p.total_markers + ' map markers) across ' + p.streets.length + ' streets',
+          p.total_renters + ' renters total',
+        ].join('<br>');
+      },
+    });
+
+    doorknockLayerGroup = L.layerGroup([doorMarkersLayer, meetingPointsLayer]);
+
+    // Side panel: the meeting point, then one row per shortlisted street
+    // (sorted by renter density, not raw totals, so a long road doesn't
+    // just win for having more addresses). Clicking a row flies to that
+    // street's own doors (computed from the marker layer, since there's no
+    // longer a per-street meeting point).
+    var streetsSorted = meetingProps.streets.slice().sort(function (a, b) {
+      return b.renters_per_100m - a.renters_per_100m;
+    });
+
+    var streetCentres = {};
+    doorknockStreetsGeojson.features.forEach(function (f) {
+      var street = f.properties.street;
+      if (!streetCentres[street]) streetCentres[street] = { lat: 0, lon: 0, n: 0 };
+      var c = streetCentres[street];
+      c.lat += f.geometry.coordinates[1];
+      c.lon += f.geometry.coordinates[0];
+      c.n += 1;
+    });
+
+    doorknockPanelControl = L.control({ position: 'bottomleft' });
+    doorknockPanelControl.onAdd = function () {
+      var div = L.DomUtil.create('div', 'legend doorknock-panel');
+      var html = '<div class="legend-title">🚪 Doorknock streets</div>';
+      html += '<div class="doorknock-row doorknock-meeting-row" style="cursor:pointer;padding:3px 0;">' +
+        '<strong>Meeting point</strong><br>' +
+        '<span style="color:#555;">' + meetingProps.meeting_label + '</span><br>' +
+        '<span style="color:#888;font-size:11px;">' + meetingProps.total_doors + ' doors &middot; ' +
+        meetingProps.total_markers + ' markers &middot; ' + meetingProps.total_renters + ' renters total</span>' +
+        '</div>';
+      html += '<div style="font-size:11px;color:#666;margin:6px 0;">Ranked by renter density (per 100m). Click a street to jump to it.</div>';
+      streetsSorted.forEach(function (s, i) {
+        html += '<div class="doorknock-row" data-idx="' + i + '" ' +
+          'style="cursor:pointer;padding:3px 0;border-top:1px solid #eee;">' +
+          '<strong>' + s.street + '</strong><br>' +
+          '<span style="color:#555;">' + s.doors + ' doors &middot; ' + s.markers + ' markers &middot; ' +
+          s.renters + ' renters (' + s.renters_per_100m + '/100m) &middot; ' +
+          s.top20_agency_listings + ' top-20-agency listings</span>' +
+          '</div>';
+      });
+      div.innerHTML = html;
+      L.DomEvent.disableClickPropagation(div);
+      div.querySelector('.doorknock-meeting-row').addEventListener('click', function () {
+        map.setView([meetingFeature.geometry.coordinates[1], meetingFeature.geometry.coordinates[0]], 16);
+      });
+      div.querySelectorAll('.doorknock-row:not(.doorknock-meeting-row)').forEach(function (row) {
+        row.addEventListener('click', function () {
+          var s = streetsSorted[parseInt(row.getAttribute('data-idx'), 10)];
+          var c = streetCentres[s.street];
+          if (c) map.setView([c.lat / c.n, c.lon / c.n], 17);
+        });
+      });
+      return div;
+    };
+
+    map.on('overlayadd', function (e) {
+      if (e.name === doorknockOverlayName && doorknockPanelControl) {
+        doorknockPanelControl.addTo(map);
+      }
+    });
+    map.on('overlayremove', function (e) {
+      if (e.name === doorknockOverlayName && doorknockPanelControl) {
+        map.removeControl(doorknockPanelControl);
+      }
+    });
+  }
+
   // ── Grid heatmap (all licences) ───────────────────────────────────────
   var allLicenceFeatures = hmoFeatures.concat(selFeatures);
   var gridHeatmap = buildGridHeatmap(allLicenceFeatures);
@@ -630,6 +776,7 @@ function buildLegend(colourScale, breaks, valueLabel) {
   overlays['🔵 HMO rented properties']      = hmoMarkerLayer;
   overlays['🟢 Privately rented properties'] = selMarkerLayer;
   if (holderMarkerLayer) overlays['⚫ Landlords (licence holder)'] = holderMarkerLayer;
+  if (doorknockLayerGroup) overlays[doorknockOverlayName] = doorknockLayerGroup;
 
   var layerControl = L.control.layers(null, overlays, { collapsed: false, position: 'topright' });
   layerControl.addTo(map);

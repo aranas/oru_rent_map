@@ -23,3 +23,10 @@ data/Oxford HMO Register*.xlsx
 data/Oxford HMO Register*.csv
 data/HMO_Register_April_*.csv
 data/Selective_Licence_Register*.csv
+
+# OS OpenMap Local shapefile source (~500MB+) — used once by
+# build_locality_anchors.py to produce the small committed
+# data/oxford_locality_anchors.json; not needed at runtime.
+data/OS OpenMap Local*/
+
+.DS_Store

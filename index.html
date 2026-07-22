@@ -75,6 +75,17 @@
       border-radius: 2px;
       border: 1px solid #ccc;
     }
+    .doorknock-panel {
+      max-width: 260px;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+    .doorknock-panel .doorknock-row:hover {
+      background: #f3f4f6;
+    }
+    .doorknock-panel .doorknock-row:first-of-type {
+      border-top: none;
+    }
 
     /* ── Hover info panel ── */
     #info-panel {
@@ -317,6 +328,16 @@
         <span><strong>Combined density</strong> &mdash; neighbourhood shading by
         total licence count. Toggle HMO-only or Selective-only density in the
         layer control.</span>
+      </li>
+      <li>
+        <span class="sym-circle" style="background:#f97316;"></span>
+        <span><strong>🚪 Doorknock streets (Cowley)</strong> &mdash; optional
+        overlay for canvassing: the Cowley streets (not neighbouring Rose
+        Hill/Littlemore/Blackbird Leys/St Clement's) with the highest renter
+        density and top-rental-agency listing density (per 100m, not raw
+        totals &mdash; so a long road doesn't win just for having more
+        addresses), with one overall meeting point (🚩) and a door/marker
+        count panel per street.</span>
       </li>
     </ul>
 

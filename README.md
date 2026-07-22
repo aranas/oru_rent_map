@@ -25,6 +25,7 @@ Pre-loaded from the Oxford City Council licence registers:
 | HMO / Private renters density | Lower Super Output Area (LSOA) choropleth shaded by licence count (toggle independently) |
 | ⚫ Licence holder addresses | Black dots at the home addresses of Oxford-based landlords (OX1–OX4 only) |
 | 🔴 Agent highlight | Dropdown to select a letting agency and overlay red halos on their managed properties |
+| 🚪 Doorknock streets (Cowley) | Optional canvassing overlay: the Cowley streets with the highest renter density and top-20-rental-agency listing density (per 100m, not raw totals), with one overall meeting point and a door/marker count panel per street. Off by default. |
 
 Hover any marker to see the property address, licence holder name, and managing agent.
 Hover an LSOA to see its licence count.
@@ -70,19 +71,38 @@ Oxford City Council registers (CSV, gitignored)
 │     Output: data/licence_locations.geojson  (updated in-place, commit after running)
 │             GeoJSON Points { type, id, lsoa, address, agent, holder, coordinates }
 │
-└─► build_holder_locations.py  ────────────────────────────────── ~varies, uses geocode cache
-      Reads licence holder home addresses from both registers.
-      Filters to OX1–OX4 postcodes only (Oxford-based landlords).
-      Geocodes using the same 6-strategy cascade; reuses existing cache.
-      Groups by address: one point per unique address with property count.
-      Holder names are intentionally excluded from the output.
-      Output: data/holder_locations.geojson  (committed)
-              GeoJSON Points { holder_address, property_count, coordinates }
+├─► build_holder_locations.py  ────────────────────────────────── ~varies, uses geocode cache
+│     Reads licence holder home addresses from both registers.
+│     Filters to OX1–OX4 postcodes only (Oxford-based landlords).
+│     Geocodes using the same 6-strategy cascade; reuses existing cache.
+│     Groups by address: one point per unique address with property count.
+│     Holder names are intentionally excluded from the output.
+│     Output: data/holder_locations.geojson  (committed)
+│             GeoJSON Points { holder_address, property_count, coordinates }
+│
+├─► build_locality_anchors.py  ───────────────────────────────────────────── <1 s, no network
+│     One-off extraction from the OS OpenMap Local "Named Place" shapefile
+│     (data/OS OpenMap Local*/, gitignored — ~500MB+ source, not committed):
+│     converts each named locality (Cowley, Temple Cowley, Rose Hill,
+│     Littlemore, Blackbird Leys, Iffley, …) from OSGB36 National Grid to
+│     WGS84 lat/lon. Only needs re-running if the OS source data changes.
+│     Output: data/oxford_locality_anchors.json  (committed)
+│             [{ name, lat, lon }, …]
+│
+└─► build_doorknock_streets.py  ──────────────────────────────────────────── a few seconds
+      Ranks Cowley streets (nearest named locality is Cowley or Temple
+      Cowley — not the neighbouring areas that share its OX4 postcode) by
+      renters-per-100m and top-20-rental-agency-listings-per-100m, keeps the
+      top 7, and picks one overall meeting point (a nearby pub/cafe/car park
+      where possible) for the shortlist.
+      Output: data/doorknock_streets.geojson         (committed)
+              data/doorknock_meeting_points.geojson   (committed)
 ```
 
-The two committed geojson files (`licence_locations.geojson`,
-`holder_locations.geojson`) are all the map needs at runtime — no server, no
-database, no API calls.
+The four committed geojson files (`licence_locations.geojson`,
+`holder_locations.geojson`, `doorknock_streets.geojson`,
+`doorknock_meeting_points.geojson`) plus `oxford_locality_anchors.json` are
+all the map needs at runtime — no server, no database, no API calls.
 
 ## Generating the data files
 
@@ -201,6 +221,9 @@ oru_rent_map/
     licence_address_lookup.json     — id → {address, agent, holder, holder_address} (gitignored)
     geocode_cache.json              — Nominatim + Google results cache (gitignored)
     geocode_failures.csv            — addresses that could not be geocoded (gitignored)
+    oxford_locality_anchors.json    — named-locality lat/lon lookup (committed)
+    doorknock_streets.geojson       — doorknock overlay: per-property markers (committed)
+    doorknock_meeting_points.geojson— doorknock overlay: single meeting point (committed)
   scripts/
     build_address_lookup.py         — build id → address/agent/holder lookup (run first)
     build_licence_locations.py      — geocode HMO + Selective property addresses
@@ -208,6 +231,8 @@ oru_rent_map/
     build_holder_locations.py       — geocode landlord home addresses (Oxford only)
     generate_building_data.py       — regenerate oxford_buildings.geojson from Overpass
     generate_placeholder.py         — regenerate LSOA boundaries from ONS + Overpass
+    build_locality_anchors.py       — extract named-locality lat/lon from OS OpenMap Local
+    build_doorknock_streets.py      — build the Cowley doorknocking overlay data
   requirements.txt
   README.md
 ```
@@ -239,3 +264,4 @@ oru_rent_map/
 - LSOA boundaries: [ONS Open Geography Portal](https://geoportal.statistics.gov.uk/) — Open Government Licence
 - Building footprints and base tiles: [OpenStreetMap](https://www.openstreetmap.org/copyright) — ODbL
 - Licence data: Oxford City Council (public register)
+- Named-locality anchors (Cowley, Temple Cowley, etc.): [OS OpenMap Local](https://www.ordnancesurvey.co.uk/products/os-open-map-local), Ordnance Survey — Open Government Licence

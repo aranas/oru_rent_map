@@ -1,0 +1,93 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -1.2096633,
+     51.7351671
+    ]
+   },
+   "properties": {
+    "meeting_label": "Dragon Bowl (fast food)",
+    "total_doors": 141,
+    "total_markers": 54,
+    "total_renters": 578,
+    "streets": [
+     {
+      "street": "Between Towns Road",
+      "doors": 53,
+      "markers": 3,
+      "renters": 258,
+      "renters_per_100m": 444.2,
+      "top20_agency_listings": 28,
+      "top20_per_100m": 48.2,
+      "span_m": 58
+     },
+     {
+      "street": "Don Bosco Close",
+      "doors": 21,
+      "markers": 13,
+      "renters": 85,
+      "renters_per_100m": 170.0,
+      "top20_agency_listings": 9,
+      "top20_per_100m": 18.0,
+      "span_m": 50
+     },
+     {
+      "street": "Turner Close",
+      "doors": 25,
+      "markers": 13,
+      "renters": 80,
+      "renters_per_100m": 112.1,
+      "top20_agency_listings": 16,
+      "top20_per_100m": 22.42,
+      "span_m": 71
+     },
+     {
+      "street": "Beresford Place",
+      "doors": 13,
+      "markers": 4,
+      "renters": 52,
+      "renters_per_100m": 104.0,
+      "top20_agency_listings": 9,
+      "top20_per_100m": 18.0,
+      "span_m": 50
+     },
+     {
+      "street": "Coleridge Close",
+      "doors": 8,
+      "markers": 3,
+      "renters": 29,
+      "renters_per_100m": 56.5,
+      "top20_agency_listings": 5,
+      "top20_per_100m": 9.73,
+      "span_m": 51
+     },
+     {
+      "street": "Ridley Road",
+      "doors": 11,
+      "markers": 8,
+      "renters": 35,
+      "renters_per_100m": 61.0,
+      "top20_agency_listings": 3,
+      "top20_per_100m": 5.23,
+      "span_m": 57
+     },
+     {
+      "street": "Kirby Place",
+      "doors": 10,
+      "markers": 10,
+      "renters": 39,
+      "renters_per_100m": 65.4,
+      "top20_agency_listings": 2,
+      "top20_per_100m": 3.35,
+      "span_m": 60
+     }
+    ]
+   }
+  }
+ ]
+}
