@@ -93,6 +93,15 @@ USER_AGENT      = "oru-hmo-map-geocoder/1.0 (open-source research tool)"
 GOOGLE_GEOCODING_URL = "https://maps.googleapis.com/maps/api/geocode/json"
 GOOGLE_API_KEY       = os.environ.get("GOOGLE_GEOCODING_KEY", "")
 
+# Oxford city bounding box — any geocoded result outside this is rejected
+OXFORD_LAT_MIN, OXFORD_LAT_MAX = 51.68, 51.82
+OXFORD_LON_MIN, OXFORD_LON_MAX = -1.38, -1.12
+
+
+def in_oxford_bounds(lon, lat):
+    return (OXFORD_LAT_MIN <= lat <= OXFORD_LAT_MAX and
+            OXFORD_LON_MIN <= lon <= OXFORD_LON_MAX)
+
 # ── Address normalisation ──────────────────────────────────────────────────
 
 UK_POSTCODE_RE = re.compile(r"[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}", re.IGNORECASE)
@@ -263,7 +272,10 @@ def _nominatim_get(query, session):
         if resp.status_code == 200:
             results = resp.json()
             if results:
-                return (float(results[0]["lon"]), float(results[0]["lat"]))
+                lon, lat = float(results[0]["lon"]), float(results[0]["lat"])
+                if in_oxford_bounds(lon, lat):
+                    return (lon, lat)
+                # Result is outside Oxford — treat as no match
     except Exception as exc:
         print(f"    Nominatim error for '{query}': {exc}")
     return None
@@ -282,7 +294,10 @@ def _google_get(query):
         data = resp.json()
         if data.get("status") == "OK" and data.get("results"):
             loc = data["results"][0]["geometry"]["location"]
-            return (loc["lng"], loc["lat"])
+            lon, lat = loc["lng"], loc["lat"]
+            if in_oxford_bounds(lon, lat):
+                return (lon, lat)
+            # Result is outside Oxford — treat as no match
         if data.get("status") not in ("ZERO_RESULTS", "OK"):
             print(f"    Google error: {data.get('status')} for '{query}'")
     except Exception as exc:
@@ -334,6 +349,19 @@ def geocode(raw_address, session, cache):
     # Strategy 2: housenumber found at start of stripped address + postcode
     if not result and hn and postcode:
         result = _nominatim_get(f"{hn} {postcode}, UK", session)
+
+    # Strategy 2b: strip letter suffix from house number (71a → 71) and retry
+    # Nominatim often only knows the base number, not the lettered sub-unit
+    hn_base = re.sub(r"[A-Za-z]+$", "", hn) if hn else ""
+    if not result and hn_base and hn_base != hn:
+        # Try base number + full street + postcode
+        expanded_base = re.sub(r"^\d+[A-Za-z]+\b", hn_base, expanded)
+        result = _nominatim_get(
+            f"{expanded_base}, {postcode}, Oxford, UK" if postcode else f"{expanded_base}, Oxford, UK",
+            session,
+        )
+        if not result and postcode:
+            result = _nominatim_get(f"{hn_base} {postcode}, UK", session)
 
     # Strategy 3: house number found anywhere in string + street + postcode
     # Catches "Flat 1, Building Name, 42 Some Street, OX1 1AA"

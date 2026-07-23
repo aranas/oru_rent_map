@@ -8,6 +8,8 @@ var CONFIG = {
   neighbourhoodsPath:     'data/neighbourhoods.geojson',
   licenceLocationsPath:   'data/licence_locations.geojson',
   holderLocationsPath:    'data/holder_locations.geojson',
+  doorknockBlocksPath:        'data/doorknock_blocks.geojson',
+  doorknockMeetingPointsPath: 'data/doorknock_meeting_points.geojson',
   // Choropleth colour ranges per type
   choroplethHmo:       ['#dbeafe', '#1e40af'],  // blue
   choroplethSelective: ['#dcfce7', '#166534'],  // green
@@ -18,6 +20,8 @@ var CONFIG = {
   // Marker colours
   hmoMarkerColour:       '#2563eb',  // blue
   selectiveMarkerColour: '#16a34a',  // green
+  doorknockBoundaryColour: '#f97316',  // orange
+  meetingPointColour:    '#7c3aed',  // violet
   // CSV upload (existing HMO footprint matching)
   hmoBuildingFill:   '#2563eb',
   hmoBuildingStroke: '#1d4ed8',
@@ -262,6 +266,59 @@ function buildBuildingFootprints(buildingGeojson) {
 }
 
 
+// Doorknocking meeting-point markers: a distinct flag icon (not a plain dot)
+// so canvassers can tell a gathering point apart from a rental-property door.
+function buildMeetingPointsLayer(pointGeojson, opts) {
+  opts = opts || {};
+  var tooltipFn = opts.tooltipFn || function () { return ''; };
+
+  var flagIcon = L.divIcon({
+    className: 'doorknock-meeting-icon',
+    html: '<div style="font-size:22px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5));">🚩</div>',
+    iconSize:   [22, 22],
+    iconAnchor: [4, 20],
+  });
+
+  return L.geoJSON(pointGeojson, {
+    pointToLayer: function (feature, latlng) {
+      return L.marker(latlng, { icon: flagIcon });
+    },
+    onEachFeature: function (feature, layer) {
+      var label = tooltipFn(feature.properties);
+      if (label) layer.bindTooltip(label, { direction: 'top', offset: [0, -18] });
+    },
+  });
+}
+
+
+// Doorknock block boundaries: an outline (not a filled area) around each
+// grid-cell "unit" — the doorknocking overlay's canvassing unit — so the
+// base HMO/Selective markers underneath stay visible and clickable.
+function buildBlockBoundariesLayer(polygonGeojson, opts) {
+  opts = opts || {};
+  var colour = opts.colour || '#f97316';
+  var tooltipFn = opts.tooltipFn || function () { return ''; };
+  var onClickFn = opts.onClickFn;
+
+  return L.geoJSON(polygonGeojson, {
+    style: function () {
+      return {
+        fillColor:   colour,
+        fillOpacity: 0.08,
+        color:       colour,
+        weight:      2,
+        dashArray:   '4 3',
+      };
+    },
+    onEachFeature: function (feature, layer) {
+      var label = tooltipFn(feature.properties);
+      if (label) layer.bindTooltip(label, { direction: 'top', sticky: true });
+      if (onClickFn) layer.on('click', function () { onClickFn(feature.properties); });
+    },
+  });
+}
+
+
 function buildLegend(colourScale, breaks, valueLabel) {
   var legend = L.control({ position: 'bottomright' });
   legend.onAdd = function () {
@@ -308,6 +365,16 @@ function buildLegend(colourScale, breaks, valueLabel) {
   try {
     var holderRes = await fetch(CONFIG.holderLocationsPath);
     if (holderRes.ok) holderGeojson = await holderRes.json();
+  } catch (e) { /* non-fatal */ }
+
+  // Doorknocking overlay (East Oxford blocks shortlist); optional
+  var doorknockBlocksGeojson = null;
+  var doorknockMeetingGeojson = null;
+  try {
+    var dkBlocksRes = await fetch(CONFIG.doorknockBlocksPath);
+    if (dkBlocksRes.ok) doorknockBlocksGeojson = await dkBlocksRes.json();
+    var dkMeetingRes = await fetch(CONFIG.doorknockMeetingPointsPath);
+    if (dkMeetingRes.ok) doorknockMeetingGeojson = await dkMeetingRes.json();
   } catch (e) { /* non-fatal */ }
 
   // ── Aggregate LSOA counts ─────────────────────────────────────────────
@@ -616,6 +683,183 @@ function buildLegend(colourScale, breaks, valueLabel) {
       return lines.join('<br>');
     },
   }) : null;
+
+  // ── Doorknocking overlay (East Oxford blocks shortlist) ─────────────────
+  // The densest small (~100m) pockets in East Oxford by renter density and
+  // top-20-rental-agency listing density, per 150 sqm (see
+  // scripts/build_doorknock_streets.py) — ranking small blocks rather than
+  // whole streets catches a dense stretch of one street sitting right next
+  // to a dense stretch of another, which a whole-street average would dilute
+  // away. Lives in its own self-contained control (checkbox + unfolding
+  // bundle list), not the standard layer-control checkbox list, so the list
+  // can be shown/hidden together with the layer from one place.
+  var doorknockLayerGroup = null;
+
+  if (doorknockBlocksGeojson && doorknockMeetingGeojson && doorknockMeetingGeojson.features.length) {
+    function streetBreakdownLines(streets) {
+      return (streets || []).map(function (s) {
+        return s.street + ': ' + s.hmo_count + ' HMO, ' + s.selective_count + ' private (' +
+          s.doors + ' doors, ' + s.renters + ' renters)';
+      }).join('<br>');
+    }
+
+    var blockBoundariesLayer = buildBlockBoundariesLayer(doorknockBlocksGeojson, {
+      colour: CONFIG.doorknockBoundaryColour,
+      tooltipFn: function (p) {
+        var lines = ['<strong>' + p.label + '</strong> (' + p.locality + ')'];
+        lines.push(p.doors + ' doors &middot; ' + p.renters + ' renters &middot; ' +
+          p.top20_agency_listings + ' top-20-agency listings');
+        lines.push(streetBreakdownLines(p.streets));
+        return lines.join('<br>');
+      },
+      // Clicking a block's boundary on the map selects the matching entry
+      // in the panel below: opens the panel if it's folded, scrolls it into
+      // view, and briefly highlights it — so a canvassing team can tap the
+      // square they're standing at and immediately see its street/HMO/
+      // private breakdown without hunting through the list.
+      onClickFn: function (p) { selectBlock(p.block_id); },
+    });
+
+    // A single overall meeting point for the whole shortlist (not one per
+    // block/bundle) — canvassers start together and split into teams from
+    // here.
+    var meetingFeature = doorknockMeetingGeojson.features[0];
+    var meetingProps    = meetingFeature.properties;
+    var bundlesSorted   = meetingProps.bundles; // already sorted by renters, server-side
+
+    var meetingPointsLayer = buildMeetingPointsLayer(doorknockMeetingGeojson, {
+      tooltipFn: function (p) {
+        return [
+          '<strong>Doorknock meeting point</strong>',
+          'Meet at: ' + p.meeting_label,
+          p.total_doors + ' doors (' + p.total_markers + ' map markers) across ' + p.bundles.length + ' bundles',
+          p.total_renters + ' renters total',
+        ].join('<br>');
+      },
+    });
+
+    doorknockLayerGroup = L.layerGroup([blockBoundariesLayer, meetingPointsLayer]);
+
+    // Each block already carries its own centroid (computed server-side
+    // from its member properties) — a bundle's centre is just the mean of
+    // its member blocks' centroids.
+    function bundleCentre(bundle) {
+      var lat = 0, lon = 0, n = bundle.blocks.length;
+      bundle.blocks.forEach(function (blk) { lat += blk.lat; lon += blk.lon; });
+      return n ? { lat: lat / n, lon: lon / n } : null;
+    }
+
+    // Populated once the control's DOM exists (see doorknockControl.onAdd
+    // below); selectBlock() is only ever called later, from a map-polygon
+    // click, so it's safe to reference these before they're assigned.
+    var doorknockCheckbox = null;
+    var doorknockBody     = null;
+
+    // Clicking a block's boundary on the map calls this: opens the panel if
+    // it's folded, scrolls the matching entry into view within the
+    // scrollable list, and flashes a highlight so it's easy to spot.
+    function selectBlock(blockId) {
+      if (!doorknockCheckbox || !blockId) return;
+      if (!doorknockCheckbox.checked) {
+        doorknockCheckbox.checked = true;
+        doorknockCheckbox.dispatchEvent(new Event('change'));
+      }
+      var el = document.getElementById('doorknock-block-' + blockId);
+      if (!el) return;
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      el.classList.add('doorknock-block-highlight');
+      setTimeout(function () { el.classList.remove('doorknock-block-highlight'); }, 2000);
+    }
+
+    // Self-contained control: a checkbox header that toggles the layer on
+    // the map AND unfolds this same box into the bundle list — no separate
+    // entry in the standard layer-control checkbox list.
+    var doorknockControl = L.control({ position: 'bottomleft' });
+    doorknockControl.onAdd = function () {
+      var div = L.DomUtil.create('div', 'legend doorknock-control');
+      var html =
+        '<label class="doorknock-toggle" style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600;">' +
+        '<input type="checkbox" id="doorknock-toggle-cb"> 🚪 Doorknock streets' +
+        '</label>' +
+        '<div class="doorknock-body" style="display:none;margin-top:8px;">' +
+        '<div class="doorknock-row doorknock-meeting-row" style="cursor:pointer;padding:3px 0;">' +
+        '<strong>Meeting point</strong><br>' +
+        '<span style="color:#555;">' + meetingProps.meeting_label + '</span><br>' +
+        '<span style="color:#888;font-size:11px;">' + meetingProps.total_doors + ' doors &middot; ' +
+        meetingProps.total_markers + ' markers &middot; ' + meetingProps.total_renters + ' renters total</span>' +
+        '</div>' +
+        '<div style="font-size:11px;color:#666;margin:6px 0;">East Oxford, ranked by renter density (per 150 sqm), bundled by geographic proximity. Click a bundle to jump to it, or click a block on the map to scroll to its details.</div>' +
+        '<div class="doorknock-bundle-list" style="max-height:45vh;overflow-y:auto;"></div>' +
+        '</div>';
+      div.innerHTML = html;
+
+      var bundleListEl = div.querySelector('.doorknock-bundle-list');
+      bundlesSorted.forEach(function (b, i) {
+        var row = document.createElement('div');
+        row.className = 'doorknock-row doorknock-bundle-row';
+        row.setAttribute('data-idx', i);
+        row.style.cssText = 'cursor:pointer;padding:4px 0;border-top:1px solid #eee;';
+        row.innerHTML =
+          '<strong>' + b.label + '</strong> <span style="color:#888;font-weight:400;">(' + b.locality + ')</span><br>' +
+          '<span style="color:#555;">' + b.doors + ' doors &middot; ' + b.markers + ' markers &middot; ' +
+          b.renters + ' renters &middot; ' + b.top20_agency_listings + ' top-20-agency listings</span>';
+
+        b.blocks.forEach(function (blk) {
+          var blockEl = document.createElement('div');
+          blockEl.className = 'doorknock-block-entry';
+          blockEl.id = 'doorknock-block-' + blk.block_id;
+          blockEl.style.cssText = 'padding-left:8px;color:#666;font-size:11px;margin-top:2px;';
+          var streetLines = (blk.streets || []).map(function (s) {
+            return '<div style="padding-left:16px;color:#888;font-size:11px;">' +
+              '&ndash; ' + s.street + ': ' + s.hmo_count + ' HMO, ' + s.selective_count +
+              ' private (' + s.doors + ' doors, ' + s.renters + ' renters)</div>';
+          }).join('');
+          blockEl.innerHTML =
+            '&bull; ' + blk.label + ' (' + blk.locality + '): ' + blk.doors + ' doors, ' +
+            blk.renters + ' renters (' + blk.renters_per_150sqm + '/150sqm), ' +
+            blk.top20_agency_listings + ' top-20-agency listings' + streetLines;
+          row.appendChild(blockEl);
+        });
+
+        bundleListEl.appendChild(row);
+      });
+
+      // Keep clicks/scrolls on this control from reaching the map
+      // (clicks would otherwise fire the map's click handler; wheel/trackpad
+      // scroll would otherwise zoom the map instead of scrolling the list).
+      L.DomEvent.disableClickPropagation(div);
+      L.DomEvent.disableScrollPropagation(div);
+
+      doorknockCheckbox = div.querySelector('#doorknock-toggle-cb');
+      doorknockBody     = div.querySelector('.doorknock-body');
+      doorknockCheckbox.addEventListener('change', function () {
+        if (doorknockCheckbox.checked) {
+          doorknockLayerGroup.addTo(map);
+          doorknockBody.style.display = 'block';
+        } else {
+          map.removeLayer(doorknockLayerGroup);
+          doorknockBody.style.display = 'none';
+        }
+      });
+
+      div.querySelector('.doorknock-meeting-row').addEventListener('click', function () {
+        map.setView([meetingFeature.geometry.coordinates[1], meetingFeature.geometry.coordinates[0]], 16);
+      });
+      bundleListEl.querySelectorAll('.doorknock-bundle-row').forEach(function (row) {
+        row.addEventListener('click', function (e) {
+          // Ignore clicks that landed on a nested block entry — those don't
+          // need to also re-fly the map to the whole bundle's centre.
+          if (e.target.closest('.doorknock-block-entry')) return;
+          var b = bundlesSorted[parseInt(row.getAttribute('data-idx'), 10)];
+          var c = bundleCentre(b);
+          if (c) map.setView([c.lat, c.lon], 17);
+        });
+      });
+
+      return div;
+    };
+    doorknockControl.addTo(map);
+  }
 
   // ── Grid heatmap (all licences) ───────────────────────────────────────
   var allLicenceFeatures = hmoFeatures.concat(selFeatures);
