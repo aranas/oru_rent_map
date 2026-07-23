@@ -2,44 +2,54 @@
 """
 build_doorknock_streets.py
 ---------------------------
-Builds the data feeding the "Doorknock streets (Cowley)" map overlay.
+Builds the data feeding the "Doorknock streets" map overlay.
 
-Identifies the Cowley streets with the highest renter DENSITY AND the
-highest density of listings from the top 20 rental agencies (by city-wide
-licence count), then outputs per-property markers and a single suggested
-meeting point for the whole shortlist.
+Identifies the densest small pockets ("blocks") in East Oxford by licence
+DENSITY (per 150 sqm) AND by density of listings from the top 20 rental
+agencies (by city-wide licence count), groups the shortlist into
+geographically-adjacent bundles (so the panel lists walkable clusters, not
+a scatter of individual grid cells), and outputs per-property markers plus
+a single suggested meeting point for the whole shortlist.
 
 Method:
-  - "Cowley" = properties whose nearest named locality (from
-    data/oxford_locality_anchors.json, built by build_locality_anchors.py
-    from the OS OpenMap Local "Named Place" layer) is Cowley or Temple
-    Cowley. Postcode district OX4 alone is too coarse — it also covers Rose
-    Hill, Littlemore, Blackbird Leys, Iffley Fields and St Clement's, which
-    have their own identity and are not what "Cowley" usually means. OX4 is
-    still used as a cheap prefilter before the nearest-locality check.
-  - "Renters" = sum of registered occupants per street (Occupants for HMO,
+  - "East Oxford" = postcode sector OX4 1 (Bartlemas Road, Divinity Road,
+    Magdalen Road, St Clement's, the northern/city end of Cowley Road and
+    Iffley Road, etc.) — verified empirically against this dataset's own
+    addresses, and distinct from Temple Cowley/Cowley (OX4 2-3), Rose Hill/
+    Littlemore (OX4 4) and Blackbird Leys (OX4 6-7), which are separate
+    neighbourhoods that happen to share the OX4 postcode district.
+  - The ranking unit is a BLOCK_SIZE_M square grid cell, not a whole named
+    street. An earlier version ranked whole streets by renters-per-length,
+    which has a real failure mode: a long street can have one genuinely
+    dense stretch sitting right next to another shortlisted street, but if
+    the rest of that street is sparse, averaging over its full length
+    dilutes the stretch below the cutoff (e.g. a dense pocket of Divinity
+    Road immediately next to Bartlemas Road was invisible this way, because
+    Divinity Road runs ~500m and most of it isn't that dense). Fixed-size
+    blocks catch exactly that: a dense pocket scores on its own, regardless
+    of what the rest of its street looks like, or even which street it's
+    on — the bundling step below then reconnects it with its dense
+    neighbours from other streets.
+  - "Renters" = sum of registered occupants per block (Occupants for HMO,
     Maximum permitted occupants for Selective licences).
   - "Top 20 rental agencies" = the 20 highest-volume canonical commercial
     letting agencies city-wide, using the same name normalisation as
     static/app.js (AGENT_NORM), excluding Oxford colleges and self-managed
     landlords.
-  - Streets are ranked by renters-per-100m and top-20-agency-listings-per-100m,
-    NOT raw totals — otherwise a long road (e.g. Cowley Road, ~1.5 miles)
-    always outranks a short one purely by having more addresses on it, even
-    if a canvasser covers far less ground per door on the short one.
-    Street "length" is estimated by projecting each street's property points
-    onto their principal axis (PCA) and taking the 5th-95th percentile
-    range — this is robust to the handful of licences per street that are
-    geocoded to the wrong place (common in this dataset; see
-    data/geocode_failures.csv) and would otherwise blow up a naive
-    max-pairwise-distance estimate. Streets with under MIN_LISTINGS
-    properties or under MIN_MARKERS distinct geocoded points are excluded
-    (too small a sample to estimate density from) and the span is floored
-    at SPAN_FLOOR_M (very short/cul-de-sac streets or streets whose points
-    all geocode to one building centroid still get treated as walkable in
-    one stop, not as infinitely dense).
-  - Streets are ranked by (renters-per-100m rank + top-20-agency-listings-
-    per-100m rank) and the best TOP_N are kept.
+  - Blocks are ranked by renters-per-150sqm and top-20-agency-listings-
+    per-150sqm — a block's area is fixed (BLOCK_SIZE_M x BLOCK_SIZE_M), so
+    no length/footprint estimation is needed. Blocks with under
+    MIN_LISTINGS properties or under MIN_MARKERS distinct geocoded points
+    are excluded (too small a sample to trust). Blocks are ranked by
+    (renters-per-150sqm rank + top-20-agency-listings-per-150sqm rank) and
+    the best TOP_N are kept. Each block is labelled with its most common
+    street name(s), for display only.
+  - The shortlist is then grouped into "bundles": blocks are grid cells, so
+    adjacency is native — two shortlisted blocks bundle together if they
+    share an edge or corner (Moore/8-connectivity), chained transitively
+    via union-find. This is what actually reconnects a dense Divinity Road
+    pocket with the neighbouring dense Bartlemas Road pocket into one
+    walkable bundle, even though they're different named streets.
 
 Inputs (must already exist):
   data/licence_locations.geojson
@@ -50,15 +60,21 @@ Inputs (must already exist):
   data/oxford_locality_anchors.json            (see build_locality_anchors.py)
 
 Outputs (committed):
-  data/doorknock_streets.geojson        — one Point per rental property on a
-                                          shortlisted street (doors to knock)
+  data/doorknock_blocks.geojson         — one Polygon per shortlisted block:
+                                          its exact grid-cell boundary (the
+                                          doorknocking "unit" to walk), with
+                                          a per-street breakdown (HMO count,
+                                          privately-rented/Selective count,
+                                          doors, renters) plus the block's
+                                          own totals and density stats
   data/doorknock_meeting_points.geojson — a single Point: one overall
                                           gathering spot for the whole
                                           shortlist (a named, publicly-
                                           accessible amenity where possible),
-                                          with a per-street breakdown of
-                                          door/marker/renter counts and the
-                                          density stats used to select it
+                                          with a breakdown by geographic
+                                          bundle (each listing its member
+                                          blocks, each with the same
+                                          per-street HMO/Selective breakdown)
 
 Run time: a few seconds, no network calls (reuses committed data files).
 """
@@ -76,18 +92,21 @@ LOCALITY_ANCHORS     = os.path.join(DATA, "oxford_locality_anchors.json")
 HMO_DETAILS_GLOB     = os.path.join(DATA, "HMO_Register_April_*_details.csv")
 SELECTIVE_CSV_GLOB   = os.path.join(DATA, "Selective_Licence_Register*.csv")
 
-OUT_STREETS          = os.path.join(DATA, "doorknock_streets.geojson")
+OUT_BLOCKS           = os.path.join(DATA, "doorknock_blocks.geojson")
 OUT_MEETING_POINTS   = os.path.join(DATA, "doorknock_meeting_points.geojson")
 
-COWLEY_DISTRICT_PREFILTER = "OX4"   # cheap prefilter; see nearest-locality check below
-COWLEY_LOCALITY_NAMES = {"Cowley", "Temple Cowley"}
-TOP_N_AGENCIES  = 20
-TOP_N_STREETS   = 7
+EAST_OXFORD_SECTOR = "OX41"   # postcode sector (no space) — see docstring
+TOP_N_AGENCIES = 20
+TOP_N_BLOCKS   = 10            # keep the shortlist small enough that a
+                                # canvassing team can scan it at a glance
 
 # Density-ranking guardrails (see module docstring)
-MIN_LISTINGS  = 5      # a street needs at least this many licences to rank
-MIN_MARKERS   = 3      # ...spread across at least this many distinct points
-SPAN_FLOOR_M  = 50      # minimum assumed street length, in metres
+MIN_LISTINGS  = 4        # a block needs at least this many licences to rank
+MIN_MARKERS   = 2        # ...spread across at least this many distinct points
+BLOCK_SIZE_M  = 100.0     # grid cell edge length, in metres — roughly a real
+                          # residential block face; small enough to isolate
+                          # a dense pocket, large enough for a usable sample
+AREA_UNIT_M2  = 150.0    # density is expressed per this many square metres
 
 # Landmark amenity types worth meeting at (publicly accessible, easy to find)
 MEETING_AMENITY_TYPES = {
@@ -354,35 +373,59 @@ def haversine_m(lat1, lon1, lat2, lon2):
     return 2 * R * math.asin(math.sqrt(a))
 
 
-def robust_span_m(points):
-    """Estimate how far apart a street's property points are spread, in
-    metres, robust to the odd mis-geocoded outlier: project every point onto
-    the principal axis of the point cloud (PCA) and take the 5th-95th
-    percentile range of that projection, rather than the raw max-pairwise
-    distance (which a single bad geocode can blow up to several km)."""
-    n = len(points)
-    if n < 2:
-        return 0.0
-    lat0 = sum(p["lat"] for p in points) / n
-    lon0 = sum(p["lon"] for p in points) / n
+# ── Grid block assignment ───────────────────────────────────────────────────
+
+def assign_block(lat, lon, lat0, block_size_m):
+    """Snap a point to a (row, col) grid cell key. `lat0` fixes the
+    metres-per-degree-longitude conversion for the whole grid (using each
+    point's own latitude would make cells slightly non-square and,
+    worse, inconsistent between points — this keeps every cell exactly
+    block_size_m x block_size_m)."""
     m_per_deg_lat = 111320.0
     m_per_deg_lon = 111320.0 * math.cos(math.radians(lat0))
-    xs = [(p["lon"] - lon0) * m_per_deg_lon for p in points]
-    ys = [(p["lat"] - lat0) * m_per_deg_lat for p in points]
-    mx, my = sum(xs) / n, sum(ys) / n
-    sxx = sum((x - mx) ** 2 for x in xs) / n
-    syy = sum((y - my) ** 2 for y in ys) / n
-    sxy = sum((xs[i] - mx) * (ys[i] - my) for i in range(n)) / n
-    theta = 0.5 * math.atan2(2 * sxy, sxx - syy)
-    proj = sorted((xs[i] - mx) * math.cos(theta) + (ys[i] - my) * math.sin(theta) for i in range(n))
-    lo = proj[max(0, int(0.05 * n))]
-    hi = proj[min(n - 1, int(0.95 * n))]
-    return hi - lo
+    row = math.floor(lat * m_per_deg_lat / block_size_m)
+    col = math.floor(lon * m_per_deg_lon / block_size_m)
+    return row, col
+
+
+def block_bounds(block, lat0, block_size_m):
+    """The exact lat/lon rectangle for a (row, col) block key — the inverse
+    of assign_block, so the boundary drawn on the map is precisely the grid
+    cell used for ranking and bundling, not an approximation of it."""
+    row, col = block
+    m_per_deg_lat = 111320.0
+    m_per_deg_lon = 111320.0 * math.cos(math.radians(lat0))
+    min_lat = row * block_size_m / m_per_deg_lat
+    max_lat = (row + 1) * block_size_m / m_per_deg_lat
+    min_lon = col * block_size_m / m_per_deg_lon
+    max_lon = (col + 1) * block_size_m / m_per_deg_lon
+    return min_lat, min_lon, max_lat, max_lon
+
+
+def street_breakdown(pts):
+    """Per-street breakdown within a block: how many HMO licences, how many
+    privately-rented (Selective licence) properties, doors and renters —
+    the level of detail a canvasser actually needs once they're standing on
+    a specific street inside the block. Sorted by renters, busiest first."""
+    by_street = defaultdict(list)
+    for r in pts:
+        by_street[r["street"]].append(r)
+    rows = []
+    for street, spts in by_street.items():
+        rows.append({
+            "street": street,
+            "hmo_count": sum(1 for r in spts if r["type"] == "hmo"),
+            "selective_count": sum(1 for r in spts if r["type"] == "selective"),
+            "doors": len({r["address"] for r in spts}),
+            "renters": sum(r["occupants"] or 0 for r in spts),
+        })
+    rows.sort(key=lambda x: -x["renters"])
+    return rows
 
 
 # ── Ranking ───────────────────────────────────────────────────────────────
 
-def rank_streets(records, anchors):
+def rank_blocks(records, anchors):
     agency_counts = defaultdict(int)
     for r in records:
         if r["agent_canon"] in COMMERCIAL_AGENCY_LABELS:
@@ -390,49 +433,97 @@ def rank_streets(records, anchors):
     top_agencies = sorted(agency_counts.items(), key=lambda x: -x[1])[:TOP_N_AGENCIES]
     top_agency_names = {name for name, _ in top_agencies}
 
-    # OX4 first (cheap prefilter), then the real Cowley-vs-neighbours check:
-    # nearest named locality must be Cowley or Temple Cowley, not Rose Hill /
-    # Littlemore / Blackbird Leys / Iffley / St Clement's (all also OX4).
-    prefiltered = [r for r in records if r["district"] == COWLEY_DISTRICT_PREFILTER and r["street"]]
-    cowley = [r for r in prefiltered if nearest_locality(r["lat"], r["lon"], anchors) in COWLEY_LOCALITY_NAMES]
+    candidates = [
+        r for r in records
+        if r["street"] and r["postcode"] and r["postcode"].startswith(EAST_OXFORD_SECTOR)
+    ]
+    lat0 = sum(r["lat"] for r in candidates) / len(candidates)
 
-    by_street = defaultdict(list)
-    for r in cowley:
-        by_street[r["street"]].append(r)
+    by_block = defaultdict(list)
+    for r in candidates:
+        by_block[assign_block(r["lat"], r["lon"], lat0, BLOCK_SIZE_M)].append(r)
 
-    street_stats = {}
-    for street, pts in by_street.items():
+    area_units = (BLOCK_SIZE_M * BLOCK_SIZE_M) / AREA_UNIT_M2
+    block_stats = {}
+    for block, pts in by_block.items():
         markers = len({(r["lon"], r["lat"]) for r in pts})
         if len(pts) < MIN_LISTINGS or markers < MIN_MARKERS:
-            continue  # too small a sample to estimate walking density from
+            continue  # too small a sample to estimate density from
         renters = sum(r["occupants"] or 0 for r in pts)
         top20_listings = sum(1 for r in pts if r["agent_canon"] in top_agency_names)
-        span_m = max(robust_span_m(pts), SPAN_FLOOR_M)
-        span_units = span_m / 100.0
-        street_stats[street] = {
+        streets = Counter(r["street"] for r in pts).most_common(2)
+        lat_c = sum(r["lat"] for r in pts) / len(pts)
+        lon_c = sum(r["lon"] for r in pts) / len(pts)
+        block_stats[block] = {
             "renters": renters,
             "listings": len(pts),
+            "markers": markers,
             "top20_listings": top20_listings,
-            "span_m": round(span_m),
-            "renters_per_100m": renters / span_units,
-            "top20_per_100m": top20_listings / span_units,
+            "renters_per_150sqm": renters / area_units,
+            "top20_per_150sqm": top20_listings / area_units,
+            "streets": [name for name, _ in streets],
+            "label": " / ".join(name for name, _ in streets),
+            "lat": lat_c,
+            "lon": lon_c,
+            "locality": nearest_locality(lat_c, lon_c, anchors),
         }
 
-    by_renters = sorted(street_stats.items(), key=lambda x: -x[1]["renters_per_100m"])
-    by_top20 = sorted(street_stats.items(), key=lambda x: -x[1]["top20_per_100m"])
-    rank_r = {name: i for i, (name, _) in enumerate(by_renters)}
-    rank_t = {name: i for i, (name, _) in enumerate(by_top20)}
+    by_renters = sorted(block_stats.items(), key=lambda x: -x[1]["renters_per_150sqm"])
+    by_top20 = sorted(block_stats.items(), key=lambda x: -x[1]["top20_per_150sqm"])
+    rank_r = {block: i for i, (block, _) in enumerate(by_renters)}
+    rank_t = {block: i for i, (block, _) in enumerate(by_top20)}
 
-    combined = sorted(street_stats.items(), key=lambda x: rank_r[x[0]] + rank_t[x[0]])
-    shortlist = [name for name, _ in combined[:TOP_N_STREETS]]
+    combined = sorted(block_stats.items(), key=lambda x: rank_r[x[0]] + rank_t[x[0]])
+    shortlist = [block for block, _ in combined[:TOP_N_BLOCKS]]
 
-    return shortlist, street_stats, top_agency_names, cowley
+    return shortlist, block_stats, top_agency_names, candidates, by_block
+
+
+# ── Bundling (group the shortlist into geographically-adjacent clusters) ───
+
+def bundle_blocks(shortlist):
+    """Chain shortlisted blocks into bundles via union-find, using native
+    grid adjacency rather than a distance threshold. This is what reconnects
+    a dense pocket of one street with a dense pocket of a neighbouring
+    street into a single walkable bundle.
+
+    Deliberately edge-only (4-connectivity: north/south/east/west), not
+    Moore/8-connectivity (which also counts diagonal touches): East Oxford
+    is dense enough that with 8-connectivity, most of the shortlist ends up
+    diagonally chained into one mega-bundle, which stops the list being
+    useful for splitting into separate walkable teams. Edge-only still
+    reconnects genuinely adjacent streets (that's an edge touch, not a
+    corner touch) while keeping bundles to a handful of blocks each."""
+    shortlist_set = set(shortlist)
+    parent = {b: b for b in shortlist}
+
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    def union(a, b):
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            parent[ra] = rb
+
+    for (row, col) in shortlist:
+        for drow, dcol in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            neighbour = (row + drow, col + dcol)
+            if neighbour in shortlist_set:
+                union((row, col), neighbour)
+
+    groups = defaultdict(list)
+    for b in shortlist:
+        groups[find(b)].append(b)
+    return list(groups.values())
 
 
 # ── Meeting point (one, for the whole shortlist) ────────────────────────────
-# A single gathering spot, not one per street: real canvasses start together
+# A single gathering spot, not one per block: real canvasses start together
 # (safety briefing, pairing up, splitting into teams) and then fan out, they
-# don't need a separate rendezvous per street.
+# don't need a separate rendezvous per block.
 
 def load_meeting_amenities():
     with open(AMENITIES_GEOJSON) as f:
@@ -448,14 +539,15 @@ def load_meeting_amenities():
 
 def pick_meeting_point(points, amenities):
     """Prefer a real, publicly-accessible landmark (pub/cafe/library/etc.)
-    near the centroid of every shortlisted street's points — weighted by how
-    many properties each street contributes, so the point stays central to
-    where the doors actually are rather than the simple average of 7 street
-    midpoints. "Meet outside 40 Some Road" is a much worse instruction than
-    "meet at The Rusty Bicycle", so this falls back to the actual property
-    point closest to the centroid (a medoid) only when no landmark is close
-    enough. A car park is preferred among equally-close landmarks since most
-    canvassers will be driving in from outside the immediate area."""
+    near the centroid of every shortlisted block's points — weighted by how
+    many properties each block contributes, so the point stays central to
+    where the doors actually are rather than the simple average of each
+    block's midpoint. "Meet outside 40 Some Road" is a much worse
+    instruction than "meet at The Rusty Bicycle", so this falls back to the
+    actual property point closest to the centroid (a medoid) only when no
+    landmark is close enough. A car park is preferred among equally-close
+    landmarks since most canvassers will be driving in from outside the
+    immediate area."""
     lat_c = sum(p["lat"] for p in points) / len(points)
     lon_c = sum(p["lon"] for p in points) / len(points)
 
@@ -478,79 +570,116 @@ def pick_meeting_point(points, amenities):
     return {"lat": medoid["lat"], "lon": medoid["lon"], "label": "near " + medoid["address"]}
 
 
+def bundle_label(members_sorted, block_stats):
+    """A readable label for a bundle: the distinct primary street names of
+    its member blocks (highest-renter block first), e.g. "Divinity Road &
+    Bartlemas Road" — this is exactly what surfaces a dense pocket of one
+    street bundled with a dense pocket of its neighbour."""
+    seen = []
+    for b in members_sorted:
+        primary = block_stats[b]["streets"][0]
+        if primary not in seen:
+            seen.append(primary)
+    if len(seen) == 1:
+        return seen[0]
+    if len(seen) == 2:
+        return seen[0] + " & " + seen[1]
+    return seen[0] + ", " + seen[1] + f" + {len(seen) - 2} more"
+
+
 def main():
     records = build_records()
     anchors = load_locality_anchors()
-    shortlist, street_stats, top_agency_names, cowley = rank_streets(records, anchors)
+    shortlist, block_stats, top_agency_names, candidates, by_block = rank_blocks(records, anchors)
     amenities = load_meeting_amenities()
 
-    print("Shortlisted streets (best combined renters/100m + top-20-agency/100m rank):")
-    for name in shortlist:
-        s = street_stats[name]
-        print(f"  {name}: {s['renters']} renters over ~{s['span_m']}m "
-              f"({s['renters_per_100m']:.0f}/100m), {s['listings']} listings, "
-              f"{s['top20_listings']} top-20-agency listings ({s['top20_per_100m']:.1f}/100m)")
+    print(f"Shortlisted blocks (top {TOP_N_BLOCKS} in East Oxford, {BLOCK_SIZE_M:.0f}m cells, "
+          f"best combined renters/150sqm + top-20-agency/150sqm rank):")
+    for block in shortlist:
+        s = block_stats[block]
+        print(f"  {s['label']} ({s['locality']}): {s['renters']} renters "
+              f"({s['renters_per_150sqm']:.0f}/150sqm), {s['listings']} listings, "
+              f"{s['top20_listings']} top-20-agency listings ({s['top20_per_150sqm']:.1f}/150sqm)")
 
     shortlist_set = set(shortlist)
-    street_records = [r for r in cowley if r["street"] in shortlist_set]
+    block_records = [r for block in shortlist_set for r in by_block[block]]
+    lat0 = sum(r["lat"] for r in candidates) / len(candidates)
 
-    # ── data/doorknock_streets.geojson — one marker per rental property,
-    #    deduplicated by exact coordinate the same way static/app.js does
-    #    for the main HMO/Selective layers ("markers" = distinct pins).
-    coord_groups = defaultdict(list)
-    for r in street_records:
-        coord_groups[(r["lon"], r["lat"])].append(r)
+    def block_summary(block):
+        pts = by_block[block]
+        s = block_stats[block]
+        return {
+            "block_id": f"{block[0]}_{block[1]}",
+            "label": s["label"],
+            "locality": s["locality"],
+            "doors": len({r["address"] for r in pts}),
+            "markers": s["markers"],
+            "renters": s["renters"],
+            "renters_per_150sqm": round(s["renters_per_150sqm"], 1),
+            "top20_agency_listings": s["top20_listings"],
+            "top20_per_150sqm": round(s["top20_per_150sqm"], 2),
+            "lat": s["lat"],
+            "lon": s["lon"],
+            "streets": street_breakdown(pts),
+        }
 
-    door_features = []
-    for (lon, lat), group in coord_groups.items():
-        addresses = sorted({r["address"] for r in group})
-        agents = sorted({r["agent_canon"] for r in group if r["agent_canon"]})
-        street = group[0]["street"]
-        door_features.append({
+    # ── data/doorknock_blocks.geojson — one Polygon per shortlisted block:
+    #    its exact grid-cell boundary (the doorknocking "unit"), with a
+    #    per-street HMO/Selective breakdown.
+    block_features = []
+    for block in shortlist:
+        min_lat, min_lon, max_lat, max_lon = block_bounds(block, lat0, BLOCK_SIZE_M)
+        summary = block_summary(block)
+        block_features.append({
             "type": "Feature",
-            "geometry": {"type": "Point", "coordinates": [lon, lat]},
-            "properties": {
-                "street": street,
-                "addresses": addresses,
-                "agents": agents,
-                "top20_agency": any(a in top_agency_names for a in agents),
-                "door_count": len(addresses),
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                    [min_lon, min_lat], [max_lon, min_lat],
+                    [max_lon, max_lat], [min_lon, max_lat],
+                    [min_lon, min_lat],
+                ]],
             },
+            "properties": summary,
         })
 
-    with open(OUT_STREETS, "w") as f:
-        json.dump({"type": "FeatureCollection", "features": door_features}, f, indent=1)
-    print(f"\nWrote {len(door_features)} markers -> {OUT_STREETS}")
+    with open(OUT_BLOCKS, "w") as f:
+        json.dump({"type": "FeatureCollection", "features": block_features}, f, indent=1)
+    print(f"\nWrote {len(block_features)} block boundaries -> {OUT_BLOCKS}")
 
     # ── data/doorknock_meeting_points.geojson — ONE overall meeting point for
-    #    the whole shortlist, plus a per-street door/marker/renter breakdown.
-    street_breakdown = []
-    for street in shortlist:
-        pts = [r for r in street_records if r["street"] == street]
-        doors = len({r["address"] for r in pts})
-        markers = len({(r["lon"], r["lat"]) for r in pts})
-        s = street_stats[street]
-        street_breakdown.append({
-            "street": street,
-            "doors": doors,
-            "markers": markers,
-            "renters": s["renters"],
-            "renters_per_100m": round(s["renters_per_100m"], 1),
-            "top20_agency_listings": s["top20_listings"],
-            "top20_per_100m": round(s["top20_per_100m"], 2),
-            "span_m": s["span_m"],
+    #    the whole shortlist, plus a breakdown by geographic bundle (each
+    #    listing its member blocks, each with its own per-street breakdown).
+    bundle_groups = bundle_blocks(shortlist)
+    bundle_list = []
+    for members in bundle_groups:
+        members_sorted = sorted(members, key=lambda b: -block_stats[b]["renters_per_150sqm"])
+        member_summaries = [block_summary(b) for b in members_sorted]
+        bundle_list.append({
+            "label": bundle_label(members_sorted, block_stats),
+            "locality": block_stats[members_sorted[0]]["locality"],
+            "doors": sum(m["doors"] for m in member_summaries),
+            "markers": sum(m["markers"] for m in member_summaries),
+            "renters": sum(m["renters"] for m in member_summaries),
+            "top20_agency_listings": sum(m["top20_agency_listings"] for m in member_summaries),
+            "blocks": member_summaries,
         })
+    bundle_list.sort(key=lambda b: -b["renters"])
 
-    meeting = pick_meeting_point(street_records, amenities)
+    print(f"\n{len(bundle_list)} bundle(s) (adjacent {BLOCK_SIZE_M:.0f}m blocks grouped together):")
+    for b in bundle_list:
+        print(f"  {b['label']}: {len(b['blocks'])} block(s), {b['doors']} doors, {b['renters']} renters")
+
+    meeting = pick_meeting_point(block_records, amenities)
     meeting_feature = {
         "type": "Feature",
         "geometry": {"type": "Point", "coordinates": [meeting["lon"], meeting["lat"]]},
         "properties": {
             "meeting_label": meeting["label"],
-            "total_doors": sum(s["doors"] for s in street_breakdown),
-            "total_markers": sum(s["markers"] for s in street_breakdown),
-            "total_renters": sum(s["renters"] for s in street_breakdown),
-            "streets": street_breakdown,
+            "total_doors": sum(b["doors"] for b in bundle_list),
+            "total_markers": sum(b["markers"] for b in bundle_list),
+            "total_renters": sum(b["renters"] for b in bundle_list),
+            "bundles": bundle_list,
         },
     }
 
