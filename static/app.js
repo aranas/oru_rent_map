@@ -22,10 +22,6 @@ var CONFIG = {
   selectiveMarkerColour: '#16a34a',  // green
   doorknockBoundaryColour: '#f97316',  // orange
   meetingPointColour:    '#7c3aed',  // violet
-  // CSV upload (existing HMO footprint matching)
-  hmoBuildingFill:   '#2563eb',
-  hmoBuildingStroke: '#1d4ed8',
-  hmoFallbackColour: '#ea580c',
 };
 
 
@@ -66,9 +62,23 @@ function quantileBreaks(values, n) {
 
 
 // ── Disclaimer dismiss ────────────────────────────────────────────────────
+// Leaflet's corner controls (zoom, Map layers, Doorknock streets) default to
+// top:0, which sits directly under the fixed disclaimer bar — on mobile,
+// where the disclaimer text wraps to 2-3 lines, that hid the dismiss button
+// entirely underneath the opaque "Map layers" box. Push every top corner
+// down by the disclaimer's actual (measured, not guessed) height instead.
+window.positionControlsBelowDisclaimer = function () {
+  var discEl = document.getElementById('disclaimer');
+  var h = (discEl && discEl.style.display !== 'none') ? discEl.offsetHeight : 0;
+  document.querySelectorAll('.leaflet-top').forEach(function (el) {
+    el.style.top = h + 'px';
+  });
+};
+
 window.dismissDisclaimer = function () {
   document.getElementById('disclaimer').style.display = 'none';
   try { sessionStorage.setItem('disclaimerDismissed', '1'); } catch (_) {}
+  window.positionControlsBelowDisclaimer();
 };
 
 (function restoreDisclaimer() {
@@ -79,6 +89,10 @@ window.dismissDisclaimer = function () {
     }
   } catch (_) {}
 })();
+
+window.addEventListener('resize', function () {
+  window.positionControlsBelowDisclaimer();
+});
 
 
 // ── Hover info panel helpers ──────────────────────────────────────────────
@@ -234,33 +248,6 @@ function buildPointMarkers(pointGeojson, opts) {
     onEachFeature: function (feature, layer) {
       var label = tooltipFn(feature.properties);
       if (label) layer.bindTooltip(label, { direction: 'top', offset: [0, -6] });
-    },
-  });
-}
-
-
-function buildBuildingFootprints(buildingGeojson) {
-  return L.geoJSON(buildingGeojson, {
-    style: function () {
-      return {
-        fillColor:   CONFIG.hmoBuildingFill,
-        fillOpacity: 0.35,
-        color:       CONFIG.hmoBuildingStroke,
-        weight:      2,
-      };
-    },
-    onEachFeature: function (feature, layer) {
-      var p = feature.properties;
-      var lines = [];
-      if (p.address)       lines.push(p.address);
-      if (p.sub_units)     lines.push('Units: ' + p.sub_units);
-      if (p.entry_count)   lines.push('<em>' + p.entry_count + ' separate HMO entries at this address</em>');
-      if (p.hmo_id)        lines.push('ID: ' + p.hmo_id);
-      if (p.licence_start) lines.push('Start: ' + p.licence_start);
-      if (p.licence_end)   lines.push('End: ' + p.licence_end);
-      if (lines.length) {
-        layer.bindTooltip(lines.join('<br>'), { direction: 'top', offset: [0, -6] });
-      }
     },
   });
 }
@@ -653,25 +640,6 @@ function buildLegend(colourScale, breaks, valueLabel) {
     if (map.hasLayer(selMarkerLayer)) selMarkerLayer.bringToFront();
   }
 
-  // ── Agent dropdown control ────────────────────────────────────────────
-  var agentControl = L.control({ position: 'topright' });
-  agentControl.onAdd = function () {
-    var div = L.DomUtil.create('div', 'agent-dropdown-control');
-    div.innerHTML =
-      '<label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">🔴 Agent highlight</label>' +
-      '<select id="agent-select" style="width:100%;font-size:12px;padding:2px 4px;">' +
-      '<option value="">— none —</option>' +
-      allAgentNames.map(function (name) {
-        return '<option value="' + name.replace(/"/g, '&quot;') + '">' + name + '</option>';
-      }).join('') +
-      '</select>';
-    L.DomEvent.disableClickPropagation(div);
-    div.querySelector('#agent-select').addEventListener('change', function () {
-      setAgentHalo(this.value);
-    });
-    return div;
-  };
-
   // ── Holder (landlord) marker layer ────────────────────────────────────
   var holderMarkerLayer = holderGeojson ? buildPointMarkers(holderGeojson, {
     radius:    5,
@@ -869,16 +837,6 @@ function buildLegend(colourScale, breaks, valueLabel) {
   hmoMarkerLayer.addTo(map);
   selMarkerLayer.addTo(map);
 
-  // ── Layer control (markers only) ──────────────────────────────────────
-  var overlays = {};
-  overlays['🔵 HMO rented properties']      = hmoMarkerLayer;
-  overlays['🟢 Privately rented properties'] = selMarkerLayer;
-  if (holderMarkerLayer) overlays['⚫ Landlords (licence holder)'] = holderMarkerLayer;
-
-  var layerControl = L.control.layers(null, overlays, { collapsed: false, position: 'topright' });
-  layerControl.addTo(map);
-  agentControl.addTo(map);
-
   // ── Density layer dropdown ─────────────────────────────────────────────
   var activeDensityLayer = null;
   var activeLegend       = null;
@@ -941,24 +899,74 @@ function buildLegend(colourScale, breaks, valueLabel) {
     activeLegend.addTo(map);
   }
 
-  var densityControl = L.control({ position: 'topright' });
-  densityControl.onAdd = function () {
-    var div = L.DomUtil.create('div', 'agent-dropdown-control');
-    div.innerHTML =
-      '<label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">🗺 Density layer</label>' +
-      '<select id="density-select" style="width:100%;font-size:12px;padding:2px 4px;">' +
-      '<option value="">— none —</option>' +
-      '<option value="hmo">HMO count per area</option>' +
-      '<option value="sel">Private renters per area</option>' +
-      '<option value="grid">Licence density grid (~500 m²)</option>' +
-      '</select>';
+  // ── Consolidated "Map layers" menu (top-right) ─────────────────────────
+  // Bundles the HMO/Selective/Landlords toggles, the agent-highlight
+  // select, and the density-layer select into one collapsed-by-default
+  // menu instead of three separate floating boxes — that many boxes at
+  // once left little room for the map on narrow/mobile screens.
+  var mapControlsControl = L.control({ position: 'topright' });
+  mapControlsControl.onAdd = function () {
+    var div = L.DomUtil.create('div', 'legend map-controls');
+    var html =
+      '<button type="button" id="map-controls-toggle" class="map-controls-toggle" aria-expanded="false">&#9776; Map layers</button>' +
+      '<div class="map-controls-body" id="map-controls-body">' +
+        '<div class="map-controls-section">' +
+          '<label><input type="checkbox" id="chk-hmo" checked> 🔵 HMO rented properties</label>' +
+          '<label><input type="checkbox" id="chk-sel" checked> 🟢 Privately rented properties</label>' +
+          (holderMarkerLayer ? '<label><input type="checkbox" id="chk-holder"> ⚫ Landlords (licence holder)</label>' : '') +
+        '</div>' +
+        '<div class="map-controls-section">' +
+          '<label class="map-controls-label">🔴 Agent highlight</label>' +
+          '<select id="agent-select">' +
+          '<option value="">— none —</option>' +
+          allAgentNames.map(function (name) {
+            return '<option value="' + name.replace(/"/g, '&quot;') + '">' + name + '</option>';
+          }).join('') +
+          '</select>' +
+        '</div>' +
+        '<div class="map-controls-section">' +
+          '<label class="map-controls-label">🗺 Density layer</label>' +
+          '<select id="density-select">' +
+          '<option value="">— none —</option>' +
+          '<option value="hmo">HMO count per area</option>' +
+          '<option value="sel">Private renters per area</option>' +
+          '<option value="grid">Licence density grid (~500 m²)</option>' +
+          '</select>' +
+        '</div>' +
+      '</div>';
+    div.innerHTML = html;
     L.DomEvent.disableClickPropagation(div);
+    L.DomEvent.disableScrollPropagation(div);
+
+    var toggleBtn = div.querySelector('#map-controls-toggle');
+    var body      = div.querySelector('#map-controls-body');
+    toggleBtn.addEventListener('click', function () {
+      var open = body.classList.toggle('open');
+      toggleBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+
+    div.querySelector('#chk-hmo').addEventListener('change', function (e) {
+      if (e.target.checked) hmoMarkerLayer.addTo(map); else map.removeLayer(hmoMarkerLayer);
+    });
+    div.querySelector('#chk-sel').addEventListener('change', function (e) {
+      if (e.target.checked) selMarkerLayer.addTo(map); else map.removeLayer(selMarkerLayer);
+    });
+    var holderChk = div.querySelector('#chk-holder');
+    if (holderChk) {
+      holderChk.addEventListener('change', function (e) {
+        if (e.target.checked) holderMarkerLayer.addTo(map); else map.removeLayer(holderMarkerLayer);
+      });
+    }
+    div.querySelector('#agent-select').addEventListener('change', function () {
+      setAgentHalo(this.value);
+    });
     div.querySelector('#density-select').addEventListener('change', function () {
       setDensityLayer(this.value);
     });
+
     return div;
   };
-  densityControl.addTo(map);
+  mapControlsControl.addTo(map);
 
   // ── Disclaimer ────────────────────────────────────────────────────────
   var hmoTotal = hmoFeatures.length;
@@ -973,131 +981,6 @@ function buildLegend(colourScale, breaks, valueLabel) {
     disc.style.display = '';
     try { sessionStorage.removeItem('disclaimerDismissed'); } catch (_) {}
   }
+  window.positionControlsBelowDisclaimer();
 
-  // ── CSV upload (adds extra layers on top of pre-loaded data) ──────────
-
-  // State for uploaded CSV layers
-  var uploadedLayers = [];
-
-  function clearUploadedLayers() {
-    uploadedLayers.forEach(function (l) {
-      if (map.hasLayer(l)) map.removeLayer(l);
-      layerControl.removeLayer(l);
-    });
-    uploadedLayers = [];
-  }
-
-  function addUploadedData(hmoData) {
-    clearUploadedLayers();
-
-    var stats = hmoData.matchStats;
-
-    if (hmoData.hmoBuildings && hmoData.hmoBuildings.features.length > 0) {
-      var bl = buildBuildingFootprints(hmoData.hmoBuildings);
-      bl.addTo(map);
-      layerControl.addOverlay(bl, 'Uploaded: HMO buildings');
-      uploadedLayers.push(bl);
-    }
-
-    if (hmoData.hmoFallbackPoints && hmoData.hmoFallbackPoints.features.length > 0) {
-      var fl = buildPointMarkers(hmoData.hmoFallbackPoints, {
-        fillColor: CONFIG.hmoFallbackColour,
-        tooltipFn: function (p) {
-          var lines = [];
-          if (p.address)       lines.push(p.address);
-          if (p.hmo_id)        lines.push('ID: ' + p.hmo_id);
-          if (p.licence_start) lines.push('Start: ' + p.licence_start);
-          if (p.licence_end)   lines.push('End: ' + p.licence_end);
-          return lines.join('<br>');
-        },
-      });
-      fl.addTo(map);
-      layerControl.addOverlay(fl, 'Uploaded: unmatched (point)');
-      uploadedLayers.push(fl);
-    }
-
-    // Update disclaimer
-    if (disc) {
-      disc.innerHTML =
-        'Showing Oxford licence data: <strong>' + hmoTotal + ' HMO</strong> + ' +
-        '<strong>' + selTotal + ' selective</strong> licences (pre-loaded). ' +
-        'Uploaded CSV: ' + stats.total + ' properties, ' + stats.matched + ' matched to buildings.' +
-        ' <button onclick="dismissDisclaimer()" aria-label="Dismiss">&times;</button>';
-      disc.style.display = '';
-      try { sessionStorage.removeItem('disclaimerDismissed'); } catch (_) {}
-    }
-
-    var btn = document.getElementById('btn-clear-hmo');
-    if (btn) btn.style.display = 'inline-block';
-  }
-
-  // ── Upload UI wiring ──────────────────────────────────────────────────
-
-  var statusEl  = document.getElementById('upload-status');
-  var dropZone  = document.getElementById('upload-drop-zone');
-  var fileInput = document.getElementById('hmo-file-input');
-  var clearBtn  = document.getElementById('btn-clear-hmo');
-
-  function setUploadStatus(msg, className) {
-    if (statusEl) {
-      statusEl.textContent = msg;
-      statusEl.className   = className || '';
-    }
-  }
-
-  if (dropZone && fileInput) {
-    dropZone.addEventListener('click', function () { fileInput.click(); });
-
-    dropZone.addEventListener('dragover', function (e) {
-      e.preventDefault();
-      dropZone.classList.add('dragover');
-    });
-    dropZone.addEventListener('dragleave', function () {
-      dropZone.classList.remove('dragover');
-    });
-    dropZone.addEventListener('drop', function (e) {
-      e.preventDefault();
-      dropZone.classList.remove('dragover');
-      if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
-    });
-
-    fileInput.addEventListener('change', function () {
-      if (fileInput.files.length > 0) handleFile(fileInput.files[0]);
-    });
-  }
-
-  function handleFile(file) {
-    if (!file.name.toLowerCase().endsWith('.csv')) {
-      setUploadStatus('Please select a .csv file.', 'error');
-      return;
-    }
-    setUploadStatus('Processing...', '');
-
-    window.HmoUpload.processHmoCsv(file, function (msg) {
-      setUploadStatus(msg, '');
-    }).then(function (result) {
-      addUploadedData(result);
-      setUploadStatus('CSV loaded', 'success');
-    }).catch(function (err) {
-      setUploadStatus('Error: ' + err.message, 'error');
-      console.error('HMO upload error:', err);
-    });
-  }
-
-  if (clearBtn) {
-    clearBtn.addEventListener('click', function () {
-      clearUploadedLayers();
-      clearBtn.style.display = 'none';
-      setUploadStatus('', '');
-      if (disc) {
-        disc.innerHTML =
-          'Showing Oxford licence data: <strong>' + hmoTotal + ' HMO</strong> licences (blue) ' +
-          'and <strong>' + selTotal + ' selective</strong> licences (green). ' +
-          'Data: Oxford City Council.' +
-          ' <button onclick="dismissDisclaimer()" aria-label="Dismiss">&times;</button>';
-        disc.style.display = '';
-        try { sessionStorage.removeItem('disclaimerDismissed'); } catch (_) {}
-      }
-    });
-  }
 })();
