@@ -19,7 +19,7 @@
 
     #map { width: 100vw; height: 100vh; }
 
-    /* ── Disclaimer banner ── */
+    /* ── Disclaimer banner (closable header bar) ── */
     #disclaimer {
       position: fixed;
       top: 0; left: 0; right: 0;
@@ -33,14 +33,19 @@
     }
     #disclaimer button {
       position: absolute;
-      right: 12px;
+      right: 6px;
       top: 50%;
       transform: translateY(-50%);
       background: none;
       border: none;
-      font-size: 18px;
+      font-size: 20px;
+      line-height: 1;
       cursor: pointer;
       color: #664d03;
+      padding: 8px 10px;
+    }
+    @media (max-width: 480px) {
+      #disclaimer { font-size: 12px; padding: 8px 44px 8px 10px; }
     }
 
     /* ── Legend ── */
@@ -51,14 +56,6 @@
       box-shadow: 0 1px 5px rgba(0,0,0,.3);
       font-size: 13px;
       line-height: 1.6;
-    }
-    .agent-dropdown-control {
-      background: white;
-      padding: 8px 10px;
-      border-radius: 6px;
-      box-shadow: 0 1px 5px rgba(0,0,0,.3);
-      font-size: 13px;
-      min-width: 180px;
     }
     .legend .legend-title {
       font-weight: 600;
@@ -75,8 +72,19 @@
       border-radius: 2px;
       border: 1px solid #ccc;
     }
+    /* Positioned mid-lateral (vertically centred on the left edge) rather
+       than stacked in a Leaflet corner, so it doesn't compete for space
+       with the map-layers menu or pile up with other bottom-corner
+       controls on narrow screens. */
     .doorknock-control {
-      max-width: 280px;
+      position: fixed !important;
+      top: 50%;
+      left: 10px;
+      transform: translateY(-50%);
+      z-index: 1000;
+      max-width: min(280px, calc(100vw - 20px));
+      max-height: 80vh;
+      overflow-y: auto;
     }
     .doorknock-control .doorknock-row:hover {
       background: #f3f4f6;
@@ -90,6 +98,60 @@
     }
     .doorknock-block-entry.doorknock-block-highlight {
       background-color: #fef08a;
+    }
+
+    /* ── Consolidated map-layers menu (top-right) ── */
+    .map-controls {
+      max-width: min(240px, calc(100vw - 20px));
+    }
+    .map-controls-toggle {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+      color: #1e293b;
+    }
+    .map-controls-body {
+      display: none;
+      margin-top: 10px;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    .map-controls-body.open { display: block; }
+    .map-controls-section {
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .map-controls-section:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+    .map-controls-section label {
+      display: block;
+      font-size: 12px;
+      margin-bottom: 6px;
+      cursor: pointer;
+    }
+    .map-controls-section label input[type="checkbox"] {
+      margin-right: 4px;
+    }
+    .map-controls-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .map-controls-section select {
+      width: 100%;
+      font-size: 12px;
+      padding: 3px 4px;
     }
 
     /* ── Hover info panel ── */
@@ -108,111 +170,6 @@
     }
     #info-panel .info-name  { font-weight: 600; margin-bottom: 2px; }
     #info-panel .info-value { color: #555; }
-
-    /* ── Upload panel ── */
-    #upload-panel {
-      position: fixed;
-      bottom: 24px;
-      left: 12px;
-      z-index: 1000;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.3);
-      padding: 14px 16px;
-      font-size: 13px;
-      max-width: 300px;
-    }
-    #upload-panel .upload-title {
-      font-weight: 600;
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .csv-info-icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: #6b7280;
-      color: white;
-      font-size: 10px;
-      font-weight: 700;
-      font-style: normal;
-      cursor: default;
-      position: relative;
-      flex-shrink: 0;
-      line-height: 1;
-    }
-    .csv-info-tooltip {
-      display: none;
-      position: absolute;
-      bottom: calc(100% + 8px);
-      left: 50%;
-      transform: translateX(-50%);
-      background: #1f2937;
-      color: #f9fafb;
-      font-size: 11px;
-      font-weight: 400;
-      line-height: 1.5;
-      padding: 10px 12px;
-      border-radius: 6px;
-      width: 230px;
-      z-index: 2000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      pointer-events: none;
-      white-space: normal;
-    }
-    .csv-info-tooltip code {
-      background: #374151;
-      padding: 1px 4px;
-      border-radius: 3px;
-      font-family: monospace;
-    }
-    .csv-info-icon:hover .csv-info-tooltip,
-    .csv-info-icon:focus .csv-info-tooltip {
-      display: block;
-    }
-    #upload-panel .upload-privacy {
-      color: #888;
-      font-size: 11px;
-      margin-bottom: 8px;
-    }
-    #upload-drop-zone {
-      border: 2px dashed #ccc;
-      border-radius: 6px;
-      padding: 14px 10px;
-      text-align: center;
-      cursor: pointer;
-      color: #666;
-      transition: border-color 0.15s, background 0.15s;
-    }
-    #upload-drop-zone.dragover {
-      border-color: #2563eb;
-      background: #eff6ff;
-    }
-    #upload-drop-zone input[type="file"] { display: none; }
-    #upload-status {
-      margin-top: 8px;
-      font-size: 12px;
-      color: #555;
-      min-height: 1.4em;
-    }
-    #upload-status.error { color: #b91c1c; }
-    #upload-status.success { color: #15803d; }
-    #btn-clear-hmo {
-      display: none;
-      margin-top: 8px;
-      padding: 5px 12px;
-      font-size: 12px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      background: #f9fafb;
-      cursor: pointer;
-    }
-    #btn-clear-hmo:hover { background: #f3f4f6; }
 
     /* ── Welcome overlay ── */
     #welcome-overlay {
@@ -310,10 +267,9 @@
     <h2>Welcome to the Oxford Licence Map</h2>
     <p>
       This interactive map shows Oxford City Council's HMO and Selective
-      Licence registers across the city's neighbourhoods (LSOAs). Use the
-      layer controls (top-right) to toggle markers and density maps.
-      You can also upload your own CSV in the panel at the bottom-left
-      to overlay additional data.
+      Licence registers across the city's neighbourhoods (LSOAs). Open the
+      &#9776; Map layers menu (top-right) to toggle markers, agent
+      highlights, and density maps.
     </p>
 
     <div class="section-label">Map elements</div>
@@ -332,7 +288,7 @@
         <span class="sym" style="background:linear-gradient(135deg,#f3e8ff,#6b21a8);opacity:.7;"></span>
         <span><strong>Combined density</strong> &mdash; neighbourhood shading by
         total licence count. Toggle HMO-only or Selective-only density in the
-        layer control.</span>
+        Map layers menu.</span>
       </li>
     </ul>
 
@@ -363,14 +319,13 @@
         <span class="sym" style="background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:14px;color:#475569;">&#9432;</span>
         <span>Hover over markers to see the full address, agent/holder
         name, and licence dates. If the neighbourhood shading makes markers
-        hard to click, untick the density layer in the top-right control.</span>
+        hard to click, untick the density layer in the Map layers menu.</span>
       </li>
     </ul>
 
     <p class="data-note">
       All reference data (tiles, boundaries, building footprints) is either
       served as static files or loaded from OpenStreetMap tile servers.
-      No uploaded data leaves your browser.
     </p>
   </div>
 </div>
@@ -387,34 +342,6 @@
   <div class="info-value" id="info-value"></div>
 </div>
 
-<!-- Upload panel -->
-<div id="upload-panel">
-  <div class="upload-title">
-    Upload custom CSV
-    <span class="csv-info-icon" tabindex="0" aria-label="CSV format help">ℹ
-      <span class="csv-info-tooltip">
-        <strong>Required columns</strong><br>
-        Your CSV must include at least one of:<br>
-        &bull; <code>address</code> — full property address<br>
-        &bull; <code>postcode</code> — UK postcode<br><br>
-        <strong>Optional columns</strong><br>
-        &bull; <code>uprn</code> — Unique Property Reference Number<br>
-        &bull; <code>lat</code> / <code>lon</code> — coordinates (skips geocoding)<br>
-        &bull; Any other columns appear in the marker tooltip.<br><br>
-        Matched properties are highlighted in orange on the map.<br>
-        No data leaves your browser.
-      </span>
-    </span>
-  </div>
-  <div class="upload-privacy">Data stays in your browser only</div>
-  <div id="upload-drop-zone">
-    Drop CSV here or <strong>click to browse</strong>
-    <input type="file" id="hmo-file-input" accept=".csv">
-  </div>
-  <div id="upload-status"></div>
-  <button id="btn-clear-hmo">Clear HMO data</button>
-</div>
-
 <!-- Map container -->
 <div id="map"></div>
 
@@ -425,12 +352,6 @@
 
 <!-- chroma.js for colour scales -->
 <script src="https://unpkg.com/chroma-js@2.4.2/chroma.min.js"></script>
-
-<!-- PapaParse for CSV handling -->
-<script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
-
-<!-- HMO upload logic (must load before app.js) -->
-<script src="static/hmo-upload.js"></script>
 
 <!-- App logic -->
 <script src="static/app.js"></script>
