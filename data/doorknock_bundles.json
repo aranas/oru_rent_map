@@ -1,0 +1,458 @@
+{
+ "total_doors": 350,
+ "total_markers": 245,
+ "total_renters": 1383,
+ "bundles": [
+  {
+   "label": "Cowley Road, Marston Street + 1 more",
+   "locality": "New Hinksey",
+   "doors": 110,
+   "markers": 53,
+   "renters": 396,
+   "top20_agency_listings": 65,
+   "blocks": [
+    {
+     "block_id": "57606_-855",
+     "label": "Cowley Road / Stockmore Street",
+     "locality": "New Hinksey",
+     "doors": 42,
+     "markers": 20,
+     "renters": 155,
+     "renters_per_150sqm": 2.3,
+     "top20_agency_listings": 24,
+     "top20_per_150sqm": 0.36,
+     "lat": 51.74853842857143,
+     "lon": -1.239824404761905,
+     "streets": [
+      {
+       "street": "Cowley Road",
+       "hmo_count": 11,
+       "selective_count": 10,
+       "doors": 21,
+       "renters": 81
+      },
+      {
+       "street": "Stockmore Street",
+       "hmo_count": 6,
+       "selective_count": 7,
+       "doors": 13,
+       "renters": 58
+      },
+      {
+       "street": "Jeune Street",
+       "hmo_count": 0,
+       "selective_count": 8,
+       "doors": 8,
+       "renters": 16
+      }
+     ]
+    },
+    {
+     "block_id": "57605_-854",
+     "label": "Marston Street / James Street",
+     "locality": "New Hinksey",
+     "doors": 29,
+     "markers": 23,
+     "renters": 121,
+     "renters_per_150sqm": 1.8,
+     "top20_agency_listings": 13,
+     "top20_per_150sqm": 0.19,
+     "lat": 51.74774148275862,
+     "lon": -1.2383502758620688,
+     "streets": [
+      {
+       "street": "Marston Street",
+       "hmo_count": 10,
+       "selective_count": 4,
+       "doors": 14,
+       "renters": 70
+      },
+      {
+       "street": "James Street",
+       "hmo_count": 4,
+       "selective_count": 4,
+       "doors": 8,
+       "renters": 27
+      },
+      {
+       "street": "Cowley Road",
+       "hmo_count": 2,
+       "selective_count": 5,
+       "doors": 7,
+       "renters": 24
+      }
+     ]
+    },
+    {
+     "block_id": "57606_-854",
+     "label": "Rectory Road / Marston Street",
+     "locality": "New Hinksey",
+     "doors": 39,
+     "markers": 10,
+     "renters": 120,
+     "renters_per_150sqm": 1.8,
+     "top20_agency_listings": 28,
+     "top20_per_150sqm": 0.42,
+     "lat": 51.74834805128205,
+     "lon": -1.2384892307692308,
+     "streets": [
+      {
+       "street": "Marston Street",
+       "hmo_count": 1,
+       "selective_count": 15,
+       "doors": 16,
+       "renters": 54
+      },
+      {
+       "street": "Rectory Road",
+       "hmo_count": 0,
+       "selective_count": 17,
+       "doors": 17,
+       "renters": 42
+      },
+      {
+       "street": "Cowley Road",
+       "hmo_count": 2,
+       "selective_count": 4,
+       "doors": 6,
+       "renters": 24
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Randolph Street & Hawkins Street",
+   "locality": "Iffley",
+   "doors": 66,
+   "markers": 60,
+   "renters": 257,
+   "top20_agency_listings": 32,
+   "blocks": [
+    {
+     "block_id": "57603_-851",
+     "label": "Randolph Street / Green Street",
+     "locality": "Iffley",
+     "doors": 36,
+     "markers": 34,
+     "renters": 140,
+     "renters_per_150sqm": 2.1,
+     "top20_agency_listings": 14,
+     "top20_per_150sqm": 0.21,
+     "lat": 51.74586269444445,
+     "lon": -1.2338364722222221,
+     "streets": [
+      {
+       "street": "Randolph Street",
+       "hmo_count": 19,
+       "selective_count": 10,
+       "doors": 29,
+       "renters": 117
+      },
+      {
+       "street": "Green Street",
+       "hmo_count": 1,
+       "selective_count": 3,
+       "doors": 4,
+       "renters": 17
+      },
+      {
+       "street": "Leon Close",
+       "hmo_count": 0,
+       "selective_count": 3,
+       "doors": 3,
+       "renters": 6
+      }
+     ]
+    },
+    {
+     "block_id": "57602_-851",
+     "label": "Hawkins Street / St Mary's Road",
+     "locality": "Iffley",
+     "doors": 30,
+     "markers": 26,
+     "renters": 117,
+     "renters_per_150sqm": 1.8,
+     "top20_agency_listings": 18,
+     "top20_per_150sqm": 0.27,
+     "lat": 51.7450356,
+     "lon": -1.2340748,
+     "streets": [
+      {
+       "street": "Hawkins Street",
+       "hmo_count": 4,
+       "selective_count": 11,
+       "doors": 15,
+       "renters": 53
+      },
+      {
+       "street": "St Mary's Road",
+       "hmo_count": 1,
+       "selective_count": 7,
+       "doors": 8,
+       "renters": 35
+      },
+      {
+       "street": "Leopold Street",
+       "hmo_count": 3,
+       "selective_count": 2,
+       "doors": 5,
+       "renters": 22
+      },
+      {
+       "street": "Randolph Street",
+       "hmo_count": 0,
+       "selective_count": 1,
+       "doors": 1,
+       "renters": 4
+      },
+      {
+       "street": "Galpin Close",
+       "hmo_count": 0,
+       "selective_count": 1,
+       "doors": 1,
+       "renters": 3
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "St Clements Street",
+   "locality": "Headington Hill",
+   "doors": 54,
+   "markers": 29,
+   "renters": 188,
+   "top20_agency_listings": 29,
+   "blocks": [
+    {
+     "block_id": "57608_-854",
+     "label": "St Clements Street / Rectory Road",
+     "locality": "Headington Hill",
+     "doors": 54,
+     "markers": 29,
+     "renters": 188,
+     "renters_per_150sqm": 2.8,
+     "top20_agency_listings": 29,
+     "top20_per_150sqm": 0.43,
+     "lat": 51.750414166666665,
+     "lon": -1.2383422222222222,
+     "streets": [
+      {
+       "street": "Rectory Road",
+       "hmo_count": 9,
+       "selective_count": 8,
+       "doors": 17,
+       "renters": 67
+      },
+      {
+       "street": "St Clements Street",
+       "hmo_count": 0,
+       "selective_count": 18,
+       "doors": 18,
+       "renters": 56
+      },
+      {
+       "street": "Cross Street",
+       "hmo_count": 1,
+       "selective_count": 13,
+       "doors": 14,
+       "renters": 37
+      },
+      {
+       "street": "Glebe Street",
+       "hmo_count": 5,
+       "selective_count": 0,
+       "doors": 5,
+       "renters": 28
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "James Street",
+   "locality": "New Hinksey",
+   "doors": 31,
+   "markers": 30,
+   "renters": 160,
+   "top20_agency_listings": 12,
+   "blocks": [
+    {
+     "block_id": "57603_-855",
+     "label": "James Street / Regent Street",
+     "locality": "New Hinksey",
+     "doors": 31,
+     "markers": 30,
+     "renters": 160,
+     "renters_per_150sqm": 2.4,
+     "top20_agency_listings": 12,
+     "top20_per_150sqm": 0.18,
+     "lat": 51.74581893548387,
+     "lon": -1.2396528387096775,
+     "streets": [
+      {
+       "street": "Regent Street",
+       "hmo_count": 10,
+       "selective_count": 1,
+       "doors": 11,
+       "renters": 73
+      },
+      {
+       "street": "James Street",
+       "hmo_count": 8,
+       "selective_count": 3,
+       "doors": 11,
+       "renters": 60
+      },
+      {
+       "street": "Monard Terrace",
+       "hmo_count": 6,
+       "selective_count": 0,
+       "doors": 6,
+       "renters": 18
+      },
+      {
+       "street": "Denmark Street",
+       "hmo_count": 1,
+       "selective_count": 0,
+       "doors": 1,
+       "renters": 5
+      },
+      {
+       "street": "Iffley Road",
+       "hmo_count": 0,
+       "selective_count": 2,
+       "doors": 2,
+       "renters": 4
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Bullingdon Road",
+   "locality": "New Hinksey",
+   "doors": 35,
+   "markers": 29,
+   "renters": 144,
+   "top20_agency_listings": 16,
+   "blocks": [
+    {
+     "block_id": "57603_-853",
+     "label": "Bullingdon Road / St Mary's Road",
+     "locality": "New Hinksey",
+     "doors": 35,
+     "markers": 29,
+     "renters": 144,
+     "renters_per_150sqm": 2.2,
+     "top20_agency_listings": 16,
+     "top20_per_150sqm": 0.24,
+     "lat": 51.74577971428572,
+     "lon": -1.2369185142857142,
+     "streets": [
+      {
+       "street": "Bullingdon Road",
+       "hmo_count": 12,
+       "selective_count": 17,
+       "doors": 29,
+       "renters": 114
+      },
+      {
+       "street": "St Mary's Road",
+       "hmo_count": 3,
+       "selective_count": 1,
+       "doors": 4,
+       "renters": 23
+      },
+      {
+       "street": "Hurst Street",
+       "hmo_count": 1,
+       "selective_count": 1,
+       "doors": 2,
+       "renters": 7
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "East Avenue",
+   "locality": "Headington Hill",
+   "doors": 29,
+   "markers": 29,
+   "renters": 123,
+   "top20_agency_listings": 14,
+   "blocks": [
+    {
+     "block_id": "57606_-850",
+     "label": "East Avenue / Ablett Close",
+     "locality": "Headington Hill",
+     "doors": 29,
+     "markers": 29,
+     "renters": 123,
+     "renters_per_150sqm": 1.8,
+     "top20_agency_listings": 14,
+     "top20_per_150sqm": 0.21,
+     "lat": 51.74855482758621,
+     "lon": -1.2324838965517242,
+     "streets": [
+      {
+       "street": "East Avenue",
+       "hmo_count": 18,
+       "selective_count": 5,
+       "doors": 23,
+       "renters": 103
+      },
+      {
+       "street": "Ablett Close",
+       "hmo_count": 5,
+       "selective_count": 1,
+       "doors": 6,
+       "renters": 20
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Iffley Road",
+   "locality": "New Hinksey",
+   "doors": 25,
+   "markers": 15,
+   "renters": 115,
+   "top20_agency_listings": 13,
+   "blocks": [
+    {
+     "block_id": "57601_-855",
+     "label": "Iffley Road / Bullingdon Road",
+     "locality": "New Hinksey",
+     "doors": 25,
+     "markers": 15,
+     "renters": 115,
+     "renters_per_150sqm": 1.7,
+     "top20_agency_listings": 13,
+     "top20_per_150sqm": 0.19,
+     "lat": 51.7440636,
+     "lon": -1.23955708,
+     "streets": [
+      {
+       "street": "Iffley Road",
+       "hmo_count": 6,
+       "selective_count": 15,
+       "doors": 21,
+       "renters": 87
+      },
+      {
+       "street": "Bullingdon Road",
+       "hmo_count": 3,
+       "selective_count": 1,
+       "doors": 4,
+       "renters": 28
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
