@@ -8,8 +8,8 @@ var CONFIG = {
   neighbourhoodsPath:     'data/neighbourhoods.geojson',
   licenceLocationsPath:   'data/licence_locations.geojson',
   holderLocationsPath:    'data/holder_locations.geojson',
-  doorknockBlocksPath:        'data/doorknock_blocks.geojson',
-  doorknockMeetingPointsPath: 'data/doorknock_meeting_points.geojson',
+  doorknockBlocksPath:  'data/doorknock_blocks.geojson',
+  doorknockBundlesPath: 'data/doorknock_bundles.json',
   // Choropleth colour ranges per type
   choroplethHmo:       ['#dbeafe', '#1e40af'],  // blue
   choroplethSelective: ['#dcfce7', '#166534'],  // green
@@ -21,7 +21,6 @@ var CONFIG = {
   hmoMarkerColour:       '#2563eb',  // blue
   selectiveMarkerColour: '#16a34a',  // green
   doorknockBoundaryColour: '#f97316',  // orange
-  meetingPointColour:    '#7c3aed',  // violet
 };
 
 
@@ -253,31 +252,6 @@ function buildPointMarkers(pointGeojson, opts) {
 }
 
 
-// Doorknocking meeting-point markers: a distinct flag icon (not a plain dot)
-// so canvassers can tell a gathering point apart from a rental-property door.
-function buildMeetingPointsLayer(pointGeojson, opts) {
-  opts = opts || {};
-  var tooltipFn = opts.tooltipFn || function () { return ''; };
-
-  var flagIcon = L.divIcon({
-    className: 'doorknock-meeting-icon',
-    html: '<div style="font-size:22px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5));">🚩</div>',
-    iconSize:   [22, 22],
-    iconAnchor: [4, 20],
-  });
-
-  return L.geoJSON(pointGeojson, {
-    pointToLayer: function (feature, latlng) {
-      return L.marker(latlng, { icon: flagIcon });
-    },
-    onEachFeature: function (feature, layer) {
-      var label = tooltipFn(feature.properties);
-      if (label) layer.bindTooltip(label, { direction: 'top', offset: [0, -18] });
-    },
-  });
-}
-
-
 // Doorknock block boundaries: an outline (not a filled area) around each
 // grid-cell "unit" — the doorknocking overlay's canvassing unit — so the
 // base HMO/Selective markers underneath stay visible and clickable.
@@ -356,12 +330,12 @@ function buildLegend(colourScale, breaks, valueLabel) {
 
   // Doorknocking overlay (East Oxford blocks shortlist); optional
   var doorknockBlocksGeojson = null;
-  var doorknockMeetingGeojson = null;
+  var doorknockBundles = null;
   try {
     var dkBlocksRes = await fetch(CONFIG.doorknockBlocksPath);
     if (dkBlocksRes.ok) doorknockBlocksGeojson = await dkBlocksRes.json();
-    var dkMeetingRes = await fetch(CONFIG.doorknockMeetingPointsPath);
-    if (dkMeetingRes.ok) doorknockMeetingGeojson = await dkMeetingRes.json();
+    var dkBundlesRes = await fetch(CONFIG.doorknockBundlesPath);
+    if (dkBundlesRes.ok) doorknockBundles = await dkBundlesRes.json();
   } catch (e) { /* non-fatal */ }
 
   // ── Aggregate LSOA counts ─────────────────────────────────────────────
@@ -420,6 +394,58 @@ function buildLegend(colourScale, breaks, valueLabel) {
 
   var hmoMerged = mergeByCoord(hmoFeatures);
   var selMerged = mergeByCoord(selFeatures);
+
+  // ── Separate exactly-overlapping cross-layer markers ──────────────────
+  // mergeByCoord already collapses same-address duplicates *within* a
+  // layer (HMO-with-HMO, Selective-with-Selective) into one dot — that's
+  // correct, one address should be one dot. But a bad geocode can still
+  // land an HMO point and a Selective point (or a landlord point) on the
+  // exact same coordinate; since those are separate layers they never get
+  // merged together, so without this they'd render as circles stacked
+  // perfectly on top of each other with only the topmost one clickable.
+  // Nudge every point in a same-coordinate cross-layer group a few metres
+  // apart (evenly spaced around the shared point) so each stays visible
+  // and independently hoverable — this only touches on-screen position,
+  // not any of the underlying counts/stats.
+  function offsetLatLon(lat, lon, distMetres, bearingDeg) {
+    var R = 6371000;
+    var brng = bearingDeg * Math.PI / 180;
+    var lat1 = lat * Math.PI / 180;
+    var lon1 = lon * Math.PI / 180;
+    var lat2 = Math.asin(
+      Math.sin(lat1) * Math.cos(distMetres / R) +
+      Math.cos(lat1) * Math.sin(distMetres / R) * Math.cos(brng)
+    );
+    var lon2 = lon1 + Math.atan2(
+      Math.sin(brng) * Math.sin(distMetres / R) * Math.cos(lat1),
+      Math.cos(distMetres / R) - Math.sin(lat1) * Math.sin(lat2)
+    );
+    return [lon2 * 180 / Math.PI, lat2 * 180 / Math.PI]; // GeoJSON order: [lon, lat]
+  }
+
+  function separateOverlappingMarkers(featureLists) {
+    var groups = {};
+    featureLists.forEach(function (features) {
+      (features || []).forEach(function (f) {
+        var key = f.geometry.coordinates[0] + ',' + f.geometry.coordinates[1];
+        (groups[key] = groups[key] || []).push(f);
+      });
+    });
+
+    var OFFSET_M = 6; // small enough to still read as "the same building"
+    Object.keys(groups).forEach(function (key) {
+      var group = groups[key];
+      if (group.length < 2) return;
+      var lon0 = group[0].geometry.coordinates[0];
+      var lat0 = group[0].geometry.coordinates[1];
+      group.forEach(function (f, i) {
+        var bearing = (360 / group.length) * i;
+        f.geometry.coordinates = offsetLatLon(lat0, lon0, OFFSET_M, bearing);
+      });
+    });
+  }
+
+  separateOverlappingMarkers([hmoMerged, selMerged, holderGeojson ? holderGeojson.features : []]);
 
   // ── Agent name normalisation ─────────────────────────────────────────
   // Stage 1: pre-process every raw name to strip noise before matching.
@@ -663,7 +689,7 @@ function buildLegend(colourScale, breaks, valueLabel) {
   // can be shown/hidden together with the layer from one place.
   var doorknockLayerGroup = null;
 
-  if (doorknockBlocksGeojson && doorknockMeetingGeojson && doorknockMeetingGeojson.features.length) {
+  if (doorknockBlocksGeojson && doorknockBundles && doorknockBundles.bundles && doorknockBundles.bundles.length) {
     function streetBreakdownLines(streets) {
       return (streets || []).map(function (s) {
         return s.street + ': ' + s.hmo_count + ' HMO, ' + s.selective_count + ' private (' +
@@ -688,25 +714,8 @@ function buildLegend(colourScale, breaks, valueLabel) {
       onClickFn: function (p) { selectBlock(p.block_id); },
     });
 
-    // A single overall meeting point for the whole shortlist (not one per
-    // block/bundle) — canvassers start together and split into teams from
-    // here.
-    var meetingFeature = doorknockMeetingGeojson.features[0];
-    var meetingProps    = meetingFeature.properties;
-    var bundlesSorted   = meetingProps.bundles; // already sorted by renters, server-side
-
-    var meetingPointsLayer = buildMeetingPointsLayer(doorknockMeetingGeojson, {
-      tooltipFn: function (p) {
-        return [
-          '<strong>Doorknock meeting point</strong>',
-          'Meet at: ' + p.meeting_label,
-          p.total_doors + ' doors (' + p.total_markers + ' map markers) across ' + p.bundles.length + ' bundles',
-          p.total_renters + ' renters total',
-        ].join('<br>');
-      },
-    });
-
-    doorknockLayerGroup = L.layerGroup([blockBoundariesLayer, meetingPointsLayer]);
+    doorknockLayerGroup = blockBoundariesLayer;
+    var bundlesSorted = doorknockBundles.bundles; // already sorted by renters, server-side
 
     // Each block already carries its own centroid (computed server-side
     // from its member properties) — a bundle's centre is just the mean of
@@ -750,12 +759,8 @@ function buildLegend(colourScale, breaks, valueLabel) {
         '<input type="checkbox" id="doorknock-toggle-cb"> 🚪 Doorknock streets' +
         '</label>' +
         '<div class="doorknock-body" style="display:none;margin-top:8px;">' +
-        '<div class="doorknock-row doorknock-meeting-row" style="cursor:pointer;padding:3px 0;">' +
-        '<strong>Meeting point</strong><br>' +
-        '<span style="color:#555;">' + meetingProps.meeting_label + '</span><br>' +
-        '<span style="color:#888;font-size:11px;">' + meetingProps.total_doors + ' doors &middot; ' +
-        meetingProps.total_markers + ' markers &middot; ' + meetingProps.total_renters + ' renters total</span>' +
-        '</div>' +
+        '<div style="color:#555;font-size:11px;">' + doorknockBundles.total_doors + ' doors &middot; ' +
+        doorknockBundles.total_markers + ' markers &middot; ' + doorknockBundles.total_renters + ' renters total</div>' +
         '<div style="font-size:11px;color:#666;margin:6px 0;">East Oxford, ranked by renter density (per 150 sqm), bundled by geographic proximity. Click a bundle to jump to it, or click a block on the map to scroll to its details.</div>' +
         '<div class="doorknock-bundle-list" style="max-height:45vh;overflow-y:auto;"></div>' +
         '</div>';
@@ -810,9 +815,6 @@ function buildLegend(colourScale, breaks, valueLabel) {
         }
       });
 
-      div.querySelector('.doorknock-meeting-row').addEventListener('click', function () {
-        map.setView([meetingFeature.geometry.coordinates[1], meetingFeature.geometry.coordinates[0]], 16);
-      });
       bundleListEl.querySelectorAll('.doorknock-bundle-row').forEach(function (row) {
         row.addEventListener('click', function (e) {
           // Ignore clicks that landed on a nested block entry — those don't

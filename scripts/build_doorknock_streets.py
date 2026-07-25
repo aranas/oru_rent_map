@@ -6,10 +6,9 @@ Builds the data feeding the "Doorknock streets" map overlay.
 
 Identifies the densest small pockets ("blocks") in East Oxford by licence
 DENSITY (per 150 sqm) AND by density of listings from the top 20 rental
-agencies (by city-wide licence count), groups the shortlist into
+agencies (by city-wide licence count), and groups the shortlist into
 geographically-adjacent bundles (so the panel lists walkable clusters, not
-a scatter of individual grid cells), and outputs per-property markers plus
-a single suggested meeting point for the whole shortlist.
+a scatter of individual grid cells).
 
 Method:
   - "East Oxford" = postcode sector OX4 1 (Bartlemas Road, Divinity Road,
@@ -56,25 +55,20 @@ Inputs (must already exist):
   data/HMO_Register_April_*_details.csv        (gitignored source register)
   data/Selective_Licence_Register*.csv         (gitignored source register)
   data/oxford_buildings.geojson                (OSM postcode -> street lookup)
-  data/amenities.geojson                       (OSM amenities, for the meeting point)
   data/oxford_locality_anchors.json            (see build_locality_anchors.py)
 
 Outputs (committed):
-  data/doorknock_blocks.geojson         — one Polygon per shortlisted block:
-                                          its exact grid-cell boundary (the
-                                          doorknocking "unit" to walk), with
-                                          a per-street breakdown (HMO count,
-                                          privately-rented/Selective count,
-                                          doors, renters) plus the block's
-                                          own totals and density stats
-  data/doorknock_meeting_points.geojson — a single Point: one overall
-                                          gathering spot for the whole
-                                          shortlist (a named, publicly-
-                                          accessible amenity where possible),
-                                          with a breakdown by geographic
-                                          bundle (each listing its member
-                                          blocks, each with the same
-                                          per-street HMO/Selective breakdown)
+  data/doorknock_blocks.geojson  — one Polygon per shortlisted block: its
+                                   exact grid-cell boundary (the
+                                   doorknocking "unit" to walk), with a
+                                   per-street breakdown (HMO count,
+                                   privately-rented/Selective count, doors,
+                                   renters) plus the block's own totals and
+                                   density stats
+  data/doorknock_bundles.json    — plain JSON: overall totals plus a
+                                   breakdown by geographic bundle (each
+                                   listing its member blocks, each with the
+                                   same per-street HMO/Selective breakdown)
 
 Run time: a few seconds, no network calls (reuses committed data files).
 """
@@ -87,13 +81,12 @@ DATA = os.path.join(ROOT, "data")
 
 LICENCE_LOCATIONS   = os.path.join(DATA, "licence_locations.geojson")
 BUILDINGS_GEOJSON    = os.path.join(DATA, "oxford_buildings.geojson")
-AMENITIES_GEOJSON    = os.path.join(DATA, "amenities.geojson")
 LOCALITY_ANCHORS     = os.path.join(DATA, "oxford_locality_anchors.json")
 HMO_DETAILS_GLOB     = os.path.join(DATA, "HMO_Register_April_*_details.csv")
 SELECTIVE_CSV_GLOB   = os.path.join(DATA, "Selective_Licence_Register*.csv")
 
-OUT_BLOCKS           = os.path.join(DATA, "doorknock_blocks.geojson")
-OUT_MEETING_POINTS   = os.path.join(DATA, "doorknock_meeting_points.geojson")
+OUT_BLOCKS   = os.path.join(DATA, "doorknock_blocks.geojson")
+OUT_BUNDLES  = os.path.join(DATA, "doorknock_bundles.json")
 
 EAST_OXFORD_SECTOR = "OX41"   # postcode sector (no space) — see docstring
 TOP_N_AGENCIES = 20
@@ -107,13 +100,6 @@ BLOCK_SIZE_M  = 100.0     # grid cell edge length, in metres — roughly a real
                           # residential block face; small enough to isolate
                           # a dense pocket, large enough for a usable sample
 AREA_UNIT_M2  = 150.0    # density is expressed per this many square metres
-
-# Landmark amenity types worth meeting at (publicly accessible, easy to find)
-MEETING_AMENITY_TYPES = {
-    'pub', 'cafe', 'restaurant', 'bar', 'fast_food',
-    'community_centre', 'library', 'place_of_worship', 'parking',
-}
-MEETING_AMENITY_MAX_M = 500  # snap to a landmark only if within this radius
 
 
 # ── Occupant counts (renter proxy) ──────────────────────────────────────────
@@ -362,17 +348,6 @@ def build_records():
     return records
 
 
-# ── Street length estimate ──────────────────────────────────────────────────
-
-def haversine_m(lat1, lon1, lat2, lon2):
-    R = 6371000.0
-    p1, p2 = math.radians(lat1), math.radians(lat2)
-    dphi = math.radians(lat2 - lat1)
-    dlambda = math.radians(lon2 - lon1)
-    a = math.sin(dphi / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dlambda / 2) ** 2
-    return 2 * R * math.asin(math.sqrt(a))
-
-
 # ── Grid block assignment ───────────────────────────────────────────────────
 
 def assign_block(lat, lon, lat0, block_size_m):
@@ -520,56 +495,6 @@ def bundle_blocks(shortlist):
     return list(groups.values())
 
 
-# ── Meeting point (one, for the whole shortlist) ────────────────────────────
-# A single gathering spot, not one per block: real canvasses start together
-# (safety briefing, pairing up, splitting into teams) and then fan out, they
-# don't need a separate rendezvous per block.
-
-def load_meeting_amenities():
-    with open(AMENITIES_GEOJSON) as f:
-        am = json.load(f)
-    out = []
-    for feat in am["features"]:
-        p = feat["properties"]
-        if p.get("amenity") in MEETING_AMENITY_TYPES and p.get("name"):
-            lon, lat = feat["geometry"]["coordinates"]
-            out.append({"name": p["name"], "amenity": p["amenity"], "lon": lon, "lat": lat})
-    return out
-
-
-def pick_meeting_point(points, amenities):
-    """Prefer a real, publicly-accessible landmark (pub/cafe/library/etc.)
-    near the centroid of every shortlisted block's points — weighted by how
-    many properties each block contributes, so the point stays central to
-    where the doors actually are rather than the simple average of each
-    block's midpoint. "Meet outside 40 Some Road" is a much worse
-    instruction than "meet at The Rusty Bicycle", so this falls back to the
-    actual property point closest to the centroid (a medoid) only when no
-    landmark is close enough. A car park is preferred among equally-close
-    landmarks since most canvassers will be driving in from outside the
-    immediate area."""
-    lat_c = sum(p["lat"] for p in points) / len(points)
-    lon_c = sum(p["lon"] for p in points) / len(points)
-
-    nearby = sorted(
-        amenities,
-        key=lambda a: (
-            0 if a["amenity"] == "parking" else 1,
-            haversine_m(lat_c, lon_c, a["lat"], a["lon"]),
-        ),
-    )
-    within_range = [a for a in nearby if haversine_m(lat_c, lon_c, a["lat"], a["lon"]) <= MEETING_AMENITY_MAX_M]
-    if within_range:
-        best = within_range[0]
-        return {
-            "lat": best["lat"], "lon": best["lon"],
-            "label": best["name"] + " (" + best["amenity"].replace("_", " ") + ")",
-        }
-
-    medoid = min(points, key=lambda p: (p["lat"] - lat_c) ** 2 + (p["lon"] - lon_c) ** 2)
-    return {"lat": medoid["lat"], "lon": medoid["lon"], "label": "near " + medoid["address"]}
-
-
 def bundle_label(members_sorted, block_stats):
     """A readable label for a bundle: the distinct primary street names of
     its member blocks (highest-renter block first), e.g. "Divinity Road &
@@ -591,7 +516,6 @@ def main():
     records = build_records()
     anchors = load_locality_anchors()
     shortlist, block_stats, top_agency_names, candidates, by_block = rank_blocks(records, anchors)
-    amenities = load_meeting_amenities()
 
     print(f"Shortlisted blocks (top {TOP_N_BLOCKS} in East Oxford, {BLOCK_SIZE_M:.0f}m cells, "
           f"best combined renters/150sqm + top-20-agency/150sqm rank):")
@@ -601,8 +525,6 @@ def main():
               f"({s['renters_per_150sqm']:.0f}/150sqm), {s['listings']} listings, "
               f"{s['top20_listings']} top-20-agency listings ({s['top20_per_150sqm']:.1f}/150sqm)")
 
-    shortlist_set = set(shortlist)
-    block_records = [r for block in shortlist_set for r in by_block[block]]
     lat0 = sum(r["lat"] for r in candidates) / len(candidates)
 
     def block_summary(block):
@@ -647,9 +569,9 @@ def main():
         json.dump({"type": "FeatureCollection", "features": block_features}, f, indent=1)
     print(f"\nWrote {len(block_features)} block boundaries -> {OUT_BLOCKS}")
 
-    # ── data/doorknock_meeting_points.geojson — ONE overall meeting point for
-    #    the whole shortlist, plus a breakdown by geographic bundle (each
-    #    listing its member blocks, each with its own per-street breakdown).
+    # ── data/doorknock_bundles.json — overall totals plus a breakdown by
+    #    geographic bundle (each listing its member blocks, each with its
+    #    own per-street breakdown).
     bundle_groups = bundle_blocks(shortlist)
     bundle_list = []
     for members in bundle_groups:
@@ -670,22 +592,16 @@ def main():
     for b in bundle_list:
         print(f"  {b['label']}: {len(b['blocks'])} block(s), {b['doors']} doors, {b['renters']} renters")
 
-    meeting = pick_meeting_point(block_records, amenities)
-    meeting_feature = {
-        "type": "Feature",
-        "geometry": {"type": "Point", "coordinates": [meeting["lon"], meeting["lat"]]},
-        "properties": {
-            "meeting_label": meeting["label"],
-            "total_doors": sum(b["doors"] for b in bundle_list),
-            "total_markers": sum(b["markers"] for b in bundle_list),
-            "total_renters": sum(b["renters"] for b in bundle_list),
-            "bundles": bundle_list,
-        },
+    summary = {
+        "total_doors": sum(b["doors"] for b in bundle_list),
+        "total_markers": sum(b["markers"] for b in bundle_list),
+        "total_renters": sum(b["renters"] for b in bundle_list),
+        "bundles": bundle_list,
     }
 
-    with open(OUT_MEETING_POINTS, "w") as f:
-        json.dump({"type": "FeatureCollection", "features": [meeting_feature]}, f, indent=1)
-    print(f"\nMeeting point: {meeting['label']} -> {OUT_MEETING_POINTS}")
+    with open(OUT_BUNDLES, "w") as f:
+        json.dump(summary, f, indent=1)
+    print(f"\nWrote bundle summary -> {OUT_BUNDLES}")
 
 
 if __name__ == "__main__":
