@@ -280,6 +280,104 @@ function buildBlockBoundariesLayer(polygonGeojson, opts) {
 }
 
 
+// ── Doorknocking checklist ("knocking mode") ────────────────────────────
+// Opens a self-contained, standalone HTML page in a new tab: one row per
+// address in the block, ordered by house number, with a checkbox per
+// address so a canvasser can tick addresses off while walking without
+// needing a network connection or losing their place if they background
+// the tab. Built as a Blob + object URL (not window.open('') +
+// document.write) specifically so the new tab gets a real document with
+// its own working localStorage, rather than an opaque about:blank origin.
+
+function escapeHtml(s) {
+  var div = document.createElement('div');
+  div.textContent = s == null ? '' : String(s);
+  return div.innerHTML;
+}
+
+function startKnockingMode(blk) {
+  var addresses = blk.addresses || [];
+  var storageKey = 'doorknock-checklist-' + blk.block_id;
+
+  var rowsHtml = addresses.map(function (a, i) {
+    var badgeClass = a.type === 'hmo' ? 'hmo' : 'private';
+    var badgeText  = a.type === 'hmo' ? 'HMO' : 'Private';
+    var occupants  = (a.occupants === null || a.occupants === undefined) ? '—' : a.occupants;
+    return (
+      '<li class="row">' +
+        '<label>' +
+          '<input type="checkbox" data-key="' + i + '">' +
+          '<span class="addr">' + escapeHtml(a.address) + '</span>' +
+          '<span class="badge ' + badgeClass + '">' + badgeText + '</span>' +
+          '<span class="occupants" title="Licensed occupants">' + occupants + ' occ.</span>' +
+          '<span class="agent">' + escapeHtml(a.agent || '—') + '</span>' +
+        '</label>' +
+      '</li>'
+    );
+  }).join('');
+
+  var css = [
+    'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;',
+    'max-width:560px;margin:0 auto;padding:16px;color:#1e293b;}',
+    'h1{font-size:18px;margin:0 0 2px;}',
+    'h1 .locality{font-weight:400;color:#666;font-size:14px;}',
+    '#progress{font-size:13px;color:#555;margin:8px 0 12px;position:sticky;top:0;',
+    'background:#fff;padding:8px 0;border-bottom:1px solid #eee;}',
+    'ul{list-style:none;padding:0;margin:0;}',
+    '.row{border-bottom:1px solid #eee;}',
+    '.row.done{opacity:.5;}',
+    '.row.done .addr{text-decoration:line-through;}',
+    'label{display:flex;align-items:center;gap:10px;padding:10px 0;cursor:pointer;}',
+    'input[type=checkbox]{width:22px;height:22px;flex-shrink:0;}',
+    '.addr{flex:1;font-size:14px;}',
+    '.badge{font-size:11px;padding:2px 6px;border-radius:4px;font-weight:600;flex-shrink:0;}',
+    '.badge.hmo{background:#dbeafe;color:#1e40af;}',
+    '.badge.private{background:#dcfce7;color:#166534;}',
+    '.occupants{font-size:11px;color:#555;flex-shrink:0;white-space:nowrap;}',
+    '.agent{font-size:12px;color:#666;min-width:100px;text-align:right;flex-shrink:0;}',
+  ].join('');
+
+  var script = [
+    'var STORAGE_KEY=' + JSON.stringify(storageKey) + ';',
+    'var saved={};',
+    'try{saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");}catch(e){}',
+    'function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(saved));}catch(e){}}',
+    'function updateProgress(){',
+    '  var boxes=document.querySelectorAll("input[type=checkbox]");',
+    '  var done=0;',
+    '  boxes.forEach(function(b){if(b.checked)done++;});',
+    '  document.getElementById("progress").textContent=done+" / "+boxes.length+" knocked";',
+    '}',
+    'document.querySelectorAll("input[type=checkbox]").forEach(function(cb){',
+    '  var key=cb.getAttribute("data-key");',
+    '  cb.checked=!!saved[key];',
+    '  if(cb.checked)cb.closest(".row").classList.add("done");',
+    '  cb.addEventListener("change",function(){',
+    '    saved[key]=cb.checked;',
+    '    save();',
+    '    cb.closest(".row").classList.toggle("done",cb.checked);',
+    '    updateProgress();',
+    '  });',
+    '});',
+    'updateProgress();',
+  ].join('\n');
+
+  var html = '<!doctype html><html><head><meta charset="utf-8">' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+    '<title>Knocking: ' + escapeHtml(blk.label) + '</title>' +
+    '<style>' + css + '</style></head><body>' +
+    '<h1>' + escapeHtml(blk.label) + ' <span class="locality">(' + escapeHtml(blk.locality) + ')</span></h1>' +
+    '<div id="progress"></div>' +
+    '<ul>' + rowsHtml + '</ul>' +
+    '<script>' + script + '<\/script>' +
+    '</body></html>';
+
+  var blob = new Blob([html], { type: 'text/html' });
+  var url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+}
+
+
 function buildLegend(colourScale, breaks, valueLabel) {
   var legend = L.control({ position: 'bottomright' });
   legend.onAdd = function () {
@@ -684,12 +782,28 @@ function buildLegend(colourScale, breaks, valueLabel) {
   // scripts/build_doorknock_streets.py) — ranking small blocks rather than
   // whole streets catches a dense stretch of one street sitting right next
   // to a dense stretch of another, which a whole-street average would dilute
-  // away. Lives in its own self-contained control (checkbox + unfolding
-  // bundle list), not the standard layer-control checkbox list, so the list
-  // can be shown/hidden together with the layer from one place.
+  // away. Lives as a section inside the consolidated "Map layers" menu
+  // (built further down) rather than its own floating control, and each
+  // bundle row shows a one-line summary by default — tap the bundle name to
+  // expand its full block/street breakdown, tap elsewhere on the row to fly
+  // the map to it.
   var doorknockLayerGroup = null;
+  var doorknockAvailable  = false;
+  var bundlesSorted       = [];
+  var bundleCentre        = function () { return null; };
+  var selectBlock         = function () {};
+
+  // Populated once the consolidated menu's DOM exists (see
+  // mapControlsControl.onAdd below); selectBlock() is only ever called
+  // later, from a map-polygon click, so it's safe to reference these here
+  // before they're assigned.
+  var mapControlsBody      = null;
+  var mapControlsToggleBtn = null;
+  var doorknockCheckbox    = null;
 
   if (doorknockBlocksGeojson && doorknockBundles && doorknockBundles.bundles && doorknockBundles.bundles.length) {
+    doorknockAvailable = true;
+
     function streetBreakdownLines(streets) {
       return (streets || []).map(function (s) {
         return s.street + ': ' + s.hmo_count + ' HMO, ' + s.selective_count + ' private (' +
@@ -707,128 +821,43 @@ function buildLegend(colourScale, breaks, valueLabel) {
         return lines.join('<br>');
       },
       // Clicking a block's boundary on the map selects the matching entry
-      // in the panel below: opens the panel if it's folded, scrolls it into
-      // view, and briefly highlights it — so a canvassing team can tap the
-      // square they're standing at and immediately see its street/HMO/
-      // private breakdown without hunting through the list.
+      // in the menu: opens the menu and the doorknock layer if folded,
+      // expands its bundle's details, scrolls to it, and briefly
+      // highlights it — so a canvassing team can tap the square they're
+      // standing at and immediately see its street/HMO/private breakdown.
       onClickFn: function (p) { selectBlock(p.block_id); },
     });
 
     doorknockLayerGroup = blockBoundariesLayer;
-    var bundlesSorted = doorknockBundles.bundles; // already sorted by renters, server-side
+    bundlesSorted = doorknockBundles.bundles; // already sorted by renters, server-side
 
     // Each block already carries its own centroid (computed server-side
     // from its member properties) — a bundle's centre is just the mean of
     // its member blocks' centroids.
-    function bundleCentre(bundle) {
+    bundleCentre = function (bundle) {
       var lat = 0, lon = 0, n = bundle.blocks.length;
       bundle.blocks.forEach(function (blk) { lat += blk.lat; lon += blk.lon; });
       return n ? { lat: lat / n, lon: lon / n } : null;
-    }
+    };
 
-    // Populated once the control's DOM exists (see doorknockControl.onAdd
-    // below); selectBlock() is only ever called later, from a map-polygon
-    // click, so it's safe to reference these before they're assigned.
-    var doorknockCheckbox = null;
-    var doorknockBody     = null;
-
-    // Clicking a block's boundary on the map calls this: opens the panel if
-    // it's folded, scrolls the matching entry into view within the
-    // scrollable list, and flashes a highlight so it's easy to spot.
-    function selectBlock(blockId) {
-      if (!doorknockCheckbox || !blockId) return;
-      if (!doorknockCheckbox.checked) {
+    selectBlock = function (blockId) {
+      if (!blockId) return;
+      if (mapControlsBody && !mapControlsBody.classList.contains('open')) {
+        mapControlsBody.classList.add('open');
+        if (mapControlsToggleBtn) mapControlsToggleBtn.setAttribute('aria-expanded', 'true');
+      }
+      if (doorknockCheckbox && !doorknockCheckbox.checked) {
         doorknockCheckbox.checked = true;
         doorknockCheckbox.dispatchEvent(new Event('change'));
       }
       var el = document.getElementById('doorknock-block-' + blockId);
       if (!el) return;
+      var details = el.closest('.doorknock-bundle-details');
+      if (details) details.style.display = 'block';
       el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       el.classList.add('doorknock-block-highlight');
       setTimeout(function () { el.classList.remove('doorknock-block-highlight'); }, 2000);
-    }
-
-    // Self-contained control: a checkbox header that toggles the layer on
-    // the map AND unfolds this same box into the bundle list — no separate
-    // entry in the standard layer-control checkbox list.
-    var doorknockControl = L.control({ position: 'bottomleft' });
-    doorknockControl.onAdd = function () {
-      var div = L.DomUtil.create('div', 'legend doorknock-control');
-      var html =
-        '<label class="doorknock-toggle" style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600;">' +
-        '<input type="checkbox" id="doorknock-toggle-cb"> 🚪 Doorknock streets' +
-        '</label>' +
-        '<div class="doorknock-body" style="display:none;margin-top:8px;">' +
-        '<div style="color:#555;font-size:11px;">' + doorknockBundles.total_doors + ' doors &middot; ' +
-        doorknockBundles.total_markers + ' markers &middot; ' + doorknockBundles.total_renters + ' renters total</div>' +
-        '<div style="font-size:11px;color:#666;margin:6px 0;">East Oxford, ranked by renter density (per 150 sqm), bundled by geographic proximity. Click a bundle to jump to it, or click a block on the map to scroll to its details.</div>' +
-        '<div class="doorknock-bundle-list" style="max-height:45vh;overflow-y:auto;"></div>' +
-        '</div>';
-      div.innerHTML = html;
-
-      var bundleListEl = div.querySelector('.doorknock-bundle-list');
-      bundlesSorted.forEach(function (b, i) {
-        var row = document.createElement('div');
-        row.className = 'doorknock-row doorknock-bundle-row';
-        row.setAttribute('data-idx', i);
-        row.style.cssText = 'cursor:pointer;padding:4px 0;border-top:1px solid #eee;';
-        row.innerHTML =
-          '<strong>' + b.label + '</strong> <span style="color:#888;font-weight:400;">(' + b.locality + ')</span><br>' +
-          '<span style="color:#555;">' + b.doors + ' doors &middot; ' + b.markers + ' markers &middot; ' +
-          b.renters + ' renters &middot; ' + b.top20_agency_listings + ' top-20-agency listings</span>';
-
-        b.blocks.forEach(function (blk) {
-          var blockEl = document.createElement('div');
-          blockEl.className = 'doorknock-block-entry';
-          blockEl.id = 'doorknock-block-' + blk.block_id;
-          blockEl.style.cssText = 'padding-left:8px;color:#666;font-size:11px;margin-top:2px;';
-          var streetLines = (blk.streets || []).map(function (s) {
-            return '<div style="padding-left:16px;color:#888;font-size:11px;">' +
-              '&ndash; ' + s.street + ': ' + s.hmo_count + ' HMO, ' + s.selective_count +
-              ' private (' + s.doors + ' doors, ' + s.renters + ' renters)</div>';
-          }).join('');
-          blockEl.innerHTML =
-            '&bull; ' + blk.label + ' (' + blk.locality + '): ' + blk.doors + ' doors, ' +
-            blk.renters + ' renters (' + blk.renters_per_150sqm + '/150sqm), ' +
-            blk.top20_agency_listings + ' top-20-agency listings' + streetLines;
-          row.appendChild(blockEl);
-        });
-
-        bundleListEl.appendChild(row);
-      });
-
-      // Keep clicks/scrolls on this control from reaching the map
-      // (clicks would otherwise fire the map's click handler; wheel/trackpad
-      // scroll would otherwise zoom the map instead of scrolling the list).
-      L.DomEvent.disableClickPropagation(div);
-      L.DomEvent.disableScrollPropagation(div);
-
-      doorknockCheckbox = div.querySelector('#doorknock-toggle-cb');
-      doorknockBody     = div.querySelector('.doorknock-body');
-      doorknockCheckbox.addEventListener('change', function () {
-        if (doorknockCheckbox.checked) {
-          doorknockLayerGroup.addTo(map);
-          doorknockBody.style.display = 'block';
-        } else {
-          map.removeLayer(doorknockLayerGroup);
-          doorknockBody.style.display = 'none';
-        }
-      });
-
-      bundleListEl.querySelectorAll('.doorknock-bundle-row').forEach(function (row) {
-        row.addEventListener('click', function (e) {
-          // Ignore clicks that landed on a nested block entry — those don't
-          // need to also re-fly the map to the whole bundle's centre.
-          if (e.target.closest('.doorknock-block-entry')) return;
-          var b = bundlesSorted[parseInt(row.getAttribute('data-idx'), 10)];
-          var c = bundleCentre(b);
-          if (c) map.setView([c.lat, c.lon], 17);
-        });
-      });
-
-      return div;
     };
-    doorknockControl.addTo(map);
   }
 
   // ── Grid heatmap (all licences) ───────────────────────────────────────
@@ -935,6 +964,7 @@ function buildLegend(colourScale, breaks, valueLabel) {
           '<option value="grid">Licence density grid (~500 m²)</option>' +
           '</select>' +
         '</div>' +
+        (doorknockAvailable ? '<div class="map-controls-section" id="doorknock-section"></div>' : '') +
       '</div>';
     div.innerHTML = html;
     L.DomEvent.disableClickPropagation(div);
@@ -942,6 +972,8 @@ function buildLegend(colourScale, breaks, valueLabel) {
 
     var toggleBtn = div.querySelector('#map-controls-toggle');
     var body      = div.querySelector('#map-controls-body');
+    mapControlsBody = body;
+    mapControlsToggleBtn = toggleBtn;
     toggleBtn.addEventListener('click', function () {
       var open = body.classList.toggle('open');
       toggleBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
@@ -965,6 +997,83 @@ function buildLegend(colourScale, breaks, valueLabel) {
     div.querySelector('#density-select').addEventListener('change', function () {
       setDensityLayer(this.value);
     });
+
+    // ── Doorknock section: nested inside this same collapsible menu ─────
+    if (doorknockAvailable) {
+      var dkSection = div.querySelector('#doorknock-section');
+      dkSection.innerHTML =
+        '<label><input type="checkbox" id="chk-doorknock"> 🚪 Doorknock streets</label>' +
+        '<div class="doorknock-summary">' + doorknockBundles.total_doors + ' doors &middot; ' +
+        doorknockBundles.total_markers + ' markers &middot; ' + doorknockBundles.total_renters + ' renters total</div>' +
+        '<div class="doorknock-bundle-list" id="doorknock-bundle-list"></div>';
+
+      doorknockCheckbox = dkSection.querySelector('#chk-doorknock');
+      var bundleListEl = dkSection.querySelector('#doorknock-bundle-list');
+
+      bundlesSorted.forEach(function (b, i) {
+        var row = document.createElement('div');
+        row.className = 'doorknock-row doorknock-bundle-row';
+        row.setAttribute('data-idx', i);
+
+        var nameEl = document.createElement('div');
+        nameEl.className = 'doorknock-bundle-name';
+        nameEl.textContent = b.label + ' (' + b.locality + ')';
+
+        var summaryEl = document.createElement('div');
+        summaryEl.className = 'doorknock-bundle-summary';
+        summaryEl.textContent = b.doors + ' doors · ' + b.renters + ' renters · ' +
+          b.top20_agency_listings + ' top-20-agency listings';
+
+        var detailsEl = document.createElement('div');
+        detailsEl.className = 'doorknock-bundle-details';
+        detailsEl.style.display = 'none';
+        b.blocks.forEach(function (blk) {
+          var blockEl = document.createElement('div');
+          blockEl.className = 'doorknock-block-entry';
+          blockEl.id = 'doorknock-block-' + blk.block_id;
+          var streetLines = (blk.streets || []).map(function (s) {
+            return '<div class="doorknock-street-line">' +
+              '&ndash; ' + s.street + ': ' + s.hmo_count + ' HMO, ' + s.selective_count +
+              ' private (' + s.doors + ' doors, ' + s.renters + ' renters)</div>';
+          }).join('');
+          blockEl.innerHTML =
+            '&bull; ' + blk.label + ' (' + blk.locality + '): ' + blk.doors + ' doors, ' +
+            blk.renters + ' renters (' + blk.renters_per_150sqm + '/150sqm), ' +
+            blk.top20_agency_listings + ' top-20-agency listings' + streetLines +
+            '<button type="button" class="doorknock-start-btn">🚪 Start knocking mode</button>';
+          blockEl.querySelector('.doorknock-start-btn').addEventListener('click', function (e) {
+            e.stopPropagation();
+            startKnockingMode(blk);
+          });
+          detailsEl.appendChild(blockEl);
+        });
+
+        row.appendChild(nameEl);
+        row.appendChild(summaryEl);
+        row.appendChild(detailsEl);
+        bundleListEl.appendChild(row);
+
+        // Tap the name -> expand/collapse this bundle's full breakdown.
+        nameEl.addEventListener('click', function (e) {
+          e.stopPropagation();
+          detailsEl.style.display = (detailsEl.style.display === 'none') ? 'block' : 'none';
+        });
+        // Tap anywhere else on the row -> fly the map to this bundle.
+        row.addEventListener('click', function (e) {
+          if (e.target.closest('.doorknock-bundle-name') || e.target.closest('.doorknock-block-entry')) return;
+          var c = bundleCentre(b);
+          if (c) map.setView([c.lat, c.lon], 17);
+        });
+      });
+
+      doorknockCheckbox.addEventListener('change', function () {
+        if (doorknockCheckbox.checked) {
+          doorknockLayerGroup.addTo(map);
+        } else {
+          map.removeLayer(doorknockLayerGroup);
+        }
+      });
+    }
 
     return div;
   };

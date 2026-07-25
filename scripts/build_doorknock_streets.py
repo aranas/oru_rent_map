@@ -63,12 +63,14 @@ Outputs (committed):
                                    doorknocking "unit" to walk), with a
                                    per-street breakdown (HMO count,
                                    privately-rented/Selective count, doors,
-                                   renters) plus the block's own totals and
-                                   density stats
+                                   renters), the block's own totals and
+                                   density stats, and a per-address list
+                                   (type, managing agent) ordered by house
+                                   number for a walking checklist
   data/doorknock_bundles.json    — plain JSON: overall totals plus a
                                    breakdown by geographic bundle (each
                                    listing its member blocks, each with the
-                                   same per-street HMO/Selective breakdown)
+                                   same per-street breakdown and address list)
 
 Run time: a few seconds, no network calls (reuses committed data files).
 """
@@ -398,6 +400,53 @@ def street_breakdown(pts):
     return rows
 
 
+HOUSE_NUMBER_RE = re.compile(r"(\d+)\s*([A-Za-z]?)")
+
+# Same sub-unit prefixes build_holder_locations.py strips before geocoding —
+# reused here so "Flat 1, 86-90 Cowley Road" sorts on the building's real
+# street number (86), not the flat number (1).
+SUBUNIT_PREFIX_RE = re.compile(
+    r"^(flat\s+\S+|flats\s+\S+(\s+(and|&)\s+\S+)?|room\s+\S+|unit\s+\S+|apt\.?\s+\S+|"
+    r"apartment\s+\S+|studio\s+\S+|basement|ground\s+floor|first\s+floor|"
+    r"second\s+floor|third\s+floor|top\s+floor|lower\s+ground|"
+    r"first\s+and\s+second\s+floor|second\s+and\s+third\s+floor|floor\s+\d+|"
+    r"maisonette|annexe|annex|the\s+flat|the\s+annexe)\s*,?\s*",
+    re.IGNORECASE,
+)
+
+
+def house_number_key(address):
+    """Best-effort sort key from the first number in an address string, e.g.
+    "62A Cowley Road" -> (62, "A"). Strips a leading sub-unit descriptor
+    first so "Flat 1, 86-90 Cowley Road" sorts on 86, not 1. Addresses with
+    no number at all sort after everything else rather than raising."""
+    stripped = SUBUNIT_PREFIX_RE.sub("", address.strip(), count=1)
+    m = HOUSE_NUMBER_RE.search(stripped)
+    if not m:
+        return (float("inf"), "", address)
+    return (int(m.group(1)), m.group(2).upper(), address)
+
+
+def address_list(pts):
+    """One row per unique address (matching the block's door count) with
+    type (HMO/Selective), managing agent and licensed occupant count,
+    ordered by house number — the actual walking checklist for a canvasser
+    standing in this block."""
+    by_address = {}
+    for r in pts:
+        if r["address"] not in by_address:
+            by_address[r["address"]] = {
+                "address": r["address"],
+                "street": r["street"],
+                "type": r["type"],
+                "agent": r["agent_canon"] or "",
+                "occupants": r["occupants"],
+            }
+    rows = list(by_address.values())
+    rows.sort(key=lambda a: house_number_key(a["address"]))
+    return rows
+
+
 # ── Ranking ───────────────────────────────────────────────────────────────
 
 def rank_blocks(records, anchors):
@@ -543,6 +592,7 @@ def main():
             "lat": s["lat"],
             "lon": s["lon"],
             "streets": street_breakdown(pts),
+            "addresses": address_list(pts),
         }
 
     # ── data/doorknock_blocks.geojson — one Polygon per shortlisted block:

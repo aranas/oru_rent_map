@@ -72,29 +72,65 @@
       border-radius: 2px;
       border: 1px solid #ccc;
     }
-    /* Positioned mid-lateral (vertically centred on the left edge) rather
-       than stacked in a Leaflet corner, so it doesn't compete for space
-       with the map-layers menu or pile up with other bottom-corner
-       controls on narrow screens. */
-    .doorknock-control {
-      position: fixed !important;
-      top: 50%;
-      left: 10px;
-      transform: translateY(-50%);
-      z-index: 1000;
-      max-width: min(280px, calc(100vw - 20px));
-      max-height: 80vh;
+    /* ── Doorknock section (nested inside the map-layers menu) ── */
+    .doorknock-summary {
+      font-size: 11px;
+      color: #666;
+      margin: 2px 0 6px;
+    }
+    .doorknock-bundle-list {
+      max-height: 35vh;
       overflow-y: auto;
     }
-    .doorknock-control .doorknock-row:hover {
-      background: #f3f4f6;
+    .doorknock-row {
+      cursor: pointer;
+      padding: 4px 0;
+      border-top: 1px solid #eee;
+    }
+    .doorknock-row:first-child { border-top: none; }
+    .doorknock-row:hover { background: #f3f4f6; }
+    .doorknock-bundle-name {
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .doorknock-bundle-name:hover { text-decoration: underline; }
+    .doorknock-bundle-summary {
+      font-size: 11px;
+      color: #555;
+    }
+    .doorknock-bundle-details {
+      margin-top: 4px;
+    }
+    .doorknock-street-line {
+      padding-left: 16px;
+      color: #888;
+      font-size: 11px;
     }
     .doorknock-block-entry {
+      padding-left: 8px;
+      color: #666;
+      font-size: 11px;
+      margin-top: 2px;
       transition: background-color 0.3s ease;
       border-radius: 3px;
     }
     .doorknock-block-entry.doorknock-block-highlight {
       background-color: #fef08a;
+    }
+    .doorknock-start-btn {
+      display: block;
+      margin-top: 6px;
+      padding: 5px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid #f97316;
+      border-radius: 4px;
+      background: #fff7ed;
+      color: #c2410c;
+      cursor: pointer;
+    }
+    .doorknock-start-btn:hover {
+      background: #ffedd5;
     }
 
     /* ── Consolidated map-layers menu (top-right) ── */
