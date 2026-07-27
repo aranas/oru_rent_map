@@ -1,2707 +1,2197 @@
 {
- "total_doors": 350,
- "total_markers": 245,
- "total_renters": 1383,
+ "total_doors": 331,
+ "total_markers": 61,
+ "total_renters": 1040,
  "bundles": [
   {
-   "label": "Cowley Road, Marston Street + 1 more",
-   "locality": "New Hinksey",
-   "doors": 110,
-   "markers": 53,
-   "renters": 396,
-   "top20_agency_listings": 65,
+   "label": "Between Towns Road & Bennett Crescent",
+   "locality": "Temple Cowley",
+   "doors": 108,
+   "markers": 7,
+   "renters": 310,
+   "top20_agency_listings": 69,
    "blocks": [
     {
-     "block_id": "57606_-855",
-     "label": "Cowley Road / Stockmore Street",
-     "locality": "New Hinksey",
-     "doors": 42,
-     "markers": 20,
-     "renters": 155,
-     "renters_per_150sqm": 2.3,
-     "top20_agency_listings": 24,
-     "top20_per_150sqm": 0.36,
-     "lat": 51.74853842857143,
-     "lon": -1.239824404761905,
+     "block_id": "57590_-836",
+     "label": "Between Towns Road / Cowley",
+     "locality": "Temple Cowley",
+     "doors": 73,
+     "markers": 3,
+     "renters": 192,
+     "renters_per_150sqm": 2.9,
+     "top20_agency_listings": 43,
+     "top20_per_150sqm": 0.64,
+     "lat": 51.73410619178082,
+     "lon": -1.2124163150684932,
      "streets": [
       {
-       "street": "Cowley Road",
-       "hmo_count": 11,
-       "selective_count": 10,
-       "doors": 21,
-       "renters": 81
-      },
-      {
-       "street": "Stockmore Street",
-       "hmo_count": 6,
-       "selective_count": 7,
-       "doors": 13,
-       "renters": 58
-      },
-      {
-       "street": "Jeune Street",
+       "street": "Between Towns Road",
        "hmo_count": 0,
-       "selective_count": 8,
-       "doors": 8,
-       "renters": 16
-      }
-     ],
-     "addresses": [
-      {
-       "address": "1 Stockmore Street, OX4 1JT",
-       "street": "Stockmore Street",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 8
-      },
-      {
-       "address": "2, Stockmore Street, Oxford, OX4 1JT",
-       "street": "Stockmore Street",
-       "type": "selective",
-       "agent": "Penny & Sinclair",
-       "occupants": 5
-      },
-      {
-       "address": "3 Stockmore Street, OX4 1JT",
-       "street": "Stockmore Street",
-       "type": "hmo",
-       "agent": "Mr Ashley Charles Bolton",
-       "occupants": 6
-      },
-      {
-       "address": "4 Stockmore Street, OX4 1JT",
-       "street": "Stockmore Street",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 4
-      },
-      {
-       "address": "Flat 1, Hawridge Mews 6-8, Stockmore Street, Oxford, OX4 1FQ",
-       "street": "Stockmore Street",
-       "type": "selective",
-       "agent": "Thomas Merrifield",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 2, Hawridge Mews 6-8, Stockmore Street, Oxford, OX4 1FQ",
-       "street": "Stockmore Street",
-       "type": "selective",
-       "agent": "College & County",
-       "occupants": 3
-      },
-      {
-       "address": "Flat 3, Hawridge Mews 6-8, Stockmore Street, Oxford, OX4 1FQ",
-       "street": "Stockmore Street",
-       "type": "selective",
-       "agent": "Thomas Merrifield",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 4, Hawridge Mews 6-8, Stockmore Street, Oxford, OX4 1FQ",
-       "street": "Stockmore Street",
-       "type": "selective",
-       "agent": "John D Wood & Co",
-       "occupants": 4
-      },
-      {
-       "address": "Flat 7, Hawridge Mews 6-8, Stockmore Street, Oxford, OX4 1FQ",
-       "street": "Stockmore Street",
-       "type": "selective",
-       "agent": "Thomas Merrifield",
-       "occupants": 3
-      },
-      {
-       "address": "Flat 9, Hawridge Mews 6-8, Stockmore Street, Oxford, OX4 1FQ",
-       "street": "Stockmore Street",
-       "type": "selective",
-       "agent": "Taylors",
-       "occupants": 4
-      },
-      {
-       "address": "7 Stockmore Street, OX4 1JT",
-       "street": "Stockmore Street",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 4
-      },
-      {
-       "address": "11 Stockmore Street, OX4 1JT",
-       "street": "Stockmore Street",
-       "type": "hmo",
-       "agent": "Ms Norsheen Sarwar",
-       "occupants": 7
-      },
-      {
-       "address": "13 Stockmore Street, OX4 1JT",
-       "street": "Stockmore Street",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 6
-      },
-      {
-       "address": "Flat 1, Jeune Hall 30, Jeune Street, Oxford, OX4 1BN",
-       "street": "Jeune Street",
-       "type": "selective",
-       "agent": "Thomas Merrifield",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 13, Jeune Hall 30, Jeune Street, Oxford, OX4 1BN",
-       "street": "Jeune Street",
-       "type": "selective",
-       "agent": "",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 14, Jeune Hall 30, Jeune Street, Oxford, OX4 1BN",
-       "street": "Jeune Street",
-       "type": "selective",
-       "agent": "R M A Properties",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 2, Jeune Hall 30, Jeune Street, Oxford, OX4 1BN",
-       "street": "Jeune Street",
-       "type": "selective",
-       "agent": "",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 4, Jeune Hall 30, Jeune Street, Oxford, OX4 1BN",
-       "street": "Jeune Street",
-       "type": "selective",
-       "agent": "Penny & Sinclair",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 5, Jeune Hall 30, Jeune Street, Oxford, OX4 1BN",
-       "street": "Jeune Street",
-       "type": "selective",
-       "agent": "Chancellors",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 7, Jeune Hall 30, Jeune Street, Oxford, OX4 1BN",
-       "street": "Jeune Street",
-       "type": "selective",
-       "agent": "Chancellors",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 9, Jeune Hall 30, Jeune Street, Oxford, OX4 1BN",
-       "street": "Jeune Street",
-       "type": "selective",
-       "agent": "",
-       "occupants": 2
-      },
-      {
-       "address": "62A Cowley Road, OX4 1JB",
-       "street": "Cowley Road",
-       "type": "hmo",
-       "agent": "Mr Ashley Charles Bolton",
-       "occupants": 4
-      },
-      {
-       "address": "66a, Cowley Road, Oxford, OX4 1JB",
-       "street": "Cowley Road",
-       "type": "selective",
-       "agent": "",
-       "occupants": 4
-      },
-      {
-       "address": "72a, Cowley Road, Oxford, OX4 1JB",
-       "street": "Cowley Road",
-       "type": "selective",
-       "agent": "Finders Keepers",
-       "occupants": 2
-      },
-      {
-       "address": "76a, Cowley Road, Oxford, OX4 1JB",
-       "street": "Cowley Road",
-       "type": "selective",
-       "agent": "LPM Residential",
-       "occupants": 3
-      },
-      {
-       "address": "77 Cowley Road, OX4 1HR",
-       "street": "Cowley Road",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 5
-      },
-      {
-       "address": "79 Cowley Road, OX4 1HR",
-       "street": "Cowley Road",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 6
-      },
-      {
-       "address": "80a, Cowley Road, Oxford, OX4 1JB",
-       "street": "Cowley Road",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 4
-      },
-      {
-       "address": "82A Cowley Road, OX4 1JB",
-       "street": "Cowley Road",
-       "type": "hmo",
-       "agent": "Ms Emma Glover",
-       "occupants": 4
-      },
-      {
-       "address": "84A Cowley Road, OX4 1JB",
-       "street": "Cowley Road",
-       "type": "hmo",
-       "agent": "Mr Ashley Charles Bolton",
-       "occupants": 4
-      },
-      {
-       "address": "Flat 1, 86-90 Cowley Road, OX4 1JB",
-       "street": "Cowley Road",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 6
-      },
-      {
-       "address": "Flat 2 86-90, Cowley Road, Oxford, OX4 1JB",
-       "street": "Cowley Road",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 4
-      },
-      {
-       "address": "Flat 3 86-90, Cowley Road, Oxford, OX4 1JB",
-       "street": "Cowley Road",
-       "type": "selective",
-       "agent": "College & County",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 5 86-90, Cowley Road, Oxford, OX4 1JB",
-       "street": "Cowley Road",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 4
-      },
-      {
-       "address": "Flat 6 86-90, Cowley Road, Oxford, OX4 1JB",
-       "street": "Cowley Road",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 7 86-90, Cowley Road, Oxford, OX4 1JB",
-       "street": "Cowley Road",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 3
-      },
-      {
-       "address": "92A Cowley Road, OX4 1JE",
-       "street": "Cowley Road",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 4
-      },
-      {
-       "address": "92C Cowley Road, OX4 1JB",
-       "street": "Cowley Road",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 3
-      },
-      {
-       "address": "96A Cowley Road, OX4 1JE",
-       "street": "Cowley Road",
-       "type": "hmo",
-       "agent": "Mr Ashley Charles Bolton",
-       "occupants": 4
-      },
-      {
-       "address": "Flats 1 And 2 98, Cowley Road, Oxford, OX4 1JE",
-       "street": "Cowley Road",
-       "type": "selective",
-       "agent": "Scott Fraser",
-       "occupants": 4
-      },
-      {
-       "address": "102A Cowley Road, OX4 1JE",
-       "street": "Cowley Road",
-       "type": "hmo",
-       "agent": "The Manager",
-       "occupants": 4
-      },
-      {
-       "address": "102B Cowley Road, OX4 1JE",
-       "street": "Cowley Road",
-       "type": "hmo",
-       "agent": "College & County",
-       "occupants": 5
-      }
-     ]
-    },
-    {
-     "block_id": "57605_-854",
-     "label": "Marston Street / James Street",
-     "locality": "New Hinksey",
-     "doors": 29,
-     "markers": 23,
-     "renters": 121,
-     "renters_per_150sqm": 1.8,
-     "top20_agency_listings": 13,
-     "top20_per_150sqm": 0.19,
-     "lat": 51.74774148275862,
-     "lon": -1.2383502758620688,
-     "streets": [
-      {
-       "street": "Marston Street",
-       "hmo_count": 10,
-       "selective_count": 4,
-       "doors": 14,
-       "renters": 70
-      },
-      {
-       "street": "James Street",
-       "hmo_count": 4,
-       "selective_count": 4,
-       "doors": 8,
-       "renters": 27
-      },
-      {
-       "street": "Cowley Road",
-       "hmo_count": 2,
-       "selective_count": 5,
-       "doors": 7,
-       "renters": 24
-      }
-     ],
-     "addresses": [
-      {
-       "address": "1 Marston Street, OX4 1JU",
-       "street": "Marston Street",
-       "type": "hmo",
-       "agent": "Mr Mohammed Idrees",
-       "occupants": 3
-      },
-      {
-       "address": "2, Marston Street, Oxford, OX4 1JU",
-       "street": "Marston Street",
-       "type": "selective",
-       "agent": "Penny & Sinclair",
-       "occupants": 2
-      },
-      {
-       "address": "3, Marston Street, Oxford, OX4 1JU",
-       "street": "Marston Street",
-       "type": "selective",
-       "agent": "Penny & Sinclair",
-       "occupants": 2
-      },
-      {
-       "address": "5 Marston Street, OX4 1JU",
-       "street": "Marston Street",
-       "type": "hmo",
-       "agent": "Mr Ashley Charles Bolton",
-       "occupants": 12
-      },
-      {
-       "address": "6 Marston Street, OX4 1JU",
-       "street": "Marston Street",
-       "type": "hmo",
-       "agent": "Mr Shaun Canning",
-       "occupants": 4
-      },
-      {
-       "address": "8, Marston Street, Oxford, OX4 1JU",
-       "street": "Marston Street",
-       "type": "selective",
-       "agent": "",
-       "occupants": 4
-      },
-      {
-       "address": "9 Marston Street, OX4 1JU",
-       "street": "Marston Street",
-       "type": "hmo",
-       "agent": "Mr Ashley Charles Bolton",
-       "occupants": 5
-      },
-      {
-       "address": "Top Flat, 10 Marston Street, OX4 1JU",
-       "street": "Marston Street",
-       "type": "hmo",
-       "agent": "Mr Ashley Charles Bolton",
-       "occupants": 4
-      },
-      {
-       "address": "11 Marston Street, OX4 1JU",
-       "street": "Marston Street",
-       "type": "hmo",
-       "agent": "Mr Mike Molton",
-       "occupants": 5
-      },
-      {
-       "address": "39a, James Street, Oxford, OX4 1ET",
-       "street": "James Street",
-       "type": "selective",
-       "agent": "Penny & Sinclair",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 2 40, James Street, Oxford, OX4 1ET",
-       "street": "James Street",
-       "type": "selective",
-       "agent": "Finders Keepers",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 3 40, James Street, Oxford, OX4 1ET",
-       "street": "James Street",
-       "type": "selective",
-       "agent": "College & County",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 4 40, James Street, Oxford, OX4 1ET",
-       "street": "James Street",
-       "type": "selective",
-       "agent": "College & County",
-       "occupants": 2
-      },
-      {
-       "address": "42 James Street, OX4 1ET",
-       "street": "James Street",
-       "type": "hmo",
-       "agent": "Chancellors",
-       "occupants": 5
-      },
-      {
-       "address": "43 James Street, OX4 1ET",
-       "street": "James Street",
-       "type": "hmo",
-       "agent": "Mr Mohammed Idrees",
-       "occupants": 5
-      },
-      {
-       "address": "44 James Street, OX4 1ET",
-       "street": "James Street",
-       "type": "hmo",
-       "agent": "Mr Phillip Blanchard",
-       "occupants": 5
-      },
-      {
-       "address": "46 James Street, OX4 1ET",
-       "street": "James Street",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 4
-      },
-      {
-       "address": "58 Marston Street, OX4 1JU",
-       "street": "Marston Street",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 6
-      },
-      {
-       "address": "59 Marston Street, OX4 1JU",
-       "street": "Marston Street",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 5
-      },
-      {
-       "address": "60 Marston Street, OX4 1JU",
-       "street": "Marston Street",
-       "type": "hmo",
-       "agent": "Chancellors",
-       "occupants": 5
-      },
-      {
-       "address": "61, Marston Street, Oxford, OX4 1JU",
-       "street": "Marston Street",
-       "type": "selective",
-       "agent": "Chancellors",
-       "occupants": 7
-      },
-      {
-       "address": "62 Marston Street, OX4 1JU",
-       "street": "Marston Street",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 6
-      },
-      {
-       "address": "107A Cowley Road, OX4 1HU",
-       "street": "Cowley Road",
-       "type": "hmo",
-       "agent": "Mr Ashley Charles Bolton",
-       "occupants": 5
-      },
-      {
-       "address": "124A Cowley Road, OX4 1JE",
-       "street": "Cowley Road",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 7
-      },
-      {
-       "address": "127a, Cowley Road, Oxford, OX4 1HU",
-       "street": "Cowley Road",
-       "type": "selective",
-       "agent": "ANDREW EAMON SCULLY",
-       "occupants": 2
-      },
-      {
-       "address": "129a, Cowley Road, Oxford, OX4 1HU",
-       "street": "Cowley Road",
-       "type": "selective",
-       "agent": "Chancellors",
-       "occupants": 2
-      },
-      {
-       "address": "131a, Cowley Road, Oxford, OX4 1HU",
-       "street": "Cowley Road",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 4
-      },
-      {
-       "address": "First Floor Flat 132, Cowley Road, Oxford, OX4 1JE",
-       "street": "Cowley Road",
-       "type": "selective",
-       "agent": "Hutton Parker",
-       "occupants": 2
-      },
-      {
-       "address": "132a, Cowley Road, Oxford, OX4 1JE",
-       "street": "Cowley Road",
-       "type": "selective",
-       "agent": "Sujaad Ahmed",
-       "occupants": 2
-      }
-     ]
-    },
-    {
-     "block_id": "57606_-854",
-     "label": "Rectory Road / Marston Street",
-     "locality": "New Hinksey",
-     "doors": 39,
-     "markers": 10,
-     "renters": 120,
-     "renters_per_150sqm": 1.8,
-     "top20_agency_listings": 28,
-     "top20_per_150sqm": 0.42,
-     "lat": 51.74834805128205,
-     "lon": -1.2384892307692308,
-     "streets": [
-      {
-       "street": "Marston Street",
-       "hmo_count": 1,
-       "selective_count": 15,
-       "doors": 16,
-       "renters": 54
+       "selective_count": 48,
+       "doors": 48,
+       "renters": 110
       },
       {
-       "street": "Rectory Road",
+       "street": "Cowley",
        "hmo_count": 0,
        "selective_count": 17,
        "doors": 17,
-       "renters": 42
+       "renters": 51
       },
       {
-       "street": "Cowley Road",
-       "hmo_count": 2,
-       "selective_count": 4,
-       "doors": 6,
-       "renters": 24
-      }
-     ],
-     "addresses": [
-      {
-       "address": "Flat 1, Pembroke Court Rectory Road, Oxford, OX4 1BY",
-       "street": "Rectory Road",
-       "type": "selective",
-       "agent": "Breckon & Breckon",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 11, Pembroke Court Rectory Road, Oxford, OX4 1BY",
-       "street": "Rectory Road",
-       "type": "selective",
-       "agent": "College & County",
-       "occupants": 3
-      },
-      {
-       "address": "Flat 12, Pembroke Court Rectory Road, Oxford, OX4 1BY",
-       "street": "Rectory Road",
-       "type": "selective",
-       "agent": "",
-       "occupants": 3
-      },
-      {
-       "address": "Flat 13, Pembroke Court Rectory Road, Oxford, OX4 1BY",
-       "street": "Rectory Road",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 3
-      },
-      {
-       "address": "Flat 15, Pembroke Court Rectory Road, Oxford, OX4 1BY",
-       "street": "Rectory Road",
-       "type": "selective",
-       "agent": "",
-       "occupants": 4
-      },
-      {
-       "address": "Flat 17, Pembroke Court Rectory Road, Oxford, OX4 1BY",
-       "street": "Rectory Road",
-       "type": "selective",
-       "agent": "Penny & Sinclair",
-       "occupants": 3
-      },
-      {
-       "address": "Flat 18, Pembroke Court Rectory Road, Oxford, OX4 1BY",
-       "street": "Rectory Road",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 3
-      },
-      {
-       "address": "Flat 3, Pembroke Court Rectory Road, Oxford, OX4 1BY",
-       "street": "Rectory Road",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 5, Pembroke Court Rectory Road, Oxford, OX4 1BY",
-       "street": "Rectory Road",
-       "type": "selective",
-       "agent": "",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 6, Pembroke Court Rectory Road, Oxford, OX4 1BY",
-       "street": "Rectory Road",
-       "type": "selective",
-       "agent": "Hutton Parker",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 9, Pembroke Court Rectory Road, Oxford, OX4 1BY",
-       "street": "Rectory Road",
-       "type": "selective",
-       "agent": "Portfolio Properties",
-       "occupants": 3
-      },
-      {
-       "address": "4a, Marston Street, Oxford, OX4 1JU",
-       "street": "Marston Street",
-       "type": "selective",
-       "agent": "Breckon & Breckon",
-       "occupants": 3
-      },
-      {
-       "address": "Ground Floor Flat 10, Marston Street, Oxford, OX4 1JU",
-       "street": "Marston Street",
-       "type": "selective",
-       "agent": "",
-       "occupants": 5
-      },
-      {
-       "address": "30, Marston Street, Oxford, OX4 1JU",
-       "street": "Marston Street",
-       "type": "selective",
-       "agent": "Thomas Merrifield",
-       "occupants": 16
-      },
-      {
-       "address": "First Floor Flat B 30, Rectory Road, Oxford, OX4 1BU",
-       "street": "Rectory Road",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 2
-      },
-      {
-       "address": "Ground Floor Flat A 30, Rectory Road, Oxford, OX4 1BU",
-       "street": "Rectory Road",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 2
-      },
-      {
-       "address": "Second Floor Flat C 30, Rectory Road, Oxford, OX4 1BU",
-       "street": "Rectory Road",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 2
-      },
-      {
-       "address": "First Floor Flat B 31, Rectory Road, Oxford, OX4 1BU",
-       "street": "Rectory Road",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 2
-      },
-      {
-       "address": "Ground Floor Flat A 31, Rectory Road, Oxford, OX4 1BU",
-       "street": "Rectory Road",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 2
-      },
-      {
-       "address": "Second Floor Flat C 31, Rectory Road, Oxford, OX4 1BU",
-       "street": "Rectory Road",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 2
-      },
-      {
-       "address": "The Flat 40, Cowley Road, Oxford, OX4 1HZ",
-       "street": "Cowley Road",
-       "type": "selective",
-       "agent": "College & County",
-       "occupants": 4
-      },
-      {
-       "address": "59a, Marston Street, Oxford, OX4 1JU",
-       "street": "Marston Street",
-       "type": "selective",
-       "agent": "",
-       "occupants": 2
-      },
-      {
-       "address": "Basement Flat 60, Marston Street, Oxford, OX4 1JU",
-       "street": "Marston Street",
-       "type": "selective",
-       "agent": "",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 1, Raja Court 63a, Marston Street, Oxford, OX4 1GW",
-       "street": "Marston Street",
-       "type": "selective",
-       "agent": "R M A Properties",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 10, Raja Court 63a, Marston Street, Oxford, OX4 1GW",
-       "street": "Marston Street",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 2, Raja Court 63a, Marston Street, Oxford, OX4 1GW",
-       "street": "Marston Street",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 3, Raja Court 63a, Marston Street, Oxford, OX4 1GW",
-       "street": "Marston Street",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 4, Raja Court 63a, Marston Street, Oxford, OX4 1GW",
-       "street": "Marston Street",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 5, Raja Court 63a, Marston Street, Oxford, OX4 1GW",
-       "street": "Marston Street",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 6, Raja Court 63a, Marston Street, Oxford, OX4 1GW",
-       "street": "Marston Street",
-       "type": "selective",
-       "agent": "R M A Properties",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 7, Raja Court 63a, Marston Street, Oxford, OX4 1GW",
-       "street": "Marston Street",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 8, Raja Court 63a, Marston Street, Oxford, OX4 1GW",
-       "street": "Marston Street",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 9, Raja Court 63a, Marston Street, Oxford, OX4 1GW",
-       "street": "Marston Street",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 2
-      },
-      {
-       "address": "63 Marston Street, OX4 1JU",
-       "street": "Marston Street",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 6
-      },
-      {
-       "address": "The Flat 101a, Cowley Road, Oxford, OX4 1HU",
-       "street": "Cowley Road",
-       "type": "selective",
-       "agent": "RMA Properties",
-       "occupants": 2
-      },
-      {
-       "address": "First Floor Front Flat 103, Cowley Road, Oxford, OX4 1HU",
-       "street": "Cowley Road",
-       "type": "selective",
-       "agent": "Hutton Parker",
-       "occupants": 3
-      },
-      {
-       "address": "120A Cowley Road, OX4 1JE",
-       "street": "Cowley Road",
-       "type": "hmo",
-       "agent": "Mr Paul Malcolm Robinson",
-       "occupants": 5
-      },
-      {
-       "address": "126A Cowley Road, OX4 1JE",
-       "street": "Cowley Road",
-       "type": "hmo",
-       "agent": "Mr Ashley Charles Bolton",
-       "occupants": 6
-      },
-      {
-       "address": "The Flat 150, Cowley Road, Oxford, OX4 1JJ",
-       "street": "Cowley Road",
-       "type": "selective",
-       "agent": "Sterling Lettings",
-       "occupants": 4
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "label": "Randolph Street & Hawkins Street",
-   "locality": "Iffley",
-   "doors": 66,
-   "markers": 60,
-   "renters": 257,
-   "top20_agency_listings": 32,
-   "blocks": [
-    {
-     "block_id": "57603_-851",
-     "label": "Randolph Street / Green Street",
-     "locality": "Iffley",
-     "doors": 36,
-     "markers": 34,
-     "renters": 140,
-     "renters_per_150sqm": 2.1,
-     "top20_agency_listings": 14,
-     "top20_per_150sqm": 0.21,
-     "lat": 51.74586269444445,
-     "lon": -1.2338364722222221,
-     "streets": [
-      {
-       "street": "Randolph Street",
-       "hmo_count": 19,
-       "selective_count": 10,
-       "doors": 29,
-       "renters": 117
-      },
-      {
-       "street": "Green Street",
-       "hmo_count": 1,
-       "selective_count": 3,
-       "doors": 4,
-       "renters": 17
-      },
-      {
-       "street": "Leon Close",
+       "street": "The Jackson Building Bennett Crescent",
        "hmo_count": 0,
-       "selective_count": 3,
-       "doors": 3,
-       "renters": 6
+       "selective_count": 8,
+       "doors": 8,
+       "renters": 31
       }
      ],
      "addresses": [
       {
-       "address": "Flat 1, Alica House 2a, Randolph Street, Oxford, OX4 1XY",
-       "street": "Randolph Street",
+       "address": "Apartment 1, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
        "type": "selective",
-       "agent": "Hutton Parker",
+       "agent": "NOPS",
        "occupants": 2
       },
       {
-       "address": "2 Randolph Street, OX4 1XY",
-       "street": "Randolph Street",
-       "type": "hmo",
-       "agent": "Mr Mohammed Idrees",
-       "occupants": 4
-      },
-      {
-       "address": "3 Randolph Street, OX4 1XY",
-       "street": "Randolph Street",
-       "type": "hmo",
-       "agent": "The Manager",
-       "occupants": 5
-      },
-      {
-       "address": "4 Randolph Street, OX4 1XY",
-       "street": "Randolph Street",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 3
-      },
-      {
-       "address": "6, Randolph Street, Oxford, OX4 1XY",
-       "street": "Randolph Street",
-       "type": "selective",
-       "agent": "Finders Keepers",
-       "occupants": 8
-      },
-      {
-       "address": "8 Randolph Street, OX4 1XY",
-       "street": "Randolph Street",
-       "type": "hmo",
-       "agent": "Finders Keepers",
-       "occupants": 4
-      },
-      {
-       "address": "9 Randolph Street, OX4 1XY",
-       "street": "Randolph Street",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 4
-      },
-      {
-       "address": "10 Green Street, OX4 1YB",
-       "street": "Green Street",
-       "type": "hmo",
-       "agent": "Mr Simon Smith",
-       "occupants": 3
-      },
-      {
-       "address": "10 Randolph Street, OX4 1XY",
-       "street": "Randolph Street",
-       "type": "hmo",
-       "agent": "The Manager",
-       "occupants": 4
-      },
-      {
-       "address": "11 Randolph Street, OX4 1XY",
-       "street": "Randolph Street",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 4
-      },
-      {
-       "address": "12, Randolph Street, Oxford, OX4 1XY",
-       "street": "Randolph Street",
-       "type": "selective",
-       "agent": "Rhys Hathaway",
-       "occupants": 4
-      },
-      {
-       "address": "12a, Green Street, Oxford, OX4 1YB",
-       "street": "Green Street",
-       "type": "selective",
-       "agent": "",
-       "occupants": 4
-      },
-      {
-       "address": "12b, Green Street, Oxford, OX4 1YB",
-       "street": "Green Street",
-       "type": "selective",
-       "agent": "Hamptons",
-       "occupants": 4
-      },
-      {
-       "address": "13, Green Street, Oxford, OX4 1YB",
-       "street": "Green Street",
-       "type": "selective",
-       "agent": "Oxford Lettings",
-       "occupants": 6
-      },
-      {
-       "address": "13 Randolph Street, OX4 1XY",
-       "street": "Randolph Street",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 3
-      },
-      {
-       "address": "14 Randolph Street, OX4 1XY",
-       "street": "Randolph Street",
-       "type": "hmo",
-       "agent": "The Manager",
-       "occupants": 4
-      },
-      {
-       "address": "16 Randolph Street, OX4 1XZ",
-       "street": "Randolph Street",
-       "type": "hmo",
-       "agent": "Mr Mohammed Idrees",
-       "occupants": 4
-      },
-      {
-       "address": "18 Randolph Street, OX4 1XZ",
-       "street": "Randolph Street",
-       "type": "hmo",
-       "agent": "Finders Keepers",
-       "occupants": 4
-      },
-      {
-       "address": "19 Randolph Street, OX4 1XZ",
-       "street": "Randolph Street",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 5
-      },
-      {
-       "address": "21 Randolph Street, OX4 1XZ",
-       "street": "Randolph Street",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 3
-      },
-      {
-       "address": "22 Randolph Street, OX4 1XZ",
-       "street": "Randolph Street",
-       "type": "hmo",
-       "agent": "Mrs Crispin Comonte",
-       "occupants": 4
-      },
-      {
-       "address": "24 Randolph Street, OX4 1XZ",
-       "street": "Randolph Street",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 4
-      },
-      {
-       "address": "25, Randolph Street, Oxford, OX4 1XZ",
-       "street": "Randolph Street",
-       "type": "selective",
-       "agent": "",
-       "occupants": 5
-      },
-      {
-       "address": "27, Randolph Street, Oxford, OX4 1XZ",
-       "street": "Randolph Street",
-       "type": "selective",
-       "agent": "",
-       "occupants": 4
-      },
-      {
-       "address": "28, Randolph Street, Oxford, OX4 1XZ",
-       "street": "Randolph Street",
-       "type": "selective",
-       "agent": "",
-       "occupants": 3
-      },
-      {
-       "address": "29 Randolph Street, OX4 1XZ",
-       "street": "Randolph Street",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 5
-      },
-      {
-       "address": "30, Randolph Street, Oxford, OX4 1XZ",
-       "street": "Randolph Street",
-       "type": "selective",
-       "agent": "Chancellors",
-       "occupants": 3
-      },
-      {
-       "address": "31 Randolph Street, OX4 1XZ",
-       "street": "Randolph Street",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 5
-      },
-      {
-       "address": "32, Randolph Street, Oxford, OX4 1XZ",
-       "street": "Randolph Street",
+       "address": "Apartment 10, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
        "type": "selective",
        "agent": "",
        "occupants": 2
       },
       {
-       "address": "35, Leon Close, Oxford, OX4 1GS",
-       "street": "Leon Close",
+       "address": "Apartment 11, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
        "type": "selective",
-       "agent": "Oxford Lettings",
-       "occupants": 2
-      },
-      {
-       "address": "36, Leon Close, Oxford, OX4 1GS",
-       "street": "Leon Close",
-       "type": "selective",
-       "agent": "Chancellors",
-       "occupants": 2
-      },
-      {
-       "address": "37 Randolph Street, OX4 1XZ",
-       "street": "Randolph Street",
-       "type": "hmo",
        "agent": "",
-       "occupants": 5
+       "occupants": 4
       },
       {
-       "address": "38, Leon Close, Oxford, OX4 1GS",
-       "street": "Leon Close",
+       "address": "Apartment 12, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "Amelie's",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 13, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 15, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "North Oxfordshire Property Services",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 16, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "Estate Management Solurions",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 17, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "RTM",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 18, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "Amelie's",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 19, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "Estate Management Solutions",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 2, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "North Oxfordshire Property Services",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 20, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 21, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "Amelie's",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 22, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 23, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 24, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "Scott Fraser",
+       "occupants": 4
+      },
+      {
+       "address": "Apartment 25, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 26, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 28, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 29, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
        "type": "selective",
        "agent": "Scott Fraser",
        "occupants": 2
       },
       {
-       "address": "39 Randolph Street, OX4 1XZ",
-       "street": "Randolph Street",
-       "type": "hmo",
-       "agent": "Ms Jacqueline Gurden",
-       "occupants": 4
-      },
-      {
-       "address": "40, Randolph Street, Oxford, OX4 1XZ",
-       "street": "Randolph Street",
+       "address": "Apartment 3, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
        "type": "selective",
-       "agent": "Chancellors",
-       "occupants": 4
+       "agent": "",
+       "occupants": 2
       },
       {
-       "address": "41, Randolph Street, Oxford, OX4 1YA",
-       "street": "Randolph Street",
+       "address": "Apartment 30, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 32, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 33, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 34, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 35, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 36, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 39, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 4, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 40, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
        "type": "selective",
        "agent": "",
        "occupants": 4
+      },
+      {
+       "address": "Apartment 41, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 42, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 43, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 44, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 46, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 47, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 48, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 49, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 50, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 4
+      },
+      {
+       "address": "Apartment 51, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "Martin & Co",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 53, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 4
+      },
+      {
+       "address": "Apartment 54, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 55, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 57, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 4
+      },
+      {
+       "address": "Apartment 58, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 6, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 4
+      },
+      {
+       "address": "Apartment 7, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 2
+      },
+      {
+       "address": "Apartment 8, Trinity Court Oxford 4, Between Towns Road, Oxford, OX4 3PP",
+       "street": "Between Towns Road",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 65, The Jackson Building Bennett Crescent, Oxford, OX4 2UQ",
+       "street": "The Jackson Building Bennett Crescent",
+       "type": "selective",
+       "agent": "Finders Keepers",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 67, The Jackson Building Bennett Crescent, Oxford, OX4 2UQ",
+       "street": "The Jackson Building Bennett Crescent",
+       "type": "selective",
+       "agent": "Penny & Sinclair",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 69, The Jackson Building Bennett Crescent, Oxford, OX4 2UQ",
+       "street": "The Jackson Building Bennett Crescent",
+       "type": "selective",
+       "agent": "Scott Fraser",
+       "occupants": 4
+      },
+      {
+       "address": "Flat 73, The Jackson Building Bennett Crescent, Oxford, OX4 2UQ",
+       "street": "The Jackson Building Bennett Crescent",
+       "type": "selective",
+       "agent": "Breckon & Breckon",
+       "occupants": 4
+      },
+      {
+       "address": "Flat 81, The Jackson Building Bennett Crescent, Oxford, OX4 2UQ",
+       "street": "The Jackson Building Bennett Crescent",
+       "type": "selective",
+       "agent": "Carter Jonas",
+       "occupants": 6
+      },
+      {
+       "address": "Flat 85, The Jackson Building Bennett Crescent, Oxford, OX4 2UQ",
+       "street": "The Jackson Building Bennett Crescent",
+       "type": "selective",
+       "agent": "Finders Keepers",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 87, The Jackson Building Bennett Crescent, Oxford, OX4 2UQ",
+       "street": "The Jackson Building Bennett Crescent",
+       "type": "selective",
+       "agent": "Finders Keepers",
+       "occupants": 4
+      },
+      {
+       "address": "Flat 97, The Jackson Building Bennett Crescent, Oxford, OX4 2UQ",
+       "street": "The Jackson Building Bennett Crescent",
+       "type": "selective",
+       "agent": "Finders Keepers",
+       "occupants": 4
+      },
+      {
+       "address": "Flat 1, Cedar Court 186, Oxford Road, Cowley, Oxford, OX4 2BU",
+       "street": "Cowley",
+       "type": "selective",
+       "agent": "Scott Fraser",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 12, Cedar Court 186, Oxford Road, Cowley, Oxford, OX4 2BU",
+       "street": "Cowley",
+       "type": "selective",
+       "agent": "",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 13, Cedar Court 186, Oxford Road, Cowley, Oxford, OX4 2BU",
+       "street": "Cowley",
+       "type": "selective",
+       "agent": "THE OXFORD PROPERTY LETTING COMPANY",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 14, Cedar Court 186, Oxford Road, Cowley, Oxford, OX4 2BU",
+       "street": "Cowley",
+       "type": "selective",
+       "agent": "Chancellors",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 15, Cedar Court 186, Oxford Road, Cowley, Oxford, OX4 2BU",
+       "street": "Cowley",
+       "type": "selective",
+       "agent": "",
+       "occupants": 5
+      },
+      {
+       "address": "Flat 16, Cedar Court 186, Oxford Road, Cowley, Oxford, OX4 2BU",
+       "street": "Cowley",
+       "type": "selective",
+       "agent": "COUNTRYWIDE GROUP",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 17, Cedar Court 186, Oxford Road, Cowley, Oxford, OX4 2BU",
+       "street": "Cowley",
+       "type": "selective",
+       "agent": "Scott Fraser",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 18, Cedar Court 186, Oxford Road, Cowley, Oxford, OX4 2BU",
+       "street": "Cowley",
+       "type": "selective",
+       "agent": "Elwood &Co",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 19, Cedar Court 186, Oxford Road, Cowley, Oxford, OX4 2BU",
+       "street": "Cowley",
+       "type": "selective",
+       "agent": "Sterling Lettings",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 20, Cedar Court 186, Oxford Road, Cowley, Oxford, OX4 2BU",
+       "street": "Cowley",
+       "type": "selective",
+       "agent": "Sterling Lettings",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 21, Cedar Court 186, Oxford Road, Cowley, Oxford, OX4 2BU",
+       "street": "Cowley",
+       "type": "selective",
+       "agent": "Scott Fraser",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 22, Cedar Court 186, Oxford Road, Cowley, Oxford, OX4 2BU",
+       "street": "Cowley",
+       "type": "selective",
+       "agent": "Elwood & Co",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 23, Cedar Court 186, Oxford Road, Cowley, Oxford, OX4 2BU",
+       "street": "Cowley",
+       "type": "selective",
+       "agent": "Elwood & Co",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 4, Cedar Court 186, Oxford Road, Cowley, Oxford, OX4 2BU",
+       "street": "Cowley",
+       "type": "selective",
+       "agent": "Scott Fraser",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 5, Cedar Court 186, Oxford Road, Cowley, Oxford, OX4 2BU",
+       "street": "Cowley",
+       "type": "selective",
+       "agent": "SIMMONS & SONS SURVEYORS",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 6, Cedar Court 186, Oxford Road, Cowley, Oxford, OX4 2BU",
+       "street": "Cowley",
+       "type": "selective",
+       "agent": "SIMMONS & SONS SURVEYORS",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 7, Cedar Court 186, Oxford Road, Cowley, Oxford, OX4 2BU",
+       "street": "Cowley",
+       "type": "selective",
+       "agent": "",
+       "occupants": 3
       }
      ]
     },
     {
-     "block_id": "57602_-851",
-     "label": "Hawkins Street / St Mary's Road",
-     "locality": "Iffley",
-     "doors": 30,
-     "markers": 26,
-     "renters": 117,
+     "block_id": "57590_-835",
+     "label": "Bennett Crescent / Morris House Bennett Crescent",
+     "locality": "Temple Cowley",
+     "doors": 35,
+     "markers": 4,
+     "renters": 118,
      "renters_per_150sqm": 1.8,
-     "top20_agency_listings": 18,
-     "top20_per_150sqm": 0.27,
-     "lat": 51.7450356,
-     "lon": -1.2340748,
+     "top20_agency_listings": 26,
+     "top20_per_150sqm": 0.39,
+     "lat": 51.734482885714286,
+     "lon": -1.2108162,
      "streets": [
       {
-       "street": "Hawkins Street",
-       "hmo_count": 4,
-       "selective_count": 11,
-       "doors": 15,
-       "renters": 53
+       "street": "Bennett Crescent",
+       "hmo_count": 0,
+       "selective_count": 21,
+       "doors": 21,
+       "renters": 64
       },
       {
-       "street": "St Mary's Road",
-       "hmo_count": 1,
+       "street": "Morris House Bennett Crescent",
+       "hmo_count": 0,
        "selective_count": 7,
-       "doors": 8,
-       "renters": 35
+       "doors": 7,
+       "renters": 28
       },
       {
-       "street": "Leopold Street",
-       "hmo_count": 3,
-       "selective_count": 2,
-       "doors": 5,
-       "renters": 22
+       "street": "The Manor House Bennett Crescent",
+       "hmo_count": 0,
+       "selective_count": 3,
+       "doors": 3,
+       "renters": 12
       },
       {
-       "street": "Randolph Street",
+       "street": "Oxford Military College Bennett Crescent",
+       "hmo_count": 0,
+       "selective_count": 3,
+       "doors": 3,
+       "renters": 10
+      },
+      {
+       "street": "The Old Chapel Bennett Crescent",
        "hmo_count": 0,
        "selective_count": 1,
        "doors": 1,
        "renters": 4
-      },
-      {
-       "street": "Galpin Close",
-       "hmo_count": 0,
-       "selective_count": 1,
-       "doors": 1,
-       "renters": 3
       }
      ],
      "addresses": [
       {
-       "address": "2, Galpin Close, Oxford, OX4 1PR",
-       "street": "Galpin Close",
+       "address": "2, Bennett Crescent, Oxford, OX4 2UN",
+       "street": "Bennett Crescent",
        "type": "selective",
-       "agent": "College & County",
+       "agent": "Finders Keepers",
        "occupants": 3
       },
       {
-       "address": "3 Hawkins Street, OX4 1YD",
-       "street": "Hawkins Street",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 4
+       "address": "Flat 1, Oxford Military College Bennett Crescent, Oxford, OX4 2UG",
+       "street": "Oxford Military College Bennett Crescent",
+       "type": "selective",
+       "agent": "Finders Keepers",
+       "occupants": 2
       },
       {
-       "address": "4, Hawkins Street, Oxford, OX4 1YD",
-       "street": "Hawkins Street",
+       "address": "Flat 19, Morris House Bennett Crescent, Oxford, OX4 2UG",
+       "street": "Morris House Bennett Crescent",
        "type": "selective",
-       "agent": "Penny & Sinclair",
+       "agent": "Andrews",
        "occupants": 3
       },
       {
-       "address": "5, Hawkins Street, Oxford, OX4 1YD",
-       "street": "Hawkins Street",
+       "address": "Flat 23, Morris House Bennett Crescent, Oxford, OX4 2UG",
+       "street": "Morris House Bennett Crescent",
        "type": "selective",
-       "agent": "Scott Fraser",
-       "occupants": 4
-      },
-      {
-       "address": "6, Hawkins Street, Oxford, OX4 1YD",
-       "street": "Hawkins Street",
-       "type": "selective",
-       "agent": "Thomas Merrifield",
-       "occupants": 3
-      },
-      {
-       "address": "7, Hawkins Street, Oxford, OX4 1YD",
-       "street": "Hawkins Street",
-       "type": "selective",
-       "agent": "",
-       "occupants": 3
-      },
-      {
-       "address": "8, Hawkins Street, Oxford, OX4 1YD",
-       "street": "Hawkins Street",
-       "type": "selective",
-       "agent": "College & County",
-       "occupants": 3
-      },
-      {
-       "address": "9, Hawkins Street, Oxford, OX4 1YD",
-       "street": "Hawkins Street",
-       "type": "selective",
-       "agent": "Penny & Sinclair",
-       "occupants": 3
-      },
-      {
-       "address": "11, Hawkins Street, Oxford, OX4 1YD",
-       "street": "Hawkins Street",
-       "type": "selective",
-       "agent": "Thomas Merrifield",
-       "occupants": 3
-      },
-      {
-       "address": "12, Hawkins Street, Oxford, OX4 1YD",
-       "street": "Hawkins Street",
-       "type": "selective",
-       "agent": "",
-       "occupants": 3
-      },
-      {
-       "address": "13 Hawkins Street, OX4 1YD",
-       "street": "Hawkins Street",
-       "type": "hmo",
-       "agent": "Mr Jordan Baskerville",
-       "occupants": 5
-      },
-      {
-       "address": "14, Hawkins Street, Oxford, OX4 1YD",
-       "street": "Hawkins Street",
-       "type": "selective",
-       "agent": "College & County",
-       "occupants": 3
-      },
-      {
-       "address": "15 Hawkins Street, OX4 1YD",
-       "street": "Hawkins Street",
-       "type": "hmo",
-       "agent": "NOPS",
+       "agent": "Breckon & Breckon",
        "occupants": 6
       },
       {
-       "address": "15 Leopold Street, OX4 1PS",
-       "street": "Leopold Street",
-       "type": "hmo",
-       "agent": "College & County",
-       "occupants": 8
-      },
-      {
-       "address": "16, Hawkins Street, Oxford, OX4 1YD",
-       "street": "Hawkins Street",
-       "type": "selective",
-       "agent": "COUNTRYWIDE",
-       "occupants": 3
-      },
-      {
-       "address": "17 Hawkins Street, OX4 1YD",
-       "street": "Hawkins Street",
-       "type": "hmo",
-       "agent": "The Manager",
-       "occupants": 4
-      },
-      {
-       "address": "21 Leopold Street, OX4 1PS",
-       "street": "Leopold Street",
-       "type": "hmo",
-       "agent": "The Manager",
-       "occupants": 4
-      },
-      {
-       "address": "23, Hawkins Street, Oxford, OX4 1YD",
-       "street": "Hawkins Street",
-       "type": "selective",
-       "agent": "",
-       "occupants": 3
-      },
-      {
-       "address": "23 Leopold Street, OX4 1PS",
-       "street": "Leopold Street",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 4
-      },
-      {
-       "address": "24, Leopold Street, Oxford, OX4 1PS",
-       "street": "Leopold Street",
-       "type": "selective",
-       "agent": "",
-       "occupants": 3
-      },
-      {
-       "address": "24a, Leopold Street, Oxford, OX4 1PS",
-       "street": "Leopold Street",
-       "type": "selective",
-       "agent": "John Brennan",
-       "occupants": 3
-      },
-      {
-       "address": "53, Randolph Street, Oxford, OX4 1YA",
-       "street": "Randolph Street",
-       "type": "selective",
-       "agent": "",
-       "occupants": 4
-      },
-      {
-       "address": "103a, St Mary's Road, Oxford, OX4 1QD",
-       "street": "St Mary's Road",
-       "type": "selective",
-       "agent": "Chancellors",
-       "occupants": 5
-      },
-      {
-       "address": "103b, St Mary's Road, Oxford, OX4 1QD",
-       "street": "St Mary's Road",
-       "type": "selective",
-       "agent": "Chancellors",
-       "occupants": 5
-      },
-      {
-       "address": "103c, St Mary's Road, Oxford, OX4 1QD",
-       "street": "St Mary's Road",
-       "type": "selective",
-       "agent": "Chancellors",
-       "occupants": 5
-      },
-      {
-       "address": "104a, St Mary's Road, Oxford, OX4 1QD",
-       "street": "St Mary's Road",
+       "address": "Flat 25, Morris House Bennett Crescent, Oxford, OX4 2UG",
+       "street": "Morris House Bennett Crescent",
        "type": "selective",
        "agent": "Chancellors",
        "occupants": 2
       },
       {
-       "address": "104b, St Mary's Road, Oxford, OX4 1QD",
-       "street": "St Mary's Road",
+       "address": "Flat 27, Morris House Bennett Crescent, Oxford, OX4 2UG",
+       "street": "Morris House Bennett Crescent",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 29, Morris House Bennett Crescent, Oxford, OX4 2UG",
+       "street": "Morris House Bennett Crescent",
+       "type": "selective",
+       "agent": "",
+       "occupants": 5
+      },
+      {
+       "address": "Flat 31, Morris House Bennett Crescent, Oxford, OX4 2UG",
+       "street": "Morris House Bennett Crescent",
+       "type": "selective",
+       "agent": "Scott Fraser",
+       "occupants": 6
+      },
+      {
+       "address": "Flat 35, Morris House Bennett Crescent, Oxford, OX4 2UG",
+       "street": "Morris House Bennett Crescent",
+       "type": "selective",
+       "agent": "Finders Keepers",
+       "occupants": 4
+      },
+      {
+       "address": "Flat 37, The Old Chapel Bennett Crescent, Oxford, OX4 2UG",
+       "street": "The Old Chapel Bennett Crescent",
+       "type": "selective",
+       "agent": "Chesterton Yeates",
+       "occupants": 4
+      },
+      {
+       "address": "Flat 41, The Manor House Bennett Crescent, Oxford, OX4 2UG",
+       "street": "The Manor House Bennett Crescent",
+       "type": "selective",
+       "agent": "",
+       "occupants": 4
+      },
+      {
+       "address": "Flat 43, The Manor House Bennett Crescent, Oxford, OX4 2UG",
+       "street": "The Manor House Bennett Crescent",
+       "type": "selective",
+       "agent": "Finders Keepers",
+       "occupants": 4
+      },
+      {
+       "address": "Flat 5, Oxford Military College Bennett Crescent, Oxford, OX4 2UG",
+       "street": "Oxford Military College Bennett Crescent",
+       "type": "selective",
+       "agent": "Breckon & Breckon",
+       "occupants": 4
+      },
+      {
+       "address": "Flat 57, The Manor House Bennett Crescent, Oxford, OX4 2UG",
+       "street": "The Manor House Bennett Crescent",
        "type": "selective",
        "agent": "Chancellors",
        "occupants": 4
       },
       {
-       "address": "104c, St Mary's Road, Oxford, OX4 1QD",
-       "street": "St Mary's Road",
+       "address": "Flat 9, Oxford Military College Bennett Crescent, Oxford, OX4 2UG",
+       "street": "Oxford Military College Bennett Crescent",
+       "type": "selective",
+       "agent": "Martin & Co",
+       "occupants": 4
+      },
+      {
+       "address": "6, Bennett Crescent, Oxford, OX4 2UN",
+       "street": "Bennett Crescent",
+       "type": "selective",
+       "agent": "",
+       "occupants": 3
+      },
+      {
+       "address": "12, Bennett Crescent, Oxford, OX4 2UN",
+       "street": "Bennett Crescent",
+       "type": "selective",
+       "agent": "",
+       "occupants": 3
+      },
+      {
+       "address": "18, Bennett Crescent, Oxford, OX4 2UN",
+       "street": "Bennett Crescent",
+       "type": "selective",
+       "agent": "Finders Keepers",
+       "occupants": 4
+      },
+      {
+       "address": "20, Bennett Crescent, Oxford, OX4 2UN",
+       "street": "Bennett Crescent",
        "type": "selective",
        "agent": "Chancellors",
-       "occupants": 5
+       "occupants": 3
       },
       {
-       "address": "106, St Mary's Road, Oxford, OX4 1QD",
-       "street": "St Mary's Road",
+       "address": "22, Bennett Crescent, Oxford, OX4 2UN",
+       "street": "Bennett Crescent",
        "type": "selective",
-       "agent": "Oxford Lettings",
-       "occupants": 5
+       "agent": "Chancellors",
+       "occupants": 3
       },
       {
-       "address": "107 St Mary's Road, OX4 1QD",
-       "street": "St Mary's Road",
-       "type": "hmo",
-       "agent": "Mr Callum Turner",
+       "address": "24, Bennett Crescent, Oxford, OX4 2UN",
+       "street": "Bennett Crescent",
+       "type": "selective",
+       "agent": "Finders Keepers",
+       "occupants": 3
+      },
+      {
+       "address": "30, Bennett Crescent, Oxford, OX4 2UN",
+       "street": "Bennett Crescent",
+       "type": "selective",
+       "agent": "Savills",
        "occupants": 4
+      },
+      {
+       "address": "44, Bennett Crescent, Oxford, OX4 2UN",
+       "street": "Bennett Crescent",
+       "type": "selective",
+       "agent": "",
+       "occupants": 3
+      },
+      {
+       "address": "46, Bennett Crescent, Oxford, OX4 2UN",
+       "street": "Bennett Crescent",
+       "type": "selective",
+       "agent": "Finders Keepers",
+       "occupants": 3
+      },
+      {
+       "address": "50, Bennett Crescent, Oxford, OX4 2UN",
+       "street": "Bennett Crescent",
+       "type": "selective",
+       "agent": "Carter Jonas",
+       "occupants": 3
+      },
+      {
+       "address": "54, Bennett Crescent, Oxford, OX4 2UN",
+       "street": "Bennett Crescent",
+       "type": "selective",
+       "agent": "",
+       "occupants": 3
+      },
+      {
+       "address": "58, Bennett Crescent, Oxford, OX4 2UN",
+       "street": "Bennett Crescent",
+       "type": "selective",
+       "agent": "Andrews",
+       "occupants": 3
+      },
+      {
+       "address": "60, Bennett Crescent, Oxford, OX4 2UN",
+       "street": "Bennett Crescent",
+       "type": "selective",
+       "agent": "Scott Fraser",
+       "occupants": 2
+      },
+      {
+       "address": "62, Bennett Crescent, Oxford, OX4 2UN",
+       "street": "Bennett Crescent",
+       "type": "selective",
+       "agent": "Finders Keepers",
+       "occupants": 3
+      },
+      {
+       "address": "66, Bennett Crescent, Oxford, OX4 2UN",
+       "street": "Bennett Crescent",
+       "type": "selective",
+       "agent": "Finders Keepers",
+       "occupants": 3
+      },
+      {
+       "address": "68, Bennett Crescent, Oxford, OX4 2UN",
+       "street": "Bennett Crescent",
+       "type": "selective",
+       "agent": "Scott Fraser",
+       "occupants": 3
+      },
+      {
+       "address": "70, Bennett Crescent, Oxford, OX4 2UN",
+       "street": "Bennett Crescent",
+       "type": "selective",
+       "agent": "Carter Jonas",
+       "occupants": 3
+      },
+      {
+       "address": "72, Bennett Crescent, Oxford, OX4 2UN",
+       "street": "Bennett Crescent",
+       "type": "selective",
+       "agent": "",
+       "occupants": 3
+      },
+      {
+       "address": "101, Bennett Crescent, Oxford, OX4 2UQ",
+       "street": "Bennett Crescent",
+       "type": "selective",
+       "agent": "Nuffield Court Management Company",
+       "occupants": 3
+      },
+      {
+       "address": "107, Bennett Crescent, Oxford, OX4 2UQ",
+       "street": "Bennett Crescent",
+       "type": "selective",
+       "agent": "Scott Fraser",
+       "occupants": 3
       }
      ]
     }
    ]
   },
   {
-   "label": "St Clements Street",
-   "locality": "Headington Hill",
-   "doors": 54,
-   "markers": 29,
-   "renters": 188,
-   "top20_agency_listings": 29,
+   "label": "Silkdale Close",
+   "locality": "Temple Cowley",
+   "doors": 59,
+   "markers": 2,
+   "renters": 142,
+   "top20_agency_listings": 30,
    "blocks": [
     {
-     "block_id": "57608_-854",
-     "label": "St Clements Street / Rectory Road",
-     "locality": "Headington Hill",
-     "doors": 54,
-     "markers": 29,
-     "renters": 188,
-     "renters_per_150sqm": 2.8,
-     "top20_agency_listings": 29,
-     "top20_per_150sqm": 0.43,
-     "lat": 51.750414166666665,
-     "lon": -1.2383422222222222,
+     "block_id": "57592_-835",
+     "label": "Silkdale Close / Salegate Lane",
+     "locality": "Temple Cowley",
+     "doors": 59,
+     "markers": 2,
+     "renters": 142,
+     "renters_per_150sqm": 2.1,
+     "top20_agency_listings": 30,
+     "top20_per_150sqm": 0.45,
+     "lat": 51.73609045762712,
+     "lon": -1.2111016610169492,
      "streets": [
       {
-       "street": "Rectory Road",
-       "hmo_count": 9,
-       "selective_count": 8,
-       "doors": 17,
-       "renters": 67
-      },
-      {
-       "street": "St Clements Street",
+       "street": "Silkdale Close",
        "hmo_count": 0,
-       "selective_count": 18,
-       "doors": 18,
-       "renters": 56
+       "selective_count": 52,
+       "doors": 52,
+       "renters": 116
       },
       {
-       "street": "Cross Street",
+       "street": "Salegate Lane",
        "hmo_count": 1,
-       "selective_count": 13,
-       "doors": 14,
-       "renters": 37
-      },
-      {
-       "street": "Glebe Street",
-       "hmo_count": 5,
-       "selective_count": 0,
-       "doors": 5,
-       "renters": 28
+       "selective_count": 6,
+       "doors": 7,
+       "renters": 26
       }
      ],
      "addresses": [
       {
-       "address": "1, Citygate 78, St Clement's Street, Oxford, OX4 1AW",
-       "street": "St Clements Street",
+       "address": "1, Salegate Lane, Oxford, OX4 2HQ",
+       "street": "Salegate Lane",
        "type": "selective",
-       "agent": "H.D. PROPERTY MANAGEMENT",
-       "occupants": 4
-      },
-      {
-       "address": "1, Thomas Mews Rectory Road, Oxford, OX4 1NU",
-       "street": "Rectory Road",
-       "type": "selective",
-       "agent": "LPM Residential",
-       "occupants": 4
-      },
-      {
-       "address": "1a, Cross Street, Oxford, OX4 1BZ",
-       "street": "Cross Street",
-       "type": "selective",
-       "agent": "Nicholas Jones",
+       "agent": "Hutton Parker",
        "occupants": 3
       },
       {
-       "address": "1b, Cross Street, Oxford, OX4 1BZ",
-       "street": "Cross Street",
-       "type": "selective",
-       "agent": "",
-       "occupants": 2
-      },
-      {
-       "address": "2, Citygate 78, St Clement's Street, Oxford, OX4 1AW",
-       "street": "St Clements Street",
-       "type": "selective",
-       "agent": "Finders Keepers",
-       "occupants": 4
-      },
-      {
-       "address": "2, Thomas Mews Rectory Road, Oxford, OX4 1NU",
-       "street": "Rectory Road",
-       "type": "selective",
-       "agent": "LPM Residential",
-       "occupants": 3
-      },
-      {
-       "address": "2, Woodman Court Cross Street, Oxford, OX4 1BZ",
-       "street": "Cross Street",
-       "type": "selective",
-       "agent": "Penny & Sinclair",
-       "occupants": 3
-      },
-      {
-       "address": "2 Cross Street, OX4 1BZ",
-       "street": "Cross Street",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 5
-      },
-      {
-       "address": "2 Glebe Street, OX4 1DQ",
-       "street": "Glebe Street",
-       "type": "hmo",
-       "agent": "College & County",
-       "occupants": 6
-      },
-      {
-       "address": "3, Thomas Mews Rectory Road, Oxford, OX4 1NU",
-       "street": "Rectory Road",
-       "type": "selective",
-       "agent": "LPM Residential",
-       "occupants": 2
-      },
-      {
-       "address": "3, Woodman Court Cross Street, Oxford, OX4 1BZ",
-       "street": "Cross Street",
-       "type": "selective",
-       "agent": "Scott Fraser",
-       "occupants": 3
-      },
-      {
-       "address": "4, Citygate 78, St Clement's Street, Oxford, OX4 1AW",
-       "street": "St Clements Street",
-       "type": "selective",
-       "agent": "College & County",
-       "occupants": 2
-      },
-      {
-       "address": "4, Cross Street, Oxford, OX4 1BZ",
-       "street": "Cross Street",
-       "type": "selective",
-       "agent": "",
-       "occupants": 3
-      },
-      {
-       "address": "4, Thomas Mews Rectory Road, Oxford, OX4 1NU",
-       "street": "Rectory Road",
-       "type": "selective",
-       "agent": "LPM Residential",
-       "occupants": 2
-      },
-      {
-       "address": "4, Woodman Court Cross Street, Oxford, OX4 1BZ",
-       "street": "Cross Street",
-       "type": "selective",
-       "agent": "Scott Fraser",
-       "occupants": 2
-      },
-      {
-       "address": "4 Glebe Street, OX4 1DQ",
-       "street": "Glebe Street",
-       "type": "hmo",
-       "agent": "College & County",
-       "occupants": 6
-      },
-      {
-       "address": "4 Rectory Road, OX4 1BW",
-       "street": "Rectory Road",
-       "type": "hmo",
-       "agent": "The Manager",
-       "occupants": 3
-      },
-      {
-       "address": "5, Citygate 78, St Clement's Street, Oxford, OX4 1AW",
-       "street": "St Clements Street",
+       "address": "2, Salegate Lane, Oxford, OX4 2HQ",
+       "street": "Salegate Lane",
        "type": "selective",
        "agent": "Taylors",
+       "occupants": 4
+      },
+      {
+       "address": "Flat 12 Maughan House, Lizmans Court Silkdale Close, Oxford, OX4 2HE",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "",
        "occupants": 3
       },
       {
-       "address": "5, Cross Street, Oxford, OX4 1BZ",
-       "street": "Cross Street",
+       "address": "Flat 13 Maughan House, Lizmans Court Silkdale Close, Oxford, OX4 2HE",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Chancellors",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 14 Maughan House, Lizmans Court Silkdale Close, Oxford, OX4 2HE",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Finders Keepers",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 19 Lambourn House, Lizmans Court Silkdale Close, Oxford, OX4 2HE",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 1maughan House, Lizmans Court Silkdale Close, Oxford, OX4 2HE",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Lucie Mayer",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 21 Lambourn House, Lizmans Court Silkdale Close, Oxford, OX4 2HE",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Chancellors",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 24 Lambourn House, Lizmans Court Silkdale Close, Oxford, OX4 2HE",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 27 Lambourn House, Lizmans Court Silkdale Close, Oxford, OX4 2HE",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Andrews",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 3 Maughan House, Lizmans Court Silkdale Close, Oxford, OX4 2HE",
+       "street": "Silkdale Close",
        "type": "selective",
        "agent": "Hutton Parker",
        "occupants": 2
       },
       {
-       "address": "5, Thomas Mews Rectory Road, Oxford, OX4 1NU",
-       "street": "Rectory Road",
+       "address": "Flat 30 Lambourn House, Lizmans Court Silkdale Close, Oxford, OX4 2HE",
+       "street": "Silkdale Close",
        "type": "selective",
-       "agent": "LPM Residential",
+       "agent": "Chancellors",
        "occupants": 2
       },
       {
-       "address": "5 Rectory Road, OX4 1BW",
-       "street": "Rectory Road",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 3
-      },
-      {
-       "address": "6, Woodman Court Cross Street, Oxford, OX4 1BZ",
-       "street": "Cross Street",
+       "address": "Flat 33 Lambourn House, Lizmans Court Silkdale Close, Oxford, OX4 2HE",
+       "street": "Silkdale Close",
        "type": "selective",
        "agent": "Finders Keepers",
        "occupants": 3
       },
       {
-       "address": "6a, Rectory Road, Oxford, OX4 1BW",
-       "street": "Rectory Road",
+       "address": "Flat 36 Lambourn House, Lizmans Court Silkdale Close, Oxford, OX4 2HE",
+       "street": "Silkdale Close",
        "type": "selective",
-       "agent": "LPM Residential",
-       "occupants": 3
-      },
-      {
-       "address": "6B Rectory Road, OX4 1BW",
-       "street": "Rectory Road",
-       "type": "hmo",
        "agent": "",
-       "occupants": 4
+       "occupants": 2
       },
       {
-       "address": "6 Glebe Street, OX4 1DQ",
-       "street": "Glebe Street",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 5
+       "address": "Flat 38 Lambourn House, Lizmans Court Silkdale Close, Oxford, OX4 2HF",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Peerless Properties (Oxford)",
+       "occupants": 2
       },
       {
-       "address": "7, Citygate 78, St Clement's Street, Oxford, OX4 1AW",
-       "street": "St Clements Street",
+       "address": "Flat 39 Lambourn House, Lizmans Court Silkdale Close, Oxford, OX4 2HF",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "College & County",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 41 Lambourn House, Lizmans Court Silkdale Close, Oxford, OX4 2HF",
+       "street": "Silkdale Close",
        "type": "selective",
        "agent": "Finders Keepers",
        "occupants": 2
       },
       {
-       "address": "7, Rectory Road, Oxford, OX4 1BW",
-       "street": "Rectory Road",
+       "address": "Flat 42 Lambourn House, Lizmans Court Silkdale Close, Oxford, OX4 2HF",
+       "street": "Silkdale Close",
        "type": "selective",
-       "agent": "",
-       "occupants": 6
-      },
-      {
-       "address": "7 Glebe Street, OX4 1DQ",
-       "street": "Glebe Street",
-       "type": "hmo",
-       "agent": "College & County",
-       "occupants": 6
-      },
-      {
-       "address": "8, Citygate 78, St Clement's Street, Oxford, OX4 1AW",
-       "street": "St Clements Street",
-       "type": "selective",
-       "agent": "Gem Estate Management",
-       "occupants": 4
-      },
-      {
-       "address": "8, Woodman Court Cross Street, Oxford, OX4 1BZ",
-       "street": "Cross Street",
-       "type": "selective",
-       "agent": "College & County",
+       "agent": "Breckon & Breckon",
        "occupants": 2
       },
       {
-       "address": "8 Rectory Road, OX4 1BW",
-       "street": "Rectory Road",
-       "type": "hmo",
-       "agent": "Mrs Sarah Hanney",
-       "occupants": 4
+       "address": "Flat 43 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HF",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Prestige Properties (Oxford)",
+       "occupants": 1
       },
       {
-       "address": "9, Citygate 78, St Clement's Street, Oxford, OX4 1AW",
-       "street": "St Clements Street",
+       "address": "Flat 44 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HF",
+       "street": "Silkdale Close",
        "type": "selective",
-       "agent": "",
-       "occupants": 3
-      },
-      {
-       "address": "9, Woodman Court Cross Street, Oxford, OX4 1BZ",
-       "street": "Cross Street",
-       "type": "selective",
-       "agent": "Finders Keepers",
+       "agent": "Chancellors",
        "occupants": 2
       },
       {
-       "address": "9 Rectory Road, OX4 1BW",
-       "street": "Rectory Road",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 5
-      },
-      {
-       "address": "10, Citygate 78, St Clement's Street, Oxford, OX4 1AW",
-       "street": "St Clements Street",
+       "address": "Flat 45 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HF",
+       "street": "Silkdale Close",
        "type": "selective",
-       "agent": "GEM Estate management",
-       "occupants": 3
-      },
-      {
-       "address": "10 Glebe Street, OX4 1DQ",
-       "street": "Glebe Street",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 5
-      },
-      {
-       "address": "10 Rectory Road, OX4 1BW",
-       "street": "Rectory Road",
-       "type": "hmo",
-       "agent": "Mr Sujaad Ahmed",
-       "occupants": 5
-      },
-      {
-       "address": "11 Rectory Road, OX4 1BW",
-       "street": "Rectory Road",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 7
-      },
-      {
-       "address": "12, Woodman Court Cross Street, Oxford, OX4 1BZ",
-       "street": "Cross Street",
-       "type": "selective",
-       "agent": "Penny & Sinclair",
+       "agent": "Premier Letting",
        "occupants": 2
       },
       {
-       "address": "12a, Rectory Road, Oxford, OX4 1BW",
-       "street": "Rectory Road",
+       "address": "Flat 46 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HF",
+       "street": "Silkdale Close",
        "type": "selective",
-       "agent": "",
-       "occupants": 3
-      },
-      {
-       "address": "14, Citygate 78, St Clement's Street, Oxford, OX4 1AW",
-       "street": "St Clements Street",
-       "type": "selective",
-       "agent": "Thomas Merrifield",
-       "occupants": 3
-      },
-      {
-       "address": "14, Woodman Court Cross Street, Oxford, OX4 1BZ",
-       "street": "Cross Street",
-       "type": "selective",
-       "agent": "College & County",
-       "occupants": 3
-      },
-      {
-       "address": "15, Citygate 78, St Clement's Street, Oxford, OX4 1AW",
-       "street": "St Clements Street",
-       "type": "selective",
-       "agent": "Scott Fraser",
-       "occupants": 3
-      },
-      {
-       "address": "15, Woodman Court Cross Street, Oxford, OX4 1BZ",
-       "street": "Cross Street",
-       "type": "selective",
-       "agent": "Portfolio Properties",
+       "agent": "Chancellors",
        "occupants": 2
       },
       {
-       "address": "16, Citygate 78, St Clement's Street, Oxford, OX4 1AW",
-       "street": "St Clements Street",
-       "type": "selective",
-       "agent": "Penny & Sinclair",
-       "occupants": 2
-      },
-      {
-       "address": "18, Citygate 78, St Clement's Street, Oxford, OX4 1AW",
-       "street": "St Clements Street",
+       "address": "Flat 48 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HF",
+       "street": "Silkdale Close",
        "type": "selective",
        "agent": "Chancellors",
        "occupants": 3
       },
       {
-       "address": "19, Citygate 78, St Clement's Street, Oxford, OX4 1AW",
-       "street": "St Clements Street",
+       "address": "Flat 49 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HF",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Chancellors",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 5 Maughan House, Lizmans Court Silkdale Close, Oxford, OX4 2HE",
+       "street": "Silkdale Close",
        "type": "selective",
        "agent": "Taylors",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 50 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HF",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "College & County",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 51 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HF",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 52 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HF",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "College & County",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 54 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HF",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Amelie's",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 56 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HF",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Finders Keepers",
+       "occupants": 1
+      },
+      {
+       "address": "Flat 60 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HF",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 61 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HF",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Peerless Properties",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 63 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HG",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Ballards Estate Agents",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 64 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HG",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Amelie's",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 66 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HG",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Chancellors",
+       "occupants": 1
+      },
+      {
+       "address": "Flat 68 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HG",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Chancellors",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 71 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HG",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 72 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HG",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Martin & Co",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 74 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HG",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Amelie's",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 75 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HG",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 76 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HG",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Chancellors",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 77 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HG",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Sujaad Ahmed",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 78 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HG",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 79 Hemingway House, Lizmans Court Silkdale Close, Oxford, OX4 2HG",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 81 Silk House, Lizmans Court Silkdale Close, Oxford, OX4 2HG",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Peerless Properties",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 83 Silk House, Lizmans Court Silkdale Close, Oxford, OX4 2HG",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Chancellors",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 84 Silk House, Lizmans Court Silkdale Close, Oxford, OX4 2HG",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Finders Keepers",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 86 Silk House, Lizmans Court Silkdale Close, Oxford, OX4 2HG",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 87 Silk House, Lizmans Court Silkdale Close, Oxford, OX4 2HG",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Taylors",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 88 Fitzgerald House, Lizmans Court Silkdale Close, Oxford, OX4 2HG",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Breckon & Breckon",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 9 Maughan House, Lizmans Court Silkdale Close, Oxford, OX4 2HE",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 91 Fitzgerald House, Lizmans Court Silkdale Close, Oxford, OX4 2HG",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "College & County",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 93 Fitzgerald House, Lizmans Court Silkdale Close, Oxford, OX4 2HG",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 94 Fitzgerald House, Lizmans Court Silkdale Close, Oxford, OX4 2HG",
+       "street": "Silkdale Close",
+       "type": "selective",
+       "agent": "Chancellors",
        "occupants": 4
       },
       {
-       "address": "56 Rectory Road, OX4 1BW",
-       "street": "Rectory Road",
+       "address": "8, Salegate Lane, Oxford, OX4 2HQ",
+       "street": "Salegate Lane",
+       "type": "selective",
+       "agent": "",
+       "occupants": 4
+      },
+      {
+       "address": "9b, Salegate Lane, Oxford, OX4 2HQ",
+       "street": "Salegate Lane",
+       "type": "selective",
+       "agent": "Finders Keepers",
+       "occupants": 2
+      },
+      {
+       "address": "9 Salegate Lane, OX4 2HQ",
+       "street": "Salegate Lane",
        "type": "hmo",
-       "agent": "Mr Abdul Shakoor",
-       "occupants": 6
-      },
-      {
-       "address": "57 Rectory Road, OX4 1BW",
-       "street": "Rectory Road",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 5
-      },
-      {
-       "address": "Flat 1 78a, St Clement's Street, Oxford, OX4 1AW",
-       "street": "St Clements Street",
-       "type": "selective",
        "agent": "",
+       "occupants": 4
+      },
+      {
+       "address": "10, Salegate Lane, Oxford, OX4 2HQ",
+       "street": "Salegate Lane",
+       "type": "selective",
+       "agent": "Oxford Lettings",
+       "occupants": 7
+      },
+      {
+       "address": "10a, Salegate Lane, Oxford, OX4 2HQ",
+       "street": "Salegate Lane",
+       "type": "selective",
+       "agent": "Oxford Lettings",
        "occupants": 2
-      },
-      {
-       "address": "Flat 2 78a, St Clement's Street, Oxford, OX4 1AW",
-       "street": "St Clements Street",
-       "type": "selective",
-       "agent": "",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 3 78a, St Clement's Street, Oxford, OX4 1AW",
-       "street": "St Clements Street",
-       "type": "selective",
-       "agent": "",
-       "occupants": 2
-      },
-      {
-       "address": "Flat 4 78a, St Clement's Street, Oxford, OX4 1AW",
-       "street": "St Clements Street",
-       "type": "selective",
-       "agent": "",
-       "occupants": 2
-      },
-      {
-       "address": "78b, St Clement's Street, Oxford, OX4 1AW",
-       "street": "St Clements Street",
-       "type": "selective",
-       "agent": "",
-       "occupants": 8
       }
      ]
     }
    ]
   },
   {
-   "label": "James Street",
-   "locality": "New Hinksey",
-   "doors": 31,
-   "markers": 30,
-   "renters": 160,
-   "top20_agency_listings": 12,
+   "label": "Oxford Road",
+   "locality": "Florence Park",
+   "doors": 24,
+   "markers": 7,
+   "renters": 99,
+   "top20_agency_listings": 11,
    "blocks": [
     {
-     "block_id": "57603_-855",
-     "label": "James Street / Regent Street",
-     "locality": "New Hinksey",
-     "doors": 31,
-     "markers": 30,
-     "renters": 160,
-     "renters_per_150sqm": 2.4,
-     "top20_agency_listings": 12,
-     "top20_per_150sqm": 0.18,
-     "lat": 51.74581893548387,
-     "lon": -1.2396528387096775,
+     "block_id": "57592_-839",
+     "label": "Oxford Road / Clive Road",
+     "locality": "Florence Park",
+     "doors": 24,
+     "markers": 7,
+     "renters": 99,
+     "renters_per_150sqm": 1.5,
+     "top20_agency_listings": 11,
+     "top20_per_150sqm": 0.16,
+     "lat": 51.736044166666666,
+     "lon": -1.2164695416666667,
      "streets": [
       {
-       "street": "Regent Street",
-       "hmo_count": 10,
-       "selective_count": 1,
-       "doors": 11,
-       "renters": 73
+       "street": "Oxford Road",
+       "hmo_count": 2,
+       "selective_count": 21,
+       "doors": 23,
+       "renters": 94
       },
       {
-       "street": "James Street",
-       "hmo_count": 8,
-       "selective_count": 3,
-       "doors": 11,
-       "renters": 60
-      },
-      {
-       "street": "Monard Terrace",
-       "hmo_count": 6,
-       "selective_count": 0,
-       "doors": 6,
-       "renters": 18
-      },
-      {
-       "street": "Denmark Street",
+       "street": "Clive Road",
        "hmo_count": 1,
        "selective_count": 0,
        "doors": 1,
        "renters": 5
-      },
-      {
-       "street": "Iffley Road",
-       "hmo_count": 0,
-       "selective_count": 2,
-       "doors": 2,
-       "renters": 4
       }
      ],
      "addresses": [
       {
-       "address": "1 Monard Terrace, Denmark Street, OX4 1QR",
-       "street": "Monard Terrace",
+       "address": "1 Clive Road, OX4 3EJ",
+       "street": "Clive Road",
        "type": "hmo",
-       "agent": "NOPS",
+       "agent": "",
+       "occupants": 5
+      },
+      {
+       "address": "Flat 1 103, Oxford Road, Cowley, Oxford, OX4 2ER",
+       "street": "Oxford Road",
+       "type": "selective",
+       "agent": "Oliver James Block Management",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 3 103, Oxford Road, Cowley, Oxford, OX4 2ER",
+       "street": "Oxford Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 4 103, Oxford Road, Cowley, Oxford, OX4 2ER",
+       "street": "Oxford Road",
+       "type": "selective",
+       "agent": "Breckon & Breckon",
        "occupants": 3
       },
       {
-       "address": "2 Denmark Street, OX4 1QS",
-       "street": "Denmark Street",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 5
-      },
-      {
-       "address": "2 James Street, OX4 1ET",
-       "street": "James Street",
-       "type": "hmo",
-       "agent": "The Manager",
-       "occupants": 5
-      },
-      {
-       "address": "2 Monard Terrace, Denmark Street, OX4 1QR",
-       "street": "Monard Terrace",
-       "type": "hmo",
-       "agent": "NOPS",
+       "address": "Flat 5 103, Oxford Road, Cowley, Oxford, OX4 2ER",
+       "street": "Oxford Road",
+       "type": "selective",
+       "agent": "Oliver James",
        "occupants": 3
       },
       {
-       "address": "3 James Street, OX4 1ET",
-       "street": "James Street",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 5
-      },
-      {
-       "address": "3 Monard Terrace, Denmark Street, OX4 1QR",
-       "street": "Monard Terrace",
-       "type": "hmo",
-       "agent": "Mrs Debbie Swailes",
-       "occupants": 3
-      },
-      {
-       "address": "4 Monard Terrace, Denmark Street, OX4 1QR",
-       "street": "Monard Terrace",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 3
-      },
-      {
-       "address": "6 Monard Terrace, Denmark Street, OX4 1QR",
-       "street": "Monard Terrace",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 3
-      },
-      {
-       "address": "7, James Street, Oxford, OX4 1ET",
-       "street": "James Street",
+       "address": "Temple Court Mews 109, Oxford Road, Cowley, Oxford, OX4 2ER",
+       "street": "Oxford Road",
        "type": "selective",
-       "agent": "Finders Keepers",
-       "occupants": 4
+       "agent": "Thomas Merrifield",
+       "occupants": 22
       },
       {
-       "address": "7 Monard Terrace, Denmark Street, OX4 1QR",
-       "street": "Monard Terrace",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 3
-      },
-      {
-       "address": "8 James Street, OX4 1ET",
-       "street": "James Street",
-       "type": "hmo",
-       "agent": "Mr Amar Jamil",
-       "occupants": 7
-      },
-      {
-       "address": "15 Regent Street, OX4 1QU",
-       "street": "Regent Street",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 6
-      },
-      {
-       "address": "17 Regent Street, OX4 1QU",
-       "street": "Regent Street",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 11
-      },
-      {
-       "address": "18 Regent Street, OX4 1QU",
-       "street": "Regent Street",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 6
-      },
-      {
-       "address": "20 Regent Street, OX4 1QU",
-       "street": "Regent Street",
-       "type": "hmo",
-       "agent": "Mr Zac Underwood",
-       "occupants": 9
-      },
-      {
-       "address": "22 Regent Street, OX4 1QX",
-       "street": "Regent Street",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 4
-      },
-      {
-       "address": "23 Regent Street, OX4 1QX",
-       "street": "Regent Street",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 5
-      },
-      {
-       "address": "24 Regent Street, OX4 1QX",
-       "street": "Regent Street",
-       "type": "hmo",
-       "agent": "The Manager",
-       "occupants": 6
-      },
-      {
-       "address": "25, Regent Street, Oxford, OX4 1QX",
-       "street": "Regent Street",
-       "type": "selective",
-       "agent": "Navid Nasiri",
-       "occupants": 8
-      },
-      {
-       "address": "26 Regent Street, OX4 1QX",
-       "street": "Regent Street",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 6
-      },
-      {
-       "address": "27 Regent Street, OX4 1QX",
-       "street": "Regent Street",
-       "type": "hmo",
-       "agent": "Mr Ashley Charles Bolton",
-       "occupants": 7
-      },
-      {
-       "address": "29 Regent Street, OX4 1QX",
-       "street": "Regent Street",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 5
-      },
-      {
-       "address": "76 James Street, OX4 1EX",
-       "street": "James Street",
-       "type": "hmo",
-       "agent": "Mr Abdul Shakoor",
-       "occupants": 5
-      },
-      {
-       "address": "Garden Flat 78, James Street, Oxford, OX4 1EX",
-       "street": "James Street",
-       "type": "selective",
-       "agent": "College & County",
-       "occupants": 2
-      },
-      {
-       "address": "78 James Street, OX4 1EX",
-       "street": "James Street",
-       "type": "hmo",
-       "agent": "The Manager",
-       "occupants": 4
-      },
-      {
-       "address": "82 James Street, OX4 1EX",
-       "street": "James Street",
-       "type": "hmo",
-       "agent": "Ms Julie Jones",
-       "occupants": 6
-      },
-      {
-       "address": "83 James Street, OX4 1EX",
-       "street": "James Street",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 6
-      },
-      {
-       "address": "84 James Street, OX4 1EX",
-       "street": "James Street",
-       "type": "hmo",
-       "agent": "College & County",
-       "occupants": 6
-      },
-      {
-       "address": "Flats 1-5 86, James Street, OX4 1EX",
-       "street": "James Street",
-       "type": "selective",
-       "agent": "Finders Keepers",
-       "occupants": 10
-      },
-      {
-       "address": "Basement Flat 123, Iffley Road, Oxford, OX4 1EJ",
-       "street": "Iffley Road",
-       "type": "selective",
-       "agent": "",
-       "occupants": 2
-      },
-      {
-       "address": "Flat A 123, Iffley Road, Oxford, OX4 1EJ",
-       "street": "Iffley Road",
-       "type": "selective",
-       "agent": "",
-       "occupants": 2
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "label": "Bullingdon Road",
-   "locality": "New Hinksey",
-   "doors": 35,
-   "markers": 29,
-   "renters": 144,
-   "top20_agency_listings": 16,
-   "blocks": [
-    {
-     "block_id": "57603_-853",
-     "label": "Bullingdon Road / St Mary's Road",
-     "locality": "New Hinksey",
-     "doors": 35,
-     "markers": 29,
-     "renters": 144,
-     "renters_per_150sqm": 2.2,
-     "top20_agency_listings": 16,
-     "top20_per_150sqm": 0.24,
-     "lat": 51.74577971428572,
-     "lon": -1.2369185142857142,
-     "streets": [
-      {
-       "street": "Bullingdon Road",
-       "hmo_count": 12,
-       "selective_count": 17,
-       "doors": 29,
-       "renters": 114
-      },
-      {
-       "street": "St Mary's Road",
-       "hmo_count": 3,
-       "selective_count": 1,
-       "doors": 4,
-       "renters": 23
-      },
-      {
-       "street": "Hurst Street",
-       "hmo_count": 1,
-       "selective_count": 1,
-       "doors": 2,
-       "renters": 7
-      }
-     ],
-     "addresses": [
-      {
-       "address": "18 Bullingdon Road, OX4 1QQ",
-       "street": "Bullingdon Road",
-       "type": "hmo",
-       "agent": "Ms Amna Rana",
-       "occupants": 4
-      },
-      {
-       "address": "21 Bullingdon Road, OX4 1QQ",
-       "street": "Bullingdon Road",
-       "type": "hmo",
-       "agent": "Chancellors",
-       "occupants": 4
-      },
-      {
-       "address": "22 Bullingdon Road, OX4 1QQ",
-       "street": "Bullingdon Road",
-       "type": "hmo",
-       "agent": "The Manager",
-       "occupants": 7
-      },
-      {
-       "address": "23A Bullingdon Road, OX4 1QH",
-       "street": "Bullingdon Road",
-       "type": "hmo",
-       "agent": "Mr Nick McKeown",
-       "occupants": 4
-      },
-      {
-       "address": "23 Hurst Street, OX4 1EZ",
-       "street": "Hurst Street",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 4
-      },
-      {
-       "address": "Flat B 24, Bullingdon Road, Oxford, OX4 1QH",
-       "street": "Bullingdon Road",
-       "type": "selective",
-       "agent": "LPM Residential",
-       "occupants": 2
-      },
-      {
-       "address": "Flat C 24, Bullingdon Road, Oxford, OX4 1QH",
-       "street": "Bullingdon Road",
-       "type": "selective",
-       "agent": "LPM Residential",
-       "occupants": 2
-      },
-      {
-       "address": "27a, Bullingdon Road, Oxford, OX4 1QH",
-       "street": "Bullingdon Road",
-       "type": "selective",
-       "agent": "Penny & Sinclair",
-       "occupants": 6
-      },
-      {
-       "address": "27b, Bullingdon Road, Oxford, OX4 1QH",
-       "street": "Bullingdon Road",
-       "type": "selective",
-       "agent": "NOPS",
-       "occupants": 2
-      },
-      {
-       "address": "28 Bullingdon Road, OX4 1QH",
-       "street": "Bullingdon Road",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 6
-      },
-      {
-       "address": "29 Bullingdon Road, OX4 1QH",
-       "street": "Bullingdon Road",
-       "type": "hmo",
-       "agent": "Mr Shaun Canning",
-       "occupants": 6
-      },
-      {
-       "address": "30, Bullingdon Road, Oxford, OX4 1QH",
-       "street": "Bullingdon Road",
-       "type": "selective",
-       "agent": "",
-       "occupants": 6
-      },
-      {
-       "address": "31 Bullingdon Road, OX4 1QH",
-       "street": "Bullingdon Road",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 6
-      },
-      {
-       "address": "32 Bullingdon Road, OX4 1QH",
-       "street": "Bullingdon Road",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 5
-      },
-      {
-       "address": "Flat 1 33, Bullingdon Road, Oxford, OX4 1QH",
-       "street": "Bullingdon Road",
-       "type": "selective",
-       "agent": "NOPS",
-       "occupants": 2
-      },
-      {
-       "address": "34, Bullingdon Road, Oxford, OX4 1QJ",
-       "street": "Bullingdon Road",
-       "type": "selective",
-       "agent": "Nicholas Jones",
-       "occupants": 6
-      },
-      {
-       "address": "36, Hurst Street, Oxford, OX4 1HB",
-       "street": "Hurst Street",
-       "type": "selective",
-       "agent": "Finders Keepers",
-       "occupants": 3
-      },
-      {
-       "address": "51 St Mary's Road, OX4 1PY",
-       "street": "St Mary's Road",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 9
-      },
-      {
-       "address": "53 St Mary's Road, OX4 1PY",
-       "street": "St Mary's Road",
-       "type": "hmo",
-       "agent": "Mr Ashley Charles Bolton",
-       "occupants": 5
-      },
-      {
-       "address": "55, St Mary's Road, Oxford, OX4 1PY",
-       "street": "St Mary's Road",
-       "type": "selective",
-       "agent": "Penny & Sinclair",
-       "occupants": 4
-      },
-      {
-       "address": "60 St Mary's Road, OX4 1PZ",
-       "street": "St Mary's Road",
-       "type": "hmo",
-       "agent": "Mr Ashley Charles Bolton",
-       "occupants": 5
-      },
-      {
-       "address": "97 Bullingdon Road, OX4 1QN",
-       "street": "Bullingdon Road",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 6
-      },
-      {
-       "address": "98 Bullingdon Road, OX4 1QN",
-       "street": "Bullingdon Road",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 6
-      },
-      {
-       "address": "99, Bullingdon Road, Oxford, OX4 1QN",
-       "street": "Bullingdon Road",
-       "type": "selective",
-       "agent": "Scott Fraser",
-       "occupants": 6
-      },
-      {
-       "address": "99a, Bullingdon Road, Oxford, OX4 1QN",
-       "street": "Bullingdon Road",
-       "type": "selective",
-       "agent": "Scott Fraser",
-       "occupants": 2
-      },
-      {
-       "address": "100a, Bullingdon Road, Oxford, OX4 1QN",
-       "street": "Bullingdon Road",
-       "type": "selective",
-       "agent": "",
-       "occupants": 2
-      },
-      {
-       "address": "Basement Flat 101, Bullingdon Road, Oxford, OX4 1QN",
-       "street": "Bullingdon Road",
+       "address": "Flat 1 111, Oxford Road, Cowley, Oxford, OX4 2ER",
+       "street": "Oxford Road",
        "type": "selective",
        "agent": "Chancellors",
        "occupants": 2
       },
       {
-       "address": "103a, Bullingdon Road, Oxford, OX4 1QN",
-       "street": "Bullingdon Road",
+       "address": "Flat 3 111, Oxford Road, Cowley, Oxford, OX4 2ER",
+       "street": "Oxford Road",
+       "type": "selective",
+       "agent": "Scott Fraser",
+       "occupants": 4
+      },
+      {
+       "address": "Flat 4 111, Oxford Road, Cowley, Oxford, OX4 2ER",
+       "street": "Oxford Road",
+       "type": "selective",
+       "agent": "Common Ground",
+       "occupants": 2
+      },
+      {
+       "address": "Flat 6 111, Oxford Road, Cowley, Oxford, OX4 2ER",
+       "street": "Oxford Road",
+       "type": "selective",
+       "agent": "Breckon & Breckon",
+       "occupants": 4
+      },
+      {
+       "address": "Flat 1 113, Oxford Road, Cowley, Oxford, OX4 2GY",
+       "street": "Oxford Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 10 113, Oxford Road, Cowley, Oxford, OX4 2GY",
+       "street": "Oxford Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 11 113, Oxford Road, Cowley, Oxford, OX4 2GY",
+       "street": "Oxford Road",
+       "type": "selective",
+       "agent": "Chancellors",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 13 113, Oxford Road, Cowley, Oxford, OX4 2GY",
+       "street": "Oxford Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 14 113, Oxford Road, Cowley, Oxford, OX4 2GY",
+       "street": "Oxford Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 3
+      },
+      {
+       "address": "Flat 2 113, Oxford Road, Cowley, Oxford, OX4 2GY",
+       "street": "Oxford Road",
        "type": "selective",
        "agent": "Elwood & Co",
        "occupants": 2
       },
       {
-       "address": "103 Bullingdon Road, OX4 1QN",
-       "street": "Bullingdon Road",
-       "type": "hmo",
-       "agent": "Mr Philip Blanchard",
-       "occupants": 5
+       "address": "Flat 3 113, Oxford Road, Cowley, Oxford, OX4 2GY",
+       "street": "Oxford Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
       },
       {
-       "address": "Garden Flat 104, Bullingdon Road, Oxford, OX4 1QN",
-       "street": "Bullingdon Road",
+       "address": "Flat 6 113, Oxford Road, Cowley, Oxford, OX4 2GY",
+       "street": "Oxford Road",
+       "type": "selective",
+       "agent": "Chancellors",
+       "occupants": 4
+      },
+      {
+       "address": "Flat 7 113, Oxford Road, Cowley, Oxford, OX4 2GY",
+       "street": "Oxford Road",
+       "type": "selective",
+       "agent": "Scott Fraser",
+       "occupants": 4
+      },
+      {
+       "address": "Flat 8 113, Oxford Road, Cowley, Oxford, OX4 2GY",
+       "street": "Oxford Road",
+       "type": "selective",
+       "agent": "College & County",
+       "occupants": 4
+      },
+      {
+       "address": "119, Oxford Road, Cowley, Oxford, OX4 2ES",
+       "street": "Oxford Road",
+       "type": "selective",
+       "agent": "Oxford Lettings",
+       "occupants": 9
+      },
+      {
+       "address": "126, Oxford Road, Cowley, Oxford, OX4 2DU",
+       "street": "Oxford Road",
+       "type": "selective",
+       "agent": "Letting4oxford",
+       "occupants": 2
+      },
+      {
+       "address": "126A Oxford Road, Cowley, OX4 2DU",
+       "street": "Oxford Road",
+       "type": "hmo",
+       "agent": "Mr Mark Dane Rawlins",
+       "occupants": 4
+      },
+      {
+       "address": "126B Oxford Road, Cowley, OX4 2DU",
+       "street": "Oxford Road",
+       "type": "hmo",
+       "agent": "Mr Mark Rawlins",
+       "occupants": 4
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Kelburne Road",
+   "locality": "Rose Hill",
+   "doors": 25,
+   "markers": 12,
+   "renters": 93,
+   "top20_agency_listings": 11,
+   "blocks": [
+    {
+     "block_id": "57584_-843",
+     "label": "Kelburne Road / Church Hill Road",
+     "locality": "Rose Hill",
+     "doors": 25,
+     "markers": 12,
+     "renters": 93,
+     "renters_per_150sqm": 1.4,
+     "top20_agency_listings": 11,
+     "top20_per_150sqm": 0.16,
+     "lat": 51.72879312,
+     "lon": -1.2219035599999999,
+     "streets": [
+      {
+       "street": "Kelburne Road",
+       "hmo_count": 1,
+       "selective_count": 22,
+       "doors": 23,
+       "renters": 80
+      },
+      {
+       "street": "Westbury Crescent",
+       "hmo_count": 0,
+       "selective_count": 1,
+       "doors": 1,
+       "renters": 8
+      },
+      {
+       "street": "Church Hill Road",
+       "hmo_count": 0,
+       "selective_count": 1,
+       "doors": 1,
+       "renters": 5
+      }
+     ],
+     "addresses": [
+      {
+       "address": "1, Queen's Court 36, Kelburne Road, Oxford, OX4 3SH",
+       "street": "Kelburne Road",
+       "type": "selective",
+       "agent": "College & County",
+       "occupants": 6
+      },
+      {
+       "address": "2, Queen's Court 36, Kelburne Road, Oxford, OX4 3SH",
+       "street": "Kelburne Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 4
+      },
+      {
+       "address": "4, Queen's Court 36, Kelburne Road, Oxford, OX4 3SH",
+       "street": "Kelburne Road",
+       "type": "selective",
+       "agent": "Scott Fraser",
+       "occupants": 3
+      },
+      {
+       "address": "6, Queen's Court 36, Kelburne Road, Oxford, OX4 3SH",
+       "street": "Kelburne Road",
+       "type": "selective",
+       "agent": "Chancellors",
+       "occupants": 4
+      },
+      {
+       "address": "8, Queen's Court 36, Kelburne Road, Oxford, OX4 3SH",
+       "street": "Kelburne Road",
+       "type": "selective",
+       "agent": "Chancellors",
+       "occupants": 4
+      },
+      {
+       "address": "10, Queen's Court 36, Kelburne Road, Oxford, OX4 3SH",
+       "street": "Kelburne Road",
+       "type": "selective",
+       "agent": "Response Organisation",
+       "occupants": 4
+      },
+      {
+       "address": "12, Queen's Court 36, Kelburne Road, Oxford, OX4 3SH",
+       "street": "Kelburne Road",
+       "type": "selective",
+       "agent": "Chancellors",
+       "occupants": 4
+      },
+      {
+       "address": "14, Queen's Court 36, Kelburne Road, Oxford, OX4 3SH",
+       "street": "Kelburne Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 4
+      },
+      {
+       "address": "17, Queen's Court 36, Kelburne Road, Oxford, OX4 3SH",
+       "street": "Kelburne Road",
+       "type": "selective",
+       "agent": "Scott Fraser",
+       "occupants": 4
+      },
+      {
+       "address": "33, Kelburne Road, Oxford, OX4 3SQ",
+       "street": "Kelburne Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 4
+      },
+      {
+       "address": "40, Kelburne Road, Oxford, OX4 3SH",
+       "street": "Kelburne Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 4
+      },
+      {
+       "address": "Flat A Upper Floor 41, Kelburne Road, Oxford, OX4 3SQ",
+       "street": "Kelburne Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "Flat B Ground Floor 41, Kelburne Road, Oxford, OX4 3SQ",
+       "street": "Kelburne Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "46 Kelburne Road, OX4 3SH",
+       "street": "Kelburne Road",
+       "type": "hmo",
+       "agent": "Ms Emma Glover",
+       "occupants": 6
+      },
+      {
+       "address": "Flat A 47, Kelburne Road, Oxford, OX4 3SQ",
+       "street": "Kelburne Road",
+       "type": "selective",
+       "agent": "Mazhar Dogar",
+       "occupants": 2
+      },
+      {
+       "address": "Flat B 47, Kelburne Road, Oxford, OX4 3SQ",
+       "street": "Kelburne Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "Flat C 47, Kelburne Road, Oxford, OX4 3SQ",
+       "street": "Kelburne Road",
        "type": "selective",
        "agent": "",
        "occupants": 1
       },
       {
-       "address": "Patio Flat 104, Bullingdon Road, Oxford, OX4 1QN",
-       "street": "Bullingdon Road",
+       "address": "48, Kelburne Road, Oxford, OX4 3SH",
+       "street": "Kelburne Road",
        "type": "selective",
-       "agent": "Top Lettings",
-       "occupants": 2
+       "agent": "Oxford Lettings",
+       "occupants": 6
       },
       {
-       "address": "105a, Bullingdon Road, Oxford, OX4 1QN",
-       "street": "Bullingdon Road",
-       "type": "selective",
-       "agent": "College & County",
-       "occupants": 2
-      },
-      {
-       "address": "105 Bullingdon Road, OX4 1QN",
-       "street": "Bullingdon Road",
-       "type": "hmo",
-       "agent": "College & County",
-       "occupants": 4
-      },
-      {
-       "address": "Flat 7 106, Bullingdon Road, Oxford, OX4 1BP",
-       "street": "Bullingdon Road",
-       "type": "selective",
-       "agent": "Nicholas Jones",
-       "occupants": 2
-      },
-      {
-       "address": "127b, Bullingdon Road, Oxford, OX4 1QP",
-       "street": "Bullingdon Road",
+       "address": "49, Kelburne Road, Oxford, OX4 3SQ",
+       "street": "Kelburne Road",
        "type": "selective",
        "agent": "College & County",
        "occupants": 4
+      },
+      {
+       "address": "Flat A 50, Kelburne Road, Oxford, OX4 3SH",
+       "street": "Kelburne Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "Flat B 50, Kelburne Road, Oxford, OX4 3SH",
+       "street": "Kelburne Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "Flat C 50, Kelburne Road, Oxford, OX4 3SH",
+       "street": "Kelburne Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "52, Church Hill Road, Oxford, OX4 3SF",
+       "street": "Church Hill Road",
+       "type": "selective",
+       "agent": "Scott Fraser",
+       "occupants": 5
+      },
+      {
+       "address": "52, Kelburne Road, Oxford, OX4 3SH",
+       "street": "Kelburne Road",
+       "type": "selective",
+       "agent": "Chesterton Yeates",
+       "occupants": 4
+      },
+      {
+       "address": "84, Westbury Crescent, Oxford, OX4 3SA",
+       "street": "Westbury Crescent",
+       "type": "selective",
+       "agent": "Chancellors",
+       "occupants": 8
       }
      ]
     }
    ]
   },
   {
-   "label": "East Avenue",
-   "locality": "Headington Hill",
+   "label": "Beauchamp Lane",
+   "locality": "Florence Park",
    "doors": 29,
-   "markers": 29,
-   "renters": 123,
-   "top20_agency_listings": 14,
+   "markers": 4,
+   "renters": 91,
+   "top20_agency_listings": 9,
    "blocks": [
     {
-     "block_id": "57606_-850",
-     "label": "East Avenue / Ablett Close",
-     "locality": "Headington Hill",
+     "block_id": "57587_-841",
+     "label": "Beauchamp Lane / Crowell Road",
+     "locality": "Florence Park",
      "doors": 29,
-     "markers": 29,
-     "renters": 123,
-     "renters_per_150sqm": 1.8,
-     "top20_agency_listings": 14,
-     "top20_per_150sqm": 0.21,
-     "lat": 51.74855482758621,
-     "lon": -1.2324838965517242,
+     "markers": 4,
+     "renters": 91,
+     "renters_per_150sqm": 1.4,
+     "top20_agency_listings": 9,
+     "top20_per_150sqm": 0.13,
+     "lat": 51.731296620689655,
+     "lon": -1.2193223103448274,
      "streets": [
       {
-       "street": "East Avenue",
-       "hmo_count": 18,
-       "selective_count": 5,
-       "doors": 23,
-       "renters": 103
+       "street": "Beauchamp Lane",
+       "hmo_count": 0,
+       "selective_count": 27,
+       "doors": 27,
+       "renters": 75
       },
       {
-       "street": "Ablett Close",
-       "hmo_count": 5,
-       "selective_count": 1,
-       "doors": 6,
-       "renters": 20
+       "street": "Crowell Road",
+       "hmo_count": 2,
+       "selective_count": 0,
+       "doors": 2,
+       "renters": 16
       }
      ],
      "addresses": [
       {
-       "address": "1 Ablett Close, OX4 1XH",
-       "street": "Ablett Close",
-       "type": "hmo",
-       "agent": "Finders Keepers",
-       "occupants": 4
+       "address": "1a, Beauchamp Lane, Oxford, OX4 3LF",
+       "street": "Beauchamp Lane",
+       "type": "selective",
+       "agent": "",
+       "occupants": 5
       },
       {
-       "address": "4 Ablett Close, OX4 1XH",
-       "street": "Ablett Close",
-       "type": "hmo",
-       "agent": "Mr Callum Turner",
-       "occupants": 3
-      },
-      {
-       "address": "6 Ablett Close, OX4 1XH",
-       "street": "Ablett Close",
-       "type": "hmo",
+       "address": "2, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
+       "type": "selective",
        "agent": "",
        "occupants": 3
       },
       {
-       "address": "34 Ablett Close, OX4 1XH",
-       "street": "Ablett Close",
-       "type": "hmo",
-       "agent": "",
-       "occupants": 4
-      },
-      {
-       "address": "35, Ablett Close, Oxford, OX4 1XH",
-       "street": "Ablett Close",
+       "address": "3, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
        "type": "selective",
        "agent": "Taylors",
        "occupants": 2
       },
       {
-       "address": "37 Ablett Close, OX4 1XH",
-       "street": "Ablett Close",
+       "address": "4, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
+       "type": "selective",
+       "agent": "Patrick Fox-Tucker",
+       "occupants": 3
+      },
+      {
+       "address": "7, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
+       "type": "selective",
+       "agent": "Common Ground",
+       "occupants": 4
+      },
+      {
+       "address": "9, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
+       "type": "selective",
+       "agent": "Common Ground",
+       "occupants": 3
+      },
+      {
+       "address": "10, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
+       "type": "selective",
+       "agent": "Scott Fraser",
+       "occupants": 2
+      },
+      {
+       "address": "10 Crowell Road, OX4 3LN",
+       "street": "Crowell Road",
        "type": "hmo",
        "agent": "",
+       "occupants": 7
+      },
+      {
+       "address": "12, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "13, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
+       "type": "selective",
+       "agent": "Thomas Merrifield",
+       "occupants": 2
+      },
+      {
+       "address": "14, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
+       "type": "selective",
+       "agent": "Stuart Stedman",
        "occupants": 4
       },
       {
-       "address": "39 East Avenue, OX4 1XP",
-       "street": "East Avenue",
-       "type": "hmo",
-       "agent": "The Rent Guru",
+       "address": "15, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
+       "type": "selective",
+       "agent": "Connells Residential Lettings",
+       "occupants": 2
+      },
+      {
+       "address": "16, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
+       "type": "selective",
+       "agent": "Avocado Property Group",
        "occupants": 4
       },
       {
-       "address": "41 East Avenue, OX4 1XP",
-       "street": "East Avenue",
+       "address": "16 Crowell Road, OX4 3LN",
+       "street": "Crowell Road",
        "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 6
+       "agent": "Mr Aaron Stevens",
+       "occupants": 9
       },
       {
-       "address": "43 East Avenue, OX4 1XP",
-       "street": "East Avenue",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 6
+       "address": "17, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
+       "type": "selective",
+       "agent": "Hutton Parker",
+       "occupants": 2
       },
       {
-       "address": "47 East Avenue, OX4 1XP",
-       "street": "East Avenue",
-       "type": "hmo",
+       "address": "19, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
+       "type": "selective",
+       "agent": "Abbey Group",
+       "occupants": 2
+      },
+      {
+       "address": "20, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
+       "type": "selective",
+       "agent": "Andrews",
+       "occupants": 3
+      },
+      {
+       "address": "21, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
+       "type": "selective",
        "agent": "",
        "occupants": 3
       },
       {
-       "address": "49 East Avenue, OX4 1XP",
-       "street": "East Avenue",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 4
-      },
-      {
-       "address": "51, East Avenue, Oxford, OX4 1XP",
-       "street": "East Avenue",
+       "address": "25, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
        "type": "selective",
-       "agent": "",
-       "occupants": 5
-      },
-      {
-       "address": "57 East Avenue, OX4 1XP",
-       "street": "East Avenue",
-       "type": "hmo",
-       "agent": "Mr Jordan Baskerville",
-       "occupants": 4
-      },
-      {
-       "address": "62 East Avenue, OX4 1XP",
-       "street": "East Avenue",
-       "type": "hmo",
-       "agent": "College & County",
-       "occupants": 4
-      },
-      {
-       "address": "65 East Avenue, OX4 1XR",
-       "street": "East Avenue",
-       "type": "hmo",
-       "agent": "College & County",
-       "occupants": 4
-      },
-      {
-       "address": "66, East Avenue, Oxford, OX4 1XP",
-       "street": "East Avenue",
-       "type": "selective",
-       "agent": "Penny & Sinclair",
-       "occupants": 4
-      },
-      {
-       "address": "67, East Avenue, Oxford, OX4 1XR",
-       "street": "East Avenue",
-       "type": "selective",
-       "agent": "Penny & Sinclair",
+       "agent": "Edmund Aldworth",
        "occupants": 3
       },
       {
-       "address": "68, East Avenue, Oxford, OX4 1XP",
-       "street": "East Avenue",
+       "address": "27, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
        "type": "selective",
-       "agent": "Penny & Sinclair",
-       "occupants": 6
+       "agent": "",
+       "occupants": 2
       },
       {
-       "address": "73 East Avenue, OX4 1XR",
-       "street": "East Avenue",
-       "type": "hmo",
+       "address": "33, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
+       "type": "selective",
        "agent": "",
        "occupants": 4
       },
       {
-       "address": "74 East Avenue, OX4 1XP",
-       "street": "East Avenue",
-       "type": "hmo",
+       "address": "34, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
+       "type": "selective",
        "agent": "College & County",
-       "occupants": 5
+       "occupants": 2
       },
       {
-       "address": "76 East Avenue, OX4 1XP",
-       "street": "East Avenue",
-       "type": "hmo",
-       "agent": "NOPS",
-       "occupants": 6
-      },
-      {
-       "address": "77 East Avenue, OX4 1XR",
-       "street": "East Avenue",
-       "type": "hmo",
+       "address": "37, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
+       "type": "selective",
        "agent": "",
-       "occupants": 4
+       "occupants": 3
       },
       {
-       "address": "78 East Avenue, OX4 1XP",
-       "street": "East Avenue",
-       "type": "hmo",
-       "agent": "Mr Mohammed Idrees",
-       "occupants": 4
-      },
-      {
-       "address": "79 East Avenue, OX4 1XR",
-       "street": "East Avenue",
-       "type": "hmo",
-       "agent": "Mr Simon Tyrrell",
-       "occupants": 4
-      },
-      {
-       "address": "86 East Avenue, OX4 1XR",
-       "street": "East Avenue",
-       "type": "hmo",
+       "address": "40, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
+       "type": "selective",
        "agent": "",
-       "occupants": 6
+       "occupants": 2
       },
       {
-       "address": "90 East Avenue, OX4 1XR",
-       "street": "East Avenue",
-       "type": "hmo",
-       "agent": "NOPS",
+       "address": "43, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
+       "type": "selective",
+       "agent": "Breckon & Breckon",
        "occupants": 4
       },
       {
-       "address": "92, East Avenue, Oxford, OX4 1XR",
-       "street": "East Avenue",
+       "address": "46, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
+       "type": "selective",
+       "agent": "Hutton Parker",
+       "occupants": 2
+      },
+      {
+       "address": "49, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
+       "type": "selective",
+       "agent": "Hutton Parker",
+       "occupants": 3
+      },
+      {
+       "address": "50, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
+       "type": "selective",
+       "agent": "Abbey Group",
+       "occupants": 2
+      },
+      {
+       "address": "52, Beauchamp Place Beauchamp Lane, Oxford, OX4 3NE",
+       "street": "Beauchamp Lane",
+       "type": "selective",
+       "agent": "Portfolio Properties",
+       "occupants": 2
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Columbine Gardens",
+   "locality": "Blackbird Leys",
+   "doors": 24,
+   "markers": 2,
+   "renters": 84,
+   "top20_agency_listings": 13,
+   "blocks": [
+    {
+     "block_id": "57570_-821",
+     "label": "Columbine Gardens / Brake Hill",
+     "locality": "Blackbird Leys",
+     "doors": 24,
+     "markers": 2,
+     "renters": 84,
+     "renters_per_150sqm": 1.3,
+     "top20_agency_listings": 13,
+     "top20_per_150sqm": 0.19,
+     "lat": 51.7159505,
+     "lon": -1.1896117499999999,
+     "streets": [
+      {
+       "street": "Columbine Gardens",
+       "hmo_count": 0,
+       "selective_count": 18,
+       "doors": 18,
+       "renters": 58
+      },
+      {
+       "street": "Brake Hill",
+       "hmo_count": 0,
+       "selective_count": 6,
+       "doors": 6,
+       "renters": 26
+      }
+     ],
+     "addresses": [
+      {
+       "address": "10, Columbine Gardens, Oxford, OX4 7LH",
+       "street": "Columbine Gardens",
+       "type": "selective",
+       "agent": "Taylors",
+       "occupants": 4
+      },
+      {
+       "address": "16, Columbine Gardens, Oxford, OX4 7LH",
+       "street": "Columbine Gardens",
+       "type": "selective",
+       "agent": "Elwood & Co",
+       "occupants": 2
+      },
+      {
+       "address": "17, Columbine Gardens, Oxford, OX4 7LH",
+       "street": "Columbine Gardens",
+       "type": "selective",
+       "agent": "Elwood & Co",
+       "occupants": 2
+      },
+      {
+       "address": "19, Columbine Gardens, Oxford, OX4 7LH",
+       "street": "Columbine Gardens",
+       "type": "selective",
+       "agent": "NOPS",
+       "occupants": 2
+      },
+      {
+       "address": "20, Columbine Gardens, Oxford, OX4 7LH",
+       "street": "Columbine Gardens",
+       "type": "selective",
+       "agent": "Chesterton Yeates",
+       "occupants": 2
+      },
+      {
+       "address": "21, Brake Hill, Oxford, OX4 7RU",
+       "street": "Brake Hill",
+       "type": "selective",
+       "agent": "Hunters",
+       "occupants": 4
+      },
+      {
+       "address": "22, Brake Hill, Oxford, OX4 7NY",
+       "street": "Brake Hill",
        "type": "selective",
        "agent": "Chancellors",
-       "occupants": 5
-      },
-      {
-       "address": "96 East Avenue, OX4 1XR",
-       "street": "East Avenue",
-       "type": "hmo",
-       "agent": "",
        "occupants": 4
       },
       {
-       "address": "98 East Avenue, OX4 1XR",
-       "street": "East Avenue",
-       "type": "hmo",
+       "address": "22, Columbine Gardens, Oxford, OX4 7LH",
+       "street": "Columbine Gardens",
+       "type": "selective",
+       "agent": "",
+       "occupants": 3
+      },
+      {
+       "address": "27, Brake Hill, Oxford, OX4 7RU",
+       "street": "Brake Hill",
+       "type": "selective",
+       "agent": "Chancellors",
+       "occupants": 4
+      },
+      {
+       "address": "28, Columbine Gardens, Oxford, OX4 7LH",
+       "street": "Columbine Gardens",
+       "type": "selective",
+       "agent": "Martin & Co",
+       "occupants": 4
+      },
+      {
+       "address": "31, Columbine Gardens, Oxford, OX4 7LH",
+       "street": "Columbine Gardens",
+       "type": "selective",
+       "agent": "Andrews",
+       "occupants": 4
+      },
+      {
+       "address": "32, Columbine Gardens, Oxford, OX4 7LH",
+       "street": "Columbine Gardens",
+       "type": "selective",
+       "agent": "Andrews",
+       "occupants": 4
+      },
+      {
+       "address": "33, Columbine Gardens, Oxford, OX4 7LH",
+       "street": "Columbine Gardens",
+       "type": "selective",
+       "agent": "Amelie's",
+       "occupants": 3
+      },
+      {
+       "address": "34, Columbine Gardens, Oxford, OX4 7LH",
+       "street": "Columbine Gardens",
+       "type": "selective",
+       "agent": "Abbey Group",
+       "occupants": 3
+      },
+      {
+       "address": "35, Columbine Gardens, Oxford, OX4 7LH",
+       "street": "Columbine Gardens",
+       "type": "selective",
+       "agent": "Chancellors",
+       "occupants": 3
+      },
+      {
+       "address": "36, Brake Hill, Oxford, OX4 7BY",
+       "street": "Brake Hill",
+       "type": "selective",
+       "agent": "",
+       "occupants": 5
+      },
+      {
+       "address": "36, Columbine Gardens, Oxford, OX4 7LH",
+       "street": "Columbine Gardens",
+       "type": "selective",
+       "agent": "Andrews",
+       "occupants": 2
+      },
+      {
+       "address": "39, Columbine Gardens, Oxford, OX4 7LH",
+       "street": "Columbine Gardens",
+       "type": "selective",
+       "agent": "",
+       "occupants": 2
+      },
+      {
+       "address": "40, Brake Hill, Oxford, OX4 7BY",
+       "street": "Brake Hill",
+       "type": "selective",
+       "agent": "Connells Estate Agents",
+       "occupants": 4
+      },
+      {
+       "address": "42, Brake Hill, Oxford, OX4 7BY",
+       "street": "Brake Hill",
+       "type": "selective",
+       "agent": "Connells Residential Lettings",
+       "occupants": 5
+      },
+      {
+       "address": "42, Columbine Gardens, Oxford, OX4 7LH",
+       "street": "Columbine Gardens",
+       "type": "selective",
        "agent": "NOPS",
+       "occupants": 4
+      },
+      {
+       "address": "46, Columbine Gardens, Oxford, OX4 7LH",
+       "street": "Columbine Gardens",
+       "type": "selective",
+       "agent": "CS Properties",
+       "occupants": 4
+      },
+      {
+       "address": "54, Columbine Gardens, Oxford, OX4 7LH",
+       "street": "Columbine Gardens",
+       "type": "selective",
+       "agent": "CS Properties",
+       "occupants": 6
+      },
+      {
+       "address": "55, Columbine Gardens, Oxford, OX4 7LH",
+       "street": "Columbine Gardens",
+       "type": "selective",
+       "agent": "Chancellors",
        "occupants": 4
       }
      ]
@@ -2709,216 +2199,557 @@
    ]
   },
   {
-   "label": "Iffley Road",
-   "locality": "New Hinksey",
-   "doors": 25,
-   "markers": 15,
-   "renters": 115,
-   "top20_agency_listings": 13,
+   "label": "Don Bosco Close",
+   "locality": "Temple Cowley",
+   "doors": 20,
+   "markers": 12,
+   "renters": 77,
+   "top20_agency_listings": 10,
    "blocks": [
     {
-     "block_id": "57601_-855",
-     "label": "Iffley Road / Bullingdon Road",
-     "locality": "New Hinksey",
-     "doors": 25,
-     "markers": 15,
-     "renters": 115,
-     "renters_per_150sqm": 1.7,
-     "top20_agency_listings": 13,
-     "top20_per_150sqm": 0.19,
-     "lat": 51.7440636,
-     "lon": -1.23955708,
+     "block_id": "57594_-835",
+     "label": "Don Bosco Close / Junction Road",
+     "locality": "Temple Cowley",
+     "doors": 20,
+     "markers": 12,
+     "renters": 77,
+     "renters_per_150sqm": 1.2,
+     "top20_agency_listings": 10,
+     "top20_per_150sqm": 0.15,
+     "lat": 51.73749335,
+     "lon": -1.2109277999999999,
      "streets": [
       {
-       "street": "Iffley Road",
-       "hmo_count": 6,
+       "street": "Don Bosco Close",
+       "hmo_count": 4,
        "selective_count": 15,
-       "doors": 21,
-       "renters": 87
+       "doors": 19,
+       "renters": 73
       },
       {
-       "street": "Bullingdon Road",
-       "hmo_count": 3,
+       "street": "Junction Road",
+       "hmo_count": 0,
        "selective_count": 1,
-       "doors": 4,
-       "renters": 28
+       "doors": 1,
+       "renters": 4
       }
      ],
      "addresses": [
       {
-       "address": "65 Bullingdon Road, OX4 1QL",
-       "street": "Bullingdon Road",
-       "type": "hmo",
-       "agent": "Mr Baskerville Jordan",
-       "occupants": 5
-      },
-      {
-       "address": "66, Bullingdon Road, OX4 1HY",
-       "street": "Bullingdon Road",
+       "address": "2, Don Bosco Close, Oxford, OX4 2LD",
+       "street": "Don Bosco Close",
        "type": "selective",
-       "agent": "Finders Keepers",
-       "occupants": 10
+       "agent": "Portfolio Properties",
+       "occupants": 2
       },
       {
-       "address": "67 Bullingdon Road, OX4 1QL",
-       "street": "Bullingdon Road",
-       "type": "hmo",
-       "agent": "Mr Mohammad Imran Faruq",
-       "occupants": 9
+       "address": "3, Don Bosco Close, Oxford, OX4 2LD",
+       "street": "Don Bosco Close",
+       "type": "selective",
+       "agent": "Elwood",
+       "occupants": 2
       },
       {
-       "address": "68 Bullingdon Road, OX4 1QL",
-       "street": "Bullingdon Road",
-       "type": "hmo",
-       "agent": "Miss Jennifer Dowden",
+       "address": "4, Temple Cloisters Junction Road, Oxford, OX4 2YG",
+       "street": "Junction Road",
+       "type": "selective",
+       "agent": "Carter Jonas",
        "occupants": 4
       },
       {
-       "address": "Flat B 165, Iffley Road, Oxford, OX4 1EL",
-       "street": "Iffley Road",
+       "address": "6, Don Bosco Close, Oxford, OX4 2LD",
+       "street": "Don Bosco Close",
        "type": "selective",
        "agent": "College & County",
        "occupants": 2
       },
       {
-       "address": "Flat C 165, Iffley Road, Oxford, OX4 1EL",
-       "street": "Iffley Road",
+       "address": "15, Don Bosco Close, Oxford, OX4 2LD",
+       "street": "Don Bosco Close",
        "type": "selective",
-       "agent": "Finders Keepers",
-       "occupants": 2
+       "agent": "Scott Fraser",
+       "occupants": 4
       },
       {
-       "address": "Flat D 165, Iffley Road, Oxford, OX4 1EL",
-       "street": "Iffley Road",
-       "type": "selective",
-       "agent": "College & County",
-       "occupants": 2
-      },
-      {
-       "address": "Flat E 165, Iffley Road, Oxford, OX4 1EL",
-       "street": "Iffley Road",
-       "type": "selective",
-       "agent": "Finders Keepers",
-       "occupants": 2
-      },
-      {
-       "address": "Flat F 165, Iffley Road, Oxford, OX4 1EL",
-       "street": "Iffley Road",
-       "type": "selective",
-       "agent": "",
-       "occupants": 2
-      },
-      {
-       "address": "167 Iffley Road, OX4 1EL",
-       "street": "Iffley Road",
+       "address": "21 Don Bosco Close, OX4 2LD",
+       "street": "Don Bosco Close",
        "type": "hmo",
        "agent": "",
+       "occupants": 6
+      },
+      {
+       "address": "22, Don Bosco Close, Oxford, OX4 2LD",
+       "street": "Don Bosco Close",
+       "type": "selective",
+       "agent": "Finders Keepers",
+       "occupants": 2
+      },
+      {
+       "address": "23, Don Bosco Close, Oxford, OX4 2LD",
+       "street": "Don Bosco Close",
+       "type": "selective",
+       "agent": "Allen & Harris",
+       "occupants": 5
+      },
+      {
+       "address": "29, Don Bosco Close, Oxford, OX4 2LD",
+       "street": "Don Bosco Close",
+       "type": "selective",
+       "agent": "Eastwick Investments",
+       "occupants": 2
+      },
+      {
+       "address": "30, Don Bosco Close, Oxford, OX4 2LD",
+       "street": "Don Bosco Close",
+       "type": "selective",
+       "agent": "Chancellors",
+       "occupants": 2
+      },
+      {
+       "address": "33, Don Bosco Close, Oxford, OX4 2LD",
+       "street": "Don Bosco Close",
+       "type": "selective",
+       "agent": "Finders Keepers",
+       "occupants": 4
+      },
+      {
+       "address": "35, Don Bosco Close, Oxford, OX4 2LD",
+       "street": "Don Bosco Close",
+       "type": "selective",
+       "agent": "",
+       "occupants": 5
+      },
+      {
+       "address": "36, Don Bosco Close, Oxford, OX4 2LD",
+       "street": "Don Bosco Close",
+       "type": "selective",
+       "agent": "DL UK Property",
        "occupants": 7
       },
       {
-       "address": "169 Iffley Road, OX4 1EL",
-       "street": "Iffley Road",
+       "address": "38 Don Bosco Close, OX4 2LD",
+       "street": "Don Bosco Close",
        "type": "hmo",
        "agent": "",
-       "occupants": 13
+       "occupants": 5
       },
       {
-       "address": "Flat A, 173 Iffley Road, OX4 1EL",
-       "street": "Iffley Road",
+       "address": "40, Don Bosco Close, Oxford, OX4 2LD",
+       "street": "Don Bosco Close",
+       "type": "selective",
+       "agent": "Bright Properties",
+       "occupants": 4
+      },
+      {
+       "address": "41 Don Bosco Close, OX4 2LD",
+       "street": "Don Bosco Close",
        "type": "hmo",
-       "agent": "",
+       "agent": "Ms Julie Calver",
        "occupants": 3
       },
       {
-       "address": "Flat B, 173 Iffley Road, OX4 1EL",
-       "street": "Iffley Road",
+       "address": "42 Don Bosco Close, OX4 2LD",
+       "street": "Don Bosco Close",
        "type": "hmo",
        "agent": "",
        "occupants": 4
       },
       {
-       "address": "175, Iffley Road, Oxford, OX4 1EL",
-       "street": "Iffley Road",
+       "address": "43, Don Bosco Close, Oxford, OX4 2LD",
+       "street": "Don Bosco Close",
        "type": "selective",
        "agent": "College & County",
-       "occupants": 9
+       "occupants": 6
       },
       {
-       "address": "Flat A 179, Iffley Road, Oxford, OX4 1EL",
-       "street": "Iffley Road",
+       "address": "46, Don Bosco Close, Oxford, OX4 2LD",
+       "street": "Don Bosco Close",
        "type": "selective",
-       "agent": "",
+       "agent": "Finders Keepers",
+       "occupants": 4
+      },
+      {
+       "address": "47, Don Bosco Close, Oxford, OX4 2LD",
+       "street": "Don Bosco Close",
+       "type": "selective",
+       "agent": "Chesterton Yeates",
+       "occupants": 4
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Wilkins Road",
+   "locality": "Temple Cowley",
+   "doors": 20,
+   "markers": 10,
+   "renters": 75,
+   "top20_agency_listings": 13,
+   "blocks": [
+    {
+     "block_id": "57593_-831",
+     "label": "Wilkins Road / Marshall Road",
+     "locality": "Temple Cowley",
+     "doors": 20,
+     "markers": 10,
+     "renters": 75,
+     "renters_per_150sqm": 1.1,
+     "top20_agency_listings": 13,
+     "top20_per_150sqm": 0.19,
+     "lat": 51.736833049999994,
+     "lon": -1.2046358,
+     "streets": [
+      {
+       "street": "Wilkins Road",
+       "hmo_count": 2,
+       "selective_count": 14,
+       "doors": 16,
+       "renters": 59
+      },
+      {
+       "street": "Marshall Road",
+       "hmo_count": 1,
+       "selective_count": 3,
+       "doors": 4,
+       "renters": 16
+      }
+     ],
+     "addresses": [
+      {
+       "address": "1b, Marshall Road, Oxford, OX4 2NP",
+       "street": "Marshall Road",
+       "type": "selective",
+       "agent": "Oxford Lettings",
        "occupants": 2
       },
       {
-       "address": "Flat B 179, Iffley Road, Oxford, OX4 1EL",
-       "street": "Iffley Road",
+       "address": "6a, Marshall Road, Oxford, OX4 2NR",
+       "street": "Marshall Road",
        "type": "selective",
        "agent": "",
+       "occupants": 4
+      },
+      {
+       "address": "28, Marshall Road, Oxford, OX4 2NR",
+       "street": "Marshall Road",
+       "type": "selective",
+       "agent": "Chancellors",
+       "occupants": 5
+      },
+      {
+       "address": "34 Marshall Road, OX4 2NR",
+       "street": "Marshall Road",
+       "type": "hmo",
+       "agent": "Mr Aaron Masih",
+       "occupants": 5
+      },
+      {
+       "address": "37, Wilkins Road, Oxford, OX4 2HY",
+       "street": "Wilkins Road",
+       "type": "selective",
+       "agent": "Chancellors",
+       "occupants": 7
+      },
+      {
+       "address": "40a, Wilkins Road, Oxford, OX4 2HX",
+       "street": "Wilkins Road",
+       "type": "selective",
+       "agent": "LPM Residential",
+       "occupants": 4
+      },
+      {
+       "address": "40b, Wilkins Road, Oxford, OX4 2HX",
+       "street": "Wilkins Road",
+       "type": "selective",
+       "agent": "LPM Residential",
+       "occupants": 4
+      },
+      {
+       "address": "43 Wilkins Road, OX4 2HY",
+       "street": "Wilkins Road",
+       "type": "hmo",
+       "agent": "Mr Sujaad Ahmed",
+       "occupants": 4
+      },
+      {
+       "address": "44 Wilkins Road, OX4 2HX",
+       "street": "Wilkins Road",
+       "type": "hmo",
+       "agent": "Mr Sujaad Ahmed",
+       "occupants": 6
+      },
+      {
+       "address": "45a, Wilkins Road, Oxford, OX4 2HY",
+       "street": "Wilkins Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 3
+      },
+      {
+       "address": "45b, Wilkins Road, Oxford, OX4 2HY",
+       "street": "Wilkins Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 3
+      },
+      {
+       "address": "Flat B 47, Wilkins Road, Oxford, OX4 2HZ",
+       "street": "Wilkins Road",
+       "type": "selective",
+       "agent": "",
+       "occupants": 4
+      },
+      {
+       "address": "Flat D 47, Wilkins Road, Oxford, OX4 2HZ",
+       "street": "Wilkins Road",
+       "type": "selective",
+       "agent": "Chancellors",
+       "occupants": 4
+      },
+      {
+       "address": "55, Wilkins Road, Oxford, OX4 2HZ",
+       "street": "Wilkins Road",
+       "type": "selective",
+       "agent": "Oxford Lettings",
+       "occupants": 7
+      },
+      {
+       "address": "75a, Wilkins Road, Oxford, OX4 2HZ",
+       "street": "Wilkins Road",
+       "type": "selective",
+       "agent": "LPM Residential",
        "occupants": 2
       },
       {
-       "address": "Flat C 179, Iffley Road, Oxford, OX4 1EL",
-       "street": "Iffley Road",
+       "address": "75b, Wilkins Road, Oxford, OX4 2HZ",
+       "street": "Wilkins Road",
+       "type": "selective",
+       "agent": "LPM Residential",
+       "occupants": 2
+      },
+      {
+       "address": "75c, Wilkins Road, Oxford, OX4 2HZ",
+       "street": "Wilkins Road",
+       "type": "selective",
+       "agent": "LPM Residential",
+       "occupants": 3
+      },
+      {
+       "address": "77a, Wilkins Road, Oxford, OX4 2JB",
+       "street": "Wilkins Road",
+       "type": "selective",
+       "agent": "Scott Fraser",
+       "occupants": 2
+      },
+      {
+       "address": "83b, Wilkins Road, Oxford, OX4 2JB",
+       "street": "Wilkins Road",
+       "type": "selective",
+       "agent": "Breckon & Breckon",
+       "occupants": 2
+      },
+      {
+       "address": "91b, Wilkins Road, Oxford, OX4 2JB",
+       "street": "Wilkins Road",
+       "type": "selective",
+       "agent": "Martin & Co",
+       "occupants": 2
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Wykeham Crescent",
+   "locality": "Rose Hill",
+   "doors": 22,
+   "markers": 5,
+   "renters": 69,
+   "top20_agency_listings": 14,
+   "blocks": [
+    {
+     "block_id": "57585_-842",
+     "label": "Wykeham Crescent / Church Hill Road",
+     "locality": "Rose Hill",
+     "doors": 22,
+     "markers": 5,
+     "renters": 69,
+     "renters_per_150sqm": 1.0,
+     "top20_agency_listings": 14,
+     "top20_per_150sqm": 0.21,
+     "lat": 51.72956318181818,
+     "lon": -1.2202361363636365,
+     "streets": [
+      {
+       "street": "Wykeham Crescent",
+       "hmo_count": 0,
+       "selective_count": 21,
+       "doors": 21,
+       "renters": 64
+      },
+      {
+       "street": "Church Hill Road",
+       "hmo_count": 0,
+       "selective_count": 1,
+       "doors": 1,
+       "renters": 5
+      }
+     ],
+     "addresses": [
+      {
+       "address": "1, Wykeham Crescent, Oxford, OX4 3SD",
+       "street": "Wykeham Crescent",
+       "type": "selective",
+       "agent": "College & County",
+       "occupants": 3
+      },
+      {
+       "address": "10, Wykeham Crescent, Oxford, OX4 3SB",
+       "street": "Wykeham Crescent",
+       "type": "selective",
+       "agent": "Portfolio Properties",
+       "occupants": 3
+      },
+      {
+       "address": "13, Wykeham Crescent, Oxford, OX4 3SD",
+       "street": "Wykeham Crescent",
+       "type": "selective",
+       "agent": "Andrews",
+       "occupants": 3
+      },
+      {
+       "address": "14, Wykeham Crescent, Oxford, OX4 3SB",
+       "street": "Wykeham Crescent",
+       "type": "selective",
+       "agent": "",
+       "occupants": 3
+      },
+      {
+       "address": "15, Wykeham Crescent, Oxford, OX4 3SD",
+       "street": "Wykeham Crescent",
+       "type": "selective",
+       "agent": "Andrews",
+       "occupants": 3
+      },
+      {
+       "address": "17, Wykeham Crescent, Oxford, OX4 3SD",
+       "street": "Wykeham Crescent",
+       "type": "selective",
+       "agent": "Finders Keepers",
+       "occupants": 3
+      },
+      {
+       "address": "20, Wykeham Crescent, Oxford, OX4 3SB",
+       "street": "Wykeham Crescent",
+       "type": "selective",
+       "agent": "Andrews",
+       "occupants": 3
+      },
+      {
+       "address": "21, Wykeham Crescent, Oxford, OX4 3SD",
+       "street": "Wykeham Crescent",
+       "type": "selective",
+       "agent": "Breckon & Breckon",
+       "occupants": 3
+      },
+      {
+       "address": "22, Wykeham Crescent, Oxford, OX4 3SB",
+       "street": "Wykeham Crescent",
+       "type": "selective",
+       "agent": "Chancellors",
+       "occupants": 3
+      },
+      {
+       "address": "27, Wykeham Crescent, Oxford, OX4 3SD",
+       "street": "Wykeham Crescent",
+       "type": "selective",
+       "agent": "Chancellors",
+       "occupants": 3
+      },
+      {
+       "address": "31, Wykeham Crescent, Oxford, OX4 3SD",
+       "street": "Wykeham Crescent",
+       "type": "selective",
+       "agent": "",
+       "occupants": 3
+      },
+      {
+       "address": "32, Wykeham Crescent, Oxford, OX4 3SB",
+       "street": "Wykeham Crescent",
+       "type": "selective",
+       "agent": "",
+       "occupants": 3
+      },
+      {
+       "address": "34, Wykeham Crescent, Oxford, OX4 3SB",
+       "street": "Wykeham Crescent",
+       "type": "selective",
+       "agent": "Chancellors",
+       "occupants": 3
+      },
+      {
+       "address": "35, Wykeham Crescent, Oxford, OX4 3SD",
+       "street": "Wykeham Crescent",
+       "type": "selective",
+       "agent": "Portfolio Properties",
+       "occupants": 3
+      },
+      {
+       "address": "36, Wykeham Crescent, Oxford, OX4 3SB",
+       "street": "Wykeham Crescent",
+       "type": "selective",
+       "agent": "Penny & Sinclair",
+       "occupants": 3
+      },
+      {
+       "address": "41, Wykeham Crescent, Oxford, OX4 3SD",
+       "street": "Wykeham Crescent",
+       "type": "selective",
+       "agent": "Hamways",
+       "occupants": 3
+      },
+      {
+       "address": "42, Wykeham Crescent, Oxford, OX4 3SB",
+       "street": "Wykeham Crescent",
+       "type": "selective",
+       "agent": "Stepping Stones",
+       "occupants": 3
+      },
+      {
+       "address": "47, Wykeham Crescent, Oxford, OX4 3SD",
+       "street": "Wykeham Crescent",
+       "type": "selective",
+       "agent": "Portfolio Properties",
+       "occupants": 3
+      },
+      {
+       "address": "51, Wykeham Crescent, Oxford, OX4 3SD",
+       "street": "Wykeham Crescent",
+       "type": "selective",
+       "agent": "",
+       "occupants": 3
+      },
+      {
+       "address": "53, Church Hill Road, Oxford, OX4 3SG",
+       "street": "Church Hill Road",
        "type": "selective",
        "agent": "",
        "occupants": 5
       },
       {
-       "address": "181a, Iffley Road, Oxford, OX4 1EL",
-       "street": "Iffley Road",
+       "address": "57, Wykeham Crescent, Oxford, OX4 3SD",
+       "street": "Wykeham Crescent",
        "type": "selective",
-       "agent": "Finders Keepers",
-       "occupants": 4
-      },
-      {
-       "address": "181 Iffley Road, OX4 1EL",
-       "street": "Iffley Road",
-       "type": "hmo",
-       "agent": "Finders Keepers",
-       "occupants": 6
-      },
-      {
-       "address": "Basement Flat 183, Iffley Road, Oxford, OX4 1EL",
-       "street": "Iffley Road",
-       "type": "selective",
-       "agent": "Oxford Lettings",
-       "occupants": 4
-      },
-      {
-       "address": "183 Iffley Road, OX4 1EL",
-       "street": "Iffley Road",
-       "type": "hmo",
        "agent": "",
-       "occupants": 6
-      },
-      {
-       "address": "Flat 1 187, Iffley Road, Oxford, OX4 1EL",
-       "street": "Iffley Road",
-       "type": "selective",
-       "agent": "LPM Residential",
        "occupants": 3
       },
       {
-       "address": "Flat 2 187, Iffley Road, Oxford, OX4 1EL",
-       "street": "Iffley Road",
+       "address": "59, Wykeham Crescent, Oxford, OX4 3SD",
+       "street": "Wykeham Crescent",
        "type": "selective",
-       "agent": "LPM Residential",
-       "occupants": 3
-      },
-      {
-       "address": "Flat 3 187, Iffley Road, Oxford, OX4 1EL",
-       "street": "Iffley Road",
-       "type": "selective",
-       "agent": "LPM Residential",
-       "occupants": 3
-      },
-      {
-       "address": "Flat 4 187, Iffley Road, Oxford, OX4 1EL",
-       "street": "Iffley Road",
-       "type": "selective",
-       "agent": "LPM Residential",
-       "occupants": 3
+       "agent": "Andrews",
+       "occupants": 4
       }
      ]
     }

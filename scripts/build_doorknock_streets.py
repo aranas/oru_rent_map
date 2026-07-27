@@ -11,12 +11,16 @@ geographically-adjacent bundles (so the panel lists walkable clusters, not
 a scatter of individual grid cells).
 
 Method:
-  - "East Oxford" = postcode sector OX4 1 (Bartlemas Road, Divinity Road,
-    Magdalen Road, St Clement's, the northern/city end of Cowley Road and
-    Iffley Road, etc.) — verified empirically against this dataset's own
-    addresses, and distinct from Temple Cowley/Cowley (OX4 2-3), Rose Hill/
-    Littlemore (OX4 4) and Blackbird Leys (OX4 6-7), which are separate
-    neighbourhoods that happen to share the OX4 postcode district.
+  - "East Oxford" = the whole OX4 postcode district (Bartlemas Road,
+    Divinity Road, Magdalen Road, St Clement's, Cowley Road, Iffley Road,
+    Temple Cowley, Rose Hill, Littlemore, Blackbird Leys, etc.) — widened
+    from the original OX4 1 sector-only scope to cast a wider net across
+    East Oxford.
+  - Blocks whose LSOA has more than STUDENT_HOUSEHOLD_MAX Census-2021
+    student-only households (data/student_households.json — see
+    scripts/build_student_households.py) are excluded from ranking, so the
+    shortlist favours long-term-renter pockets over areas that are mostly
+    purpose-built/HMO student housing already well served by other means.
   - The ranking unit is a BLOCK_SIZE_M square grid cell, not a whole named
     street. An earlier version ranked whole streets by renters-per-length,
     which has a real failure mode: a long street can have one genuinely
@@ -56,6 +60,8 @@ Inputs (must already exist):
   data/Selective_Licence_Register*.csv         (gitignored source register)
   data/oxford_buildings.geojson                (OSM postcode -> street lookup)
   data/oxford_locality_anchors.json            (see build_locality_anchors.py)
+  data/neighbourhoods.geojson                  (LSOA boundaries)
+  data/student_households.json                 (see build_student_households.py)
 
 Outputs (committed):
   data/doorknock_blocks.geojson  — one Polygon per shortlisted block: its
@@ -78,22 +84,29 @@ Run time: a few seconds, no network calls (reuses committed data files).
 import csv, glob, json, math, os, re
 from collections import defaultdict, Counter
 
+from shapely.geometry import Point, shape
+
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 DATA = os.path.join(ROOT, "data")
 
 LICENCE_LOCATIONS   = os.path.join(DATA, "licence_locations.geojson")
 BUILDINGS_GEOJSON    = os.path.join(DATA, "oxford_buildings.geojson")
 LOCALITY_ANCHORS     = os.path.join(DATA, "oxford_locality_anchors.json")
+NEIGHBOURHOODS_GEOJSON = os.path.join(DATA, "neighbourhoods.geojson")
+STUDENT_HOUSEHOLDS  = os.path.join(DATA, "student_households.json")
 HMO_DETAILS_GLOB     = os.path.join(DATA, "HMO_Register_April_*_details.csv")
 SELECTIVE_CSV_GLOB   = os.path.join(DATA, "Selective_Licence_Register*.csv")
 
 OUT_BLOCKS   = os.path.join(DATA, "doorknock_blocks.geojson")
 OUT_BUNDLES  = os.path.join(DATA, "doorknock_bundles.json")
 
-EAST_OXFORD_SECTOR = "OX41"   # postcode sector (no space) — see docstring
+EAST_OXFORD_DISTRICT = "OX4"   # postcode district — see docstring
 TOP_N_AGENCIES = 20
 TOP_N_BLOCKS   = 10            # keep the shortlist small enough that a
                                 # canvassing team can scan it at a glance
+STUDENT_HOUSEHOLD_MAX = 60      # exclude blocks whose LSOA has more
+                                # Census-2021 student-only households than
+                                # this — see docstring
 
 # Density-ranking guardrails (see module docstring)
 MIN_LISTINGS  = 4        # a block needs at least this many licences to rank
@@ -270,6 +283,29 @@ def load_locality_anchors():
 def nearest_locality(lat, lon, anchors):
     best = min(anchors, key=lambda a: (a["lat"] - lat) ** 2 + (a["lon"] - lon) ** 2)
     return best["name"]
+
+
+# ── LSOA lookup (for the student-household exclusion) ──────────────────────
+
+def load_lsoa_shapes():
+    with open(NEIGHBOURHOODS_GEOJSON) as f:
+        geo = json.load(f)
+    return [(feat["properties"]["LSOA21CD"], shape(feat["geometry"])) for feat in geo["features"]]
+
+
+def load_student_households():
+    with open(STUDENT_HOUSEHOLDS) as f:
+        raw = json.load(f)
+    return {code: row["student_households"] for code, row in raw.items()}
+
+
+def lsoa_for_point(lat, lon, lsoa_shapes):
+    """Nearest LSOA polygon to a point (distance is 0 when inside it) —
+    robust to a point sitting fractionally outside a boundary due to
+    coordinate rounding, unlike a strict .contains() check."""
+    pt = Point(lon, lat)
+    code, _ = min(lsoa_shapes, key=lambda cs: cs[1].distance(pt))
+    return code
 
 
 def load_postcode_street_lookup():
@@ -449,7 +485,7 @@ def address_list(pts):
 
 # ── Ranking ───────────────────────────────────────────────────────────────
 
-def rank_blocks(records, anchors):
+def rank_blocks(records, anchors, lsoa_shapes, student_hh):
     agency_counts = defaultdict(int)
     for r in records:
         if r["agent_canon"] in COMMERCIAL_AGENCY_LABELS:
@@ -459,7 +495,7 @@ def rank_blocks(records, anchors):
 
     candidates = [
         r for r in records
-        if r["street"] and r["postcode"] and r["postcode"].startswith(EAST_OXFORD_SECTOR)
+        if r["street"] and r["district"] == EAST_OXFORD_DISTRICT
     ]
     lat0 = sum(r["lat"] for r in candidates) / len(candidates)
 
@@ -468,6 +504,7 @@ def rank_blocks(records, anchors):
         by_block[assign_block(r["lat"], r["lon"], lat0, BLOCK_SIZE_M)].append(r)
 
     area_units = (BLOCK_SIZE_M * BLOCK_SIZE_M) / AREA_UNIT_M2
+    excluded_student_blocks = 0
     block_stats = {}
     for block, pts in by_block.items():
         markers = len({(r["lon"], r["lat"]) for r in pts})
@@ -478,6 +515,12 @@ def rank_blocks(records, anchors):
         streets = Counter(r["street"] for r in pts).most_common(2)
         lat_c = sum(r["lat"] for r in pts) / len(pts)
         lon_c = sum(r["lon"] for r in pts) / len(pts)
+
+        lsoa_code = lsoa_for_point(lat_c, lon_c, lsoa_shapes)
+        if student_hh.get(lsoa_code, 0) > STUDENT_HOUSEHOLD_MAX:
+            excluded_student_blocks += 1
+            continue  # mostly purpose-built/HMO student housing already
+
         block_stats[block] = {
             "renters": renters,
             "listings": len(pts),
@@ -490,7 +533,12 @@ def rank_blocks(records, anchors):
             "lat": lat_c,
             "lon": lon_c,
             "locality": nearest_locality(lat_c, lon_c, anchors),
+            "lsoa_code": lsoa_code,
+            "student_households": student_hh.get(lsoa_code, 0),
         }
+
+    print(f"Excluded {excluded_student_blocks} block(s) with LSOA student-only "
+          f"households > {STUDENT_HOUSEHOLD_MAX}")
 
     by_renters = sorted(block_stats.items(), key=lambda x: -x[1]["renters_per_150sqm"])
     by_top20 = sorted(block_stats.items(), key=lambda x: -x[1]["top20_per_150sqm"])
@@ -564,15 +612,20 @@ def bundle_label(members_sorted, block_stats):
 def main():
     records = build_records()
     anchors = load_locality_anchors()
-    shortlist, block_stats, top_agency_names, candidates, by_block = rank_blocks(records, anchors)
+    lsoa_shapes = load_lsoa_shapes()
+    student_hh = load_student_households()
+    shortlist, block_stats, top_agency_names, candidates, by_block = rank_blocks(
+        records, anchors, lsoa_shapes, student_hh)
 
-    print(f"Shortlisted blocks (top {TOP_N_BLOCKS} in East Oxford, {BLOCK_SIZE_M:.0f}m cells, "
-          f"best combined renters/150sqm + top-20-agency/150sqm rank):")
+    print(f"Shortlisted blocks (top {TOP_N_BLOCKS} in East Oxford / {EAST_OXFORD_DISTRICT}, "
+          f"{BLOCK_SIZE_M:.0f}m cells, best combined renters/150sqm + top-20-agency/150sqm rank, "
+          f"LSOA student-only households <= {STUDENT_HOUSEHOLD_MAX}):")
     for block in shortlist:
         s = block_stats[block]
         print(f"  {s['label']} ({s['locality']}): {s['renters']} renters "
               f"({s['renters_per_150sqm']:.0f}/150sqm), {s['listings']} listings, "
-              f"{s['top20_listings']} top-20-agency listings ({s['top20_per_150sqm']:.1f}/150sqm)")
+              f"{s['top20_listings']} top-20-agency listings ({s['top20_per_150sqm']:.1f}/150sqm), "
+              f"{s['student_households']} student-only households in LSOA")
 
     lat0 = sum(r["lat"] for r in candidates) / len(candidates)
 
