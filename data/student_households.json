@@ -1,0 +1,422 @@
+{
+ "E01028513": {
+  "lsoa_name": "Oxford 005A",
+  "student_households": 5,
+  "total_households": 928
+ },
+ "E01028514": {
+  "lsoa_name": "Oxford 005B",
+  "student_households": 5,
+  "total_households": 545
+ },
+ "E01028515": {
+  "lsoa_name": "Oxford 007A",
+  "student_households": 1,
+  "total_households": 683
+ },
+ "E01028516": {
+  "lsoa_name": "Oxford 005C",
+  "student_households": 8,
+  "total_households": 940
+ },
+ "E01028517": {
+  "lsoa_name": "Oxford 017A",
+  "student_households": 1,
+  "total_households": 499
+ },
+ "E01028518": {
+  "lsoa_name": "Oxford 017B",
+  "student_households": 0,
+  "total_households": 643
+ },
+ "E01028519": {
+  "lsoa_name": "Oxford 017C",
+  "student_households": 0,
+  "total_households": 592
+ },
+ "E01028520": {
+  "lsoa_name": "Oxford 018A",
+  "student_households": 4,
+  "total_households": 603
+ },
+ "E01028521": {
+  "lsoa_name": "Oxford 008A",
+  "student_households": 37,
+  "total_households": 563
+ },
+ "E01028522": {
+  "lsoa_name": "Oxford 008B",
+  "student_households": 90,
+  "total_households": 701
+ },
+ "E01028523": {
+  "lsoa_name": "Oxford 010A",
+  "student_households": 34,
+  "total_households": 594
+ },
+ "E01028524": {
+  "lsoa_name": "Oxford 010B",
+  "student_households": 7,
+  "total_households": 628
+ },
+ "E01028525": {
+  "lsoa_name": "Oxford 010C",
+  "student_households": 11,
+  "total_households": 714
+ },
+ "E01028526": {
+  "lsoa_name": "Oxford 010D",
+  "student_households": 105,
+  "total_households": 522
+ },
+ "E01028527": {
+  "lsoa_name": "Oxford 015A",
+  "student_households": 3,
+  "total_households": 665
+ },
+ "E01028528": {
+  "lsoa_name": "Oxford 015B",
+  "student_households": 7,
+  "total_households": 594
+ },
+ "E01028529": {
+  "lsoa_name": "Oxford 015C",
+  "student_households": 3,
+  "total_households": 639
+ },
+ "E01028530": {
+  "lsoa_name": "Oxford 015D",
+  "student_households": 6,
+  "total_households": 673
+ },
+ "E01028531": {
+  "lsoa_name": "Oxford 019B",
+  "student_households": 12,
+  "total_households": 825
+ },
+ "E01028532": {
+  "lsoa_name": "Oxford 019A",
+  "student_households": 65,
+  "total_households": 1012
+ },
+ "E01028534": {
+  "lsoa_name": "Oxford 006A",
+  "student_households": 15,
+  "total_households": 460
+ },
+ "E01028535": {
+  "lsoa_name": "Oxford 006B",
+  "student_households": 33,
+  "total_households": 693
+ },
+ "E01028536": {
+  "lsoa_name": "Oxford 006C",
+  "student_households": 25,
+  "total_households": 616
+ },
+ "E01028537": {
+  "lsoa_name": "Oxford 006D",
+  "student_households": 30,
+  "total_households": 842
+ },
+ "E01028538": {
+  "lsoa_name": "Oxford 005D",
+  "student_households": 6,
+  "total_households": 698
+ },
+ "E01028539": {
+  "lsoa_name": "Oxford 006E",
+  "student_households": 20,
+  "total_households": 700
+ },
+ "E01028540": {
+  "lsoa_name": "Oxford 006F",
+  "student_households": 7,
+  "total_households": 544
+ },
+ "E01028541": {
+  "lsoa_name": "Oxford 012A",
+  "student_households": 27,
+  "total_households": 580
+ },
+ "E01028542": {
+  "lsoa_name": "Oxford 012B",
+  "student_households": 7,
+  "total_households": 729
+ },
+ "E01028543": {
+  "lsoa_name": "Oxford 012C",
+  "student_households": 11,
+  "total_households": 559
+ },
+ "E01028544": {
+  "lsoa_name": "Oxford 012D",
+  "student_households": 24,
+  "total_households": 553
+ },
+ "E01028545": {
+  "lsoa_name": "Oxford 014A",
+  "student_households": 26,
+  "total_households": 673
+ },
+ "E01028546": {
+  "lsoa_name": "Oxford 014B",
+  "student_households": 7,
+  "total_households": 722
+ },
+ "E01028547": {
+  "lsoa_name": "Oxford 014C",
+  "student_households": 83,
+  "total_households": 872
+ },
+ "E01028548": {
+  "lsoa_name": "Oxford 009A",
+  "student_households": 19,
+  "total_households": 777
+ },
+ "E01028549": {
+  "lsoa_name": "Oxford 009B",
+  "student_households": 23,
+  "total_households": 706
+ },
+ "E01028550": {
+  "lsoa_name": "Oxford 009C",
+  "student_households": 55,
+  "total_households": 704
+ },
+ "E01028551": {
+  "lsoa_name": "Oxford 009D",
+  "student_households": 50,
+  "total_households": 544
+ },
+ "E01028552": {
+  "lsoa_name": "Oxford 016A",
+  "student_households": 3,
+  "total_households": 792
+ },
+ "E01028553": {
+  "lsoa_name": "Oxford 016B",
+  "student_households": 1,
+  "total_households": 758
+ },
+ "E01028554": {
+  "lsoa_name": "Oxford 016C",
+  "student_households": 4,
+  "total_households": 606
+ },
+ "E01028555": {
+  "lsoa_name": "Oxford 016D",
+  "student_households": 0,
+  "total_households": 674
+ },
+ "E01028556": {
+  "lsoa_name": "Oxford 020B",
+  "student_households": 5,
+  "total_households": 676
+ },
+ "E01028557": {
+  "lsoa_name": "Oxford 020D",
+  "student_households": 2,
+  "total_households": 736
+ },
+ "E01028558": {
+  "lsoa_name": "Oxford 020C",
+  "student_households": 3,
+  "total_households": 591
+ },
+ "E01028559": {
+  "lsoa_name": "Oxford 020A",
+  "student_households": 16,
+  "total_households": 672
+ },
+ "E01028560": {
+  "lsoa_name": "Oxford 004A",
+  "student_households": 7,
+  "total_households": 715
+ },
+ "E01028561": {
+  "lsoa_name": "Oxford 004B",
+  "student_households": 7,
+  "total_households": 681
+ },
+ "E01028562": {
+  "lsoa_name": "Oxford 004C",
+  "student_households": 30,
+  "total_households": 635
+ },
+ "E01028563": {
+  "lsoa_name": "Oxford 004D",
+  "student_households": 12,
+  "total_households": 612
+ },
+ "E01028565": {
+  "lsoa_name": "Oxford 003A",
+  "student_households": 13,
+  "total_households": 500
+ },
+ "E01028567": {
+  "lsoa_name": "Oxford 017D",
+  "student_households": 1,
+  "total_households": 664
+ },
+ "E01028568": {
+  "lsoa_name": "Oxford 018B",
+  "student_households": 0,
+  "total_households": 585
+ },
+ "E01028569": {
+  "lsoa_name": "Oxford 018C",
+  "student_households": 1,
+  "total_households": 606
+ },
+ "E01028570": {
+  "lsoa_name": "Oxford 018D",
+  "student_households": 1,
+  "total_households": 788
+ },
+ "E01028571": {
+  "lsoa_name": "Oxford 007B",
+  "student_households": 9,
+  "total_households": 668
+ },
+ "E01028572": {
+  "lsoa_name": "Oxford 007C",
+  "student_households": 3,
+  "total_households": 793
+ },
+ "E01028573": {
+  "lsoa_name": "Oxford 007D",
+  "student_households": 13,
+  "total_households": 637
+ },
+ "E01028574": {
+  "lsoa_name": "Oxford 007E",
+  "student_households": 11,
+  "total_households": 616
+ },
+ "E01028575": {
+  "lsoa_name": "Oxford 015E",
+  "student_households": 5,
+  "total_households": 654
+ },
+ "E01028576": {
+  "lsoa_name": "Oxford 016E",
+  "student_households": 1,
+  "total_households": 511
+ },
+ "E01028577": {
+  "lsoa_name": "Oxford 016F",
+  "student_households": 1,
+  "total_households": 778
+ },
+ "E01028578": {
+  "lsoa_name": "Oxford 015F",
+  "student_households": 3,
+  "total_households": 640
+ },
+ "E01028579": {
+  "lsoa_name": "Oxford 011A",
+  "student_households": 111,
+  "total_households": 525
+ },
+ "E01028580": {
+  "lsoa_name": "Oxford 011B",
+  "student_households": 80,
+  "total_households": 543
+ },
+ "E01028581": {
+  "lsoa_name": "Oxford 011C",
+  "student_households": 62,
+  "total_households": 502
+ },
+ "E01028582": {
+  "lsoa_name": "Oxford 011D",
+  "student_households": 79,
+  "total_households": 516
+ },
+ "E01028584": {
+  "lsoa_name": "Oxford 003C",
+  "student_households": 10,
+  "total_households": 1052
+ },
+ "E01028586": {
+  "lsoa_name": "Oxford 011E",
+  "student_households": 78,
+  "total_households": 623
+ },
+ "E01028587": {
+  "lsoa_name": "Oxford 011F",
+  "student_households": 127,
+  "total_households": 677
+ },
+ "E01028588": {
+  "lsoa_name": "Oxford 011G",
+  "student_households": 119,
+  "total_households": 466
+ },
+ "E01028591": {
+  "lsoa_name": "Oxford 002C",
+  "student_households": 4,
+  "total_households": 523
+ },
+ "E01028592": {
+  "lsoa_name": "Oxford 002D",
+  "student_households": 9,
+  "total_households": 462
+ },
+ "E01028594": {
+  "lsoa_name": "Oxford 001A",
+  "student_households": 2,
+  "total_households": 671
+ },
+ "E01028595": {
+  "lsoa_name": "Oxford 001B",
+  "student_households": 0,
+  "total_households": 663
+ },
+ "E01028596": {
+  "lsoa_name": "Oxford 001C",
+  "student_households": 0,
+  "total_households": 634
+ },
+ "E01028597": {
+  "lsoa_name": "Oxford 001D",
+  "student_households": 6,
+  "total_households": 634
+ },
+ "E01032554": {
+  "lsoa_name": "Oxford 002F",
+  "student_households": 13,
+  "total_households": 993
+ },
+ "E01032555": {
+  "lsoa_name": "Oxford 002G",
+  "student_households": 3,
+  "total_households": 774
+ },
+ "E01035740": {
+  "lsoa_name": "Oxford 003E",
+  "student_households": 13,
+  "total_households": 732
+ },
+ "E01035741": {
+  "lsoa_name": "Oxford 008F",
+  "student_households": 4,
+  "total_households": 609
+ },
+ "E01035742": {
+  "lsoa_name": "Oxford 008G",
+  "student_households": 44,
+  "total_households": 611
+ },
+ "E01035743": {
+  "lsoa_name": "Oxford 019C",
+  "student_households": 15,
+  "total_households": 450
+ },
+ "E01035744": {
+  "lsoa_name": "Oxford 019D",
+  "student_households": 4,
+  "total_households": 457
+ }
+}
