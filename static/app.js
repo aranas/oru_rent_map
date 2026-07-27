@@ -10,9 +10,11 @@ var CONFIG = {
   holderLocationsPath:    'data/holder_locations.geojson',
   doorknockBlocksPath:  'data/doorknock_blocks.geojson',
   doorknockBundlesPath: 'data/doorknock_bundles.json',
+  studentHouseholdsPath: 'data/student_households.json',
   // Choropleth colour ranges per type
   choroplethHmo:       ['#dbeafe', '#1e40af'],  // blue
   choroplethSelective: ['#dcfce7', '#166534'],  // green
+  choroplethStudent:   ['#ede9fe', '#5b21b6'],  // purple
   numQuantiles: 6,
   defaultFillOpacity:  0.55,
   defaultBorderColour: '#666',
@@ -436,6 +438,13 @@ function buildLegend(colourScale, breaks, valueLabel) {
     if (dkBundlesRes.ok) doorknockBundles = await dkBundlesRes.json();
   } catch (e) { /* non-fatal */ }
 
+  // Census 2021 student-only-household counts per LSOA; optional
+  var studentHouseholds = null;
+  try {
+    var studentRes = await fetch(CONFIG.studentHouseholdsPath);
+    if (studentRes.ok) studentHouseholds = await studentRes.json();
+  } catch (e) { /* non-fatal */ }
+
   // ── Aggregate LSOA counts ─────────────────────────────────────────────
   var hmoLsoa = {};
   var selLsoa = {};
@@ -455,6 +464,11 @@ function buildLegend(colourScale, breaks, valueLabel) {
     var name = f.properties.LSOA21NM || '';
     f.properties.hmo_count       = hmoLsoa[name] || 0;
     f.properties.selective_count = selLsoa[name] || 0;
+    if (studentHouseholds) {
+      var code = f.properties.LSOA21CD || '';
+      var row  = studentHouseholds[code];
+      f.properties.student_households = row ? row.student_households : 0;
+    }
   });
 
   // ── Split licence features by type ───────────────────────────────────
@@ -717,6 +731,9 @@ function buildLegend(colourScale, breaks, valueLabel) {
 
   var hmoChoro  = buildChoropleth(wardGeojson, 'hmo_count',      'HMO count per area',        CONFIG.choroplethHmo);
   var selChoro  = buildChoropleth(wardGeojson, 'selective_count', 'Private renters per area',  CONFIG.choroplethSelective);
+  var studentChoro = studentHouseholds
+    ? buildChoropleth(wardGeojson, 'student_households', 'Student-only households per area', CONFIG.choroplethStudent)
+    : null;
 
   // ── Agent halo layer ─────────────────────────────────────────────────
   // Count properties per canonical agent; only show agents with >= 5
@@ -887,6 +904,14 @@ function buildLegend(colourScale, breaks, valueLabel) {
     'sel':     { layer: selChoro.wardLayer, colourScale: selChoro.colourScale, breaks: selChoro.breaks, label: 'Private renters per area' },
     'grid':    { layer: gridHeatmap,        colourScale: gridColourScale,   breaks: null, label: 'Licence density (~500 m²)' },
   };
+  if (studentChoro) {
+    densityOptions['student'] = {
+      layer: studentChoro.wardLayer,
+      colourScale: studentChoro.colourScale,
+      breaks: studentChoro.breaks,
+      label: 'Student-only households per area (Census 2021)',
+    };
+  }
 
   function buildGridLegend(colourScale, maxVal, label) {
     var legend = L.control({ position: 'bottomright' });
@@ -962,6 +987,7 @@ function buildLegend(colourScale, breaks, valueLabel) {
           '<option value="hmo">HMO count per area</option>' +
           '<option value="sel">Private renters per area</option>' +
           '<option value="grid">Licence density grid (~500 m²)</option>' +
+          (studentChoro ? '<option value="student">Student-only households (Census 2021)</option>' : '') +
           '</select>' +
         '</div>' +
         (doorknockAvailable ? '<div class="map-controls-section" id="doorknock-section"></div>' : '') +
